@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@inxtone/core": ["./packages/core/src"],
+      "@inxtone/core/*": ["./packages/core/src/*"]
+    }
+  },
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/tui" },
+    { "path": "./packages/server" },
+    { "path": "./packages/web" }
+  ],
+  "exclude": ["node_modules", "dist", "**/dist"]
+}
