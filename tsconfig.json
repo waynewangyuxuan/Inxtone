@@ -25,11 +25,5 @@
       "@inxtone/core/*": ["./packages/core/src/*"]
     }
   },
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/tui" },
-    { "path": "./packages/server" },
-    { "path": "./packages/web" }
-  ],
   "exclude": ["node_modules", "dist", "**/dist"]
 }

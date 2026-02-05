@@ -10,7 +10,7 @@ import { VERSION } from '@inxtone/core';
 
 const DEFAULT_PORT = 3456;
 
-export async function createServer(port: number = DEFAULT_PORT) {
+export async function createServer(_port: number = DEFAULT_PORT) {
   const server = Fastify({
     logger: true,
   });

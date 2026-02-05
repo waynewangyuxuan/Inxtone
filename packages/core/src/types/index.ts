@@ -5,19 +5,14 @@
  * These interfaces serve as contracts for parallel development.
  */
 
-// Entity types (to be defined in Phase 2)
-// export * from './entities.js';
+// Entity types - Data models mapped to SQLite schema
+export * from './entities.js';
 
-// Service interfaces (to be defined in Phase 2)
-// export * from './services.js';
+// Service interfaces - Core business logic contracts
+export * from './services.js';
 
-// API types (to be defined in Phase 2)
-// export * from './api.js';
+// API types - HTTP API contracts for client/server communication
+export * from './api.js';
 
-// Event types (to be defined in Phase 2)
-// export * from './events.js';
-
-// Placeholder export for Phase 1
-export interface PlaceholderType {
-  id: string;
-}
+// Event types - EventBus event definitions
+export * from './events.js';

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { render } from 'ink';
-import React from 'react';
 import { VERSION } from '@inxtone/core';
 import { App } from './app.js';
 
