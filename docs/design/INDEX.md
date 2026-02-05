@@ -9,18 +9,22 @@
 | 文档 | 内容 | 状态 |
 |------|------|------|
 | [01_INTERACTION.md](./01_INTERACTION.md) | 交互层设计：TUI + Web GUI | ✅ 已确认 |
-| [02_BUSINESS_LOGIC.md](./02_BUSINESS_LOGIC.md) | 业务逻辑层：AI 集成 + 核心逻辑 | ⏳ 待开始 |
-| [03_DATA_LAYER.md](./03_DATA_LAYER.md) | 数据层：文件结构 + 索引设计 | ⏳ 待开始 |
-| [04_IMPLEMENTATION.md](./04_IMPLEMENTATION.md) | 具体实现：技术栈 + 架构 | ⏳ 待开始 |
+| [02_BUSINESS_LOGIC.md](./02_BUSINESS_LOGIC.md) | 业务逻辑层：Schemas, Rules, Templates, Workflows | ✅ 已确认 |
+| [03_COMPUTER_LOGIC.md](./03_COMPUTER_LOGIC.md) | 计算逻辑层：AI抽象、搜索、并发 | ✅ 已确认 |
+| [04_DATA_LAYER.md](./04_DATA_LAYER.md) | 数据层：SQLite Schema + 版本 + 模板 | ✅ 已确认 |
+| [05_ARCHITECTURE.md](./05_ARCHITECTURE.md) | 架构对齐：模块划分 + 通信契约 + 组件清单 | 🚧 进行中 |
+| [component-preview.html](./component-preview.html) | GUI 组件可视化预览 | 🚧 进行中 |
+| 06_IMPLEMENTATION.md | 实现计划：里程碑 + 任务分解 | ⏳ 待开始 |
 
 ---
 
 ## 设计原则
 
 1. **开源友好** — 清晰、简单、易贡献
-2. **本地优先** — 数据属于用户，Markdown 是 source of truth
-3. **CLI First** — 命令行优先，Web UI 是增强
-4. **渐进增强** — 核心功能先行，高级功能后加
+2. **本地优先** — 数据属于用户，SQLite 是 source of truth，Markdown 是导出格式
+3. **TUI First** — 终端界面优先，Web UI 是增强
+4. **框架思维** — Inxtone 是框架 + 默认配置，用户可自定义一切
+5. **渐进增强** — 核心功能先行，高级功能后加
 
 ---
 
