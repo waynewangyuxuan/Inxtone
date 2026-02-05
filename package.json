@@ -12,12 +12,13 @@
     "test:coverage": "vitest run --coverage",
     "test:contracts": "vitest run --project contracts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "pnpm -r run clean && rm -rf node_modules",
-    "db:migrate": "pnpm --filter @inxtone/core run db:migrate"
+    "db:migrate": "pnpm --filter @inxtone/core run db:migrate",
+    "prepare": "husky"
   },
   "keywords": [
     "writing",
@@ -41,10 +42,21 @@
     "eslint": "^9.5.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
     "prettier": "^3.3.0",
     "tsx": "^4.15.0",
     "typescript": "^5.4.0",
     "typescript-eslint": "^7.13.0",
     "vitest": "^1.6.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
   }
 }

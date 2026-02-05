@@ -662,15 +662,15 @@ program.parse()
 |---|------|----------|------|
 | 1 | TUI 交互 | 01_INTERACTION.md | ✅ |
 | 2 | Web GUI | 01_INTERACTION.md | ✅ |
-| 3 | 角色管理 | 02_BUSINESS_LOGIC + API | ✅ |
-| 4 | 世界观管理 | 02_BUSINESS_LOGIC + API | ✅ |
-| 5 | 剧情管理 | 02_BUSINESS_LOGIC + API | ✅ |
+| 3 | 角色管理 | BusinessLogic/ + API | ✅ |
+| 4 | 世界观管理 | BusinessLogic/ + API | ✅ |
+| 5 | 剧情管理 | BusinessLogic/ + API | ✅ |
 | 6 | 章节编辑 | 01_INTERACTION + API | ✅ |
 | 7 | AI 续写 | 03_COMPUTER_LOGIC + API | ✅ |
 | 8 | AI 问答 | 03_COMPUTER_LOGIC + API | ✅ |
-| 9 | 一致性检查 | 02_BUSINESS_LOGIC + API | ✅ |
-| 10 | Wayne 原则 | 02_BUSINESS_LOGIC | ✅ |
-| 11 | 伏笔追踪 | 02_BUSINESS_LOGIC | ✅ |
+| 9 | 一致性检查 | BusinessLogic/ + API | ✅ |
+| 10 | Wayne 原则 | BusinessLogic/ | ✅ |
+| 11 | 伏笔追踪 | BusinessLogic/ | ✅ |
 | 12 | 版本历史 | 04_DATA_LAYER | ✅ |
 | 13 | 导出功能 | API | ✅ |
 | 14 | 配置管理 | API | ✅ |

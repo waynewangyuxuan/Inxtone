@@ -1,5 +1,7 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
 
-# Run linting before commit
+# Run lint-staged for incremental checks
 pnpm lint-staged
+
+# Run typecheck on staged files' packages
+pnpm typecheck

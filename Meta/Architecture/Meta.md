@@ -50,7 +50,7 @@ graph TD
 ## Document Notes
 
 ### Completed Splits
-- ✅ 02_BUSINESS_LOGIC.md (1639 lines) → [BusinessLogic/](BusinessLogic/Meta.md) (21 files)
+- ✅ ~~02_BUSINESS_LOGIC.md~~ (1639 lines) → [BusinessLogic/](BusinessLogic/Meta.md) (21 files) — *原文件已删除*
 
 ### Pending Splits
 These documents are over the 150-line limit and flagged for further splitting:
