@@ -34,3 +34,9 @@ yarn.lock
 
 # Inxtone user data
 .inxtone/
+
+# pnpm store
+.pnpm-store/
+
+# Claude Code local settings
+.claude/
