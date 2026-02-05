@@ -9,6 +9,33 @@
 
 ---
 
+## Web GUI Route Structure
+
+```
+/                           Dashboard
+/bible/characters           人物列表
+/bible/characters/:id       人物详情
+/bible/characters/:id/arc   人物弧光
+/bible/characters/map       关系图 ★
+/bible/world/rules          世界规则
+/bible/world/locations      地点
+/bible/world/factions       势力
+/bible/world/timeline       时间线 ★
+/bible/plot/outline         大纲
+/bible/plot/foreshadowing   伏笔
+/bible/plot/hooks           钩子
+/bible/plot/pacing          节奏 ★
+/write                      章节列表
+/write/:chapter             写作编辑器
+/write/:chapter/history     版本历史
+/export                     导出
+/settings                   设置
+```
+
+★ = 可视化增强功能 (Canvas/D3.js)
+
+---
+
 ## 6.1 Dashboard (首页)
 
 **Purpose:** Entry point, status at a glance, quick actions

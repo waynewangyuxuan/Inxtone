@@ -11,18 +11,20 @@
 
 ### Must Have (P0)
 
-- [ ] `inxtone init` — Project scaffolding
-- [ ] `inxtone serve` — Local web UI server
+- [ ] `inxtone` — TUI mode (interactive terminal)
+- [ ] `inxtone init [name]` — Project scaffolding
+- [ ] `inxtone serve` — HTTP Server + TUI
+- [ ] `inxtone serve --no-tui` — Headless mode
 - [ ] Project dashboard (list chapters, word count)
-- [ ] Chapter editor (markdown, auto-save to file)
-- [ ] Character cards (markdown + frontmatter)
+- [ ] Chapter editor (markdown, auto-save)
+- [ ] Character cards (structured data in SQLite)
 - [ ] World rules (basic structure)
 - [ ] Plot outliner (2 levels: Arc → Chapter)
-- [ ] Gemini integration (continuation, dialogue)
+- [ ] Gemini/Claude integration (continuation, dialogue)
 - [ ] Basic context injection (current chapter + selected entities)
-- [ ] `inxtone export --txt` — TXT export
-- [ ] `inxtone export --docx` — Word export
-- [ ] `inxtone config` — API key management
+- [ ] `inxtone export md` — Markdown export
+- [ ] `inxtone export docx` — Word export
+- [ ] `inxtone config set/get` — API key management
 
 ### Should Have (P1)
 
@@ -30,7 +32,8 @@
 - [ ] Foreshadowing tracker
 - [ ] Full-text search across project
 - [ ] Multiple AI prompt templates
-- [ ] `inxtone ask` — CLI query interface
+- [ ] `inxtone ai ask "question"` — CLI query interface
+- [ ] `inxtone bible list/show/search` — Story Bible CLI
 
 ### Nice to Have (P2)
 

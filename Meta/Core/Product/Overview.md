@@ -13,7 +13,7 @@ Inxtone is an **open-source, local-first CLI tool** with a web-based UI that hel
 
 **Architecture:** CLI + Local Web UI (similar to Ollama, Jupyter)
 - Run `inxtone serve` → opens `localhost:3456` with full-featured writing interface
-- All data stored locally as **Markdown files + SQLite index**
+- All data stored locally in **SQLite database** (Markdown exported for external editing)
 - **Git-friendly** project structure for version control
 - **BYOK (Bring Your Own Key)** for Gemini API
 
