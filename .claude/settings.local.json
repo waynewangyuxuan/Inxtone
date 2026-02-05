@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial project setup with Meta folder structure\n\nAdd project documentation scaffolding including:\n- Core specs \\(Product, Technical\\)\n- Research documentation \\(Cognitive Foundations, Node/Edge Schema\\)\n- Milestone tracking \\(M1\\)\n- ADR system \\(ADR-0001: Multi-agent pipeline architecture\\)\n- Project management files \\(Progress, Todo, Labels\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit --amend -m \"$\\(cat <<''EOF''\nInitial project setup\n\nAdd project documentation:\n- Product.md and Design.md specifications\n- METHODOLOGDY framework with world-building, characters, plot, outline, and draft templates\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
