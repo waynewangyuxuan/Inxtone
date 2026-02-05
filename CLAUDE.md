@@ -8,7 +8,7 @@ Inxtone is an **open-source, local-first CLI tool** with a web-based UI that hel
 
 **Architecture:** CLI + Local Web UI (similar to Ollama, Jupyter)
 - Run `inxtone serve` → opens `localhost:3456` with full-featured writing interface
-- All data stored locally as **Markdown files + SQLite index**
+- All data stored in **SQLite** (source of truth), Markdown for export
 - **Git-friendly** project structure for version control
 - **BYOK (Bring Your Own Key)** for Gemini API
 
@@ -64,6 +64,31 @@ Quick links:
 | **Testing** | Vitest |
 
 ## Development Workflow
+
+### Core Principle: Test-Oriented Parallel Development
+
+We use **git worktree** for parallel feature development. This requires:
+
+1. **Interface-First**: Define TypeScript interfaces before implementation
+2. **Test-First**: Write tests before code (tests = interface contract)
+3. **Parallel Branches**: Multiple features developed simultaneously via worktree
+
+```
+M1 (Foundation) ──→ Interface + Test Stubs defined
+                          │
+        ┌─────────────────┼─────────────────┐
+        ▼                 ▼                 ▼
+   feat/story-bible  feat/writing     feat/ai-service
+   (worktree-1)      (worktree-2)     (worktree-3)
+        │                 │                 │
+        └─────────────────┴─────────────────┘
+                          │
+                    merge to main
+```
+
+**Before starting any phase**: Run `/test-plan` skill to design test cases.
+
+See [Regulation.md](Meta/Core/Regulation.md#9-test-oriented-development) for detailed workflow.
 
 ### Branching Strategy
 - `main` - Production-ready code
