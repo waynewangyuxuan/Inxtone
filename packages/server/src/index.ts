@@ -21,7 +21,7 @@ export async function createServer(_port: number = DEFAULT_PORT) {
   });
 
   // Health check endpoint
-  server.get('/api/health', async () => {
+  server.get('/api/health', () => {
     return {
       status: 'ok',
       version: VERSION,
@@ -34,7 +34,7 @@ export async function createServer(_port: number = DEFAULT_PORT) {
 
 // Start server if run directly
 async function main() {
-  const port = parseInt(process.env['PORT'] ?? String(DEFAULT_PORT), 10);
+  const port = parseInt(process.env.PORT ?? String(DEFAULT_PORT), 10);
   const server = await createServer(port);
 
   try {
@@ -46,4 +46,4 @@ async function main() {
   }
 }
 
-main();
+void main();
