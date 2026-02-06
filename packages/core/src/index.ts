@@ -8,5 +8,7 @@
 // Types and Interfaces
 export * from './types/index.js';
 
+// Note: Database module is server-only, import via '@inxtone/core/db'
+
 // Version
 export const VERSION = '0.1.0';

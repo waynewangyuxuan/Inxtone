@@ -4,6 +4,41 @@
 
 ---
 
+## 2026-02-05 (Session 3)
+
+### Completed
+- **M1 Phase 4: Database Schema** — SQLite layer fully implemented
+  - `Database` class: connection management, WAL mode, foreign keys, transactions
+  - `MigrationRunner`: sequential versioned migrations, rollback support, status reporting
+  - Migration 001: 18 core tables (project, characters, relationships, world, locations, factions, timeline_events, arcs, foreshadowing, hooks, volumes, chapters, writing_goals, writing_sessions, versions, check_results, embeddings, config)
+  - FTS5 full-text search on chapters and characters with auto-sync triggers
+  - Migration CLI: `pnpm db:migrate` with --status, --rollback, --path options
+  - Tests: Database.test.ts, MigrationRunner.test.ts, schema.test.ts
+  - Added `@inxtone/core/db` export path
+- **Test contract additions** — ConfigService contract test, MockEventBus/MockWritingService updates
+
+### Decisions Made
+- SQLite schema uses JSON columns for flexible nested data (motivation, facets, arc, etc.)
+- FTS5 virtual tables with triggers for auto-sync on chapter/character changes
+- Migration system uses in-code migrations (not SQL files) for type safety
+
+- **Build/test fixes for Phase 4:**
+  - Added `src/db/index.ts` to tsup entry points for `@inxtone/core/db` export
+  - Separated db from main index.ts to prevent better-sqlite3 bundling into web
+  - Rebuilt better-sqlite3 native bindings
+  - Fixed FTS5 test queries (rowid vs id, CJK tokenization expectations)
+  - All 238 tests pass, build + typecheck clean
+
+### Blockers/Issues
+- Test mocks still need updating to match Phase 2 interface changes
+- FTS5 default tokenizer has limited CJK word segmentation (future: ICU tokenizer)
+
+### Next
+- M1 Phase 5: CLI shell (functional inxtone commands)
+- M1 Phase 6: Server + Web shell
+
+---
+
 ## 2026-02-05 (Session 2)
 
 ### Completed
@@ -28,14 +63,6 @@
 - Web build uses `vite build` only (no tsc step)
 - ESLint relaxed for scaffold phase (recommendedTypeChecked, not strict)
 - Test mocks excluded from lint/typecheck until interface alignment
-
-### Blockers/Issues
-- Test mocks need updating to match Phase 2 interface changes
-
-### Next
-- M1 Phase 3: Complete test infrastructure (mock factory, test-db, contract tests)
-- M1 Phase 4: Database schema with better-sqlite3
-- M1 Phase 5-6: CLI shell + Server/Web shell
 
 ---
 

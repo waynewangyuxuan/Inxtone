@@ -8,7 +8,6 @@
 
 - [ ] **Update test mocks** - Align MockEventBus, MockWritingService, MockStoryBibleService, MockConfigService with Phase 2 interfaces
 - [ ] **Complete test infrastructure** - Mock factory, test-db util, pnpm test:contracts script
-- [ ] **Database schema** - Create better-sqlite3 Database class, migration system, initial schema
 - [ ] **CLI shell** - inxtone --version, --help, init, serve commands (functional)
 - [ ] **Server shell** - Fastify serving web build, static files, WebSocket setup
 - [ ] **Web shell** - AppShell component, routing, empty dashboard
@@ -42,3 +41,4 @@
 - [x] Set up pre-commit hooks — husky + lint-staged (2026-02-05)
 - [x] Fix ESLint v9 compatibility — typescript-eslint v8 (2026-02-05)
 - [x] Create Regulation.md content (2026-02-05)
+- [x] M1 Phase 4: Database Schema — Database class, MigrationRunner, 18 tables, FTS5 (2026-02-05)
