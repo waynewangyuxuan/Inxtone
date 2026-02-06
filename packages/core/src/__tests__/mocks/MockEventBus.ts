@@ -103,10 +103,21 @@ export class MockEventBus implements IEventBus {
     }
   }
 
-  // === Test Helpers (not part of interface) ===
+  // ============================================
+  // Test Helpers (NOT part of IEventBus interface)
+  // ============================================
+  //
+  // The following methods are utilities for testing purposes only.
+  // They are NOT part of the IEventBus interface contract and should
+  // NOT be relied upon in production code. Use these methods to:
+  // - Verify events were emitted in tests
+  // - Wait for async events in integration tests
+  // - Clean up state between test cases
+  // ============================================
 
   /**
-   * Get all emitted events
+   * Get all emitted events for test assertions.
+   * @returns A copy of the event history array
    */
   getEventHistory(): Array<{ type: string } & Record<string, unknown>> {
     return [...this.eventHistory];

@@ -272,6 +272,19 @@ describe('IStoryBibleService Contract', () => {
       expect(location.id).toMatch(/^L\d+$/);
     });
 
+    it('getLocation returns null for non-existent id', async () => {
+      const location = await service.getLocation('L999');
+      expect(location).toBeNull();
+    });
+
+    it('getLocation returns the created location', async () => {
+      const created = await service.createLocation({ name: 'Find Me' });
+      const found = await service.getLocation(created.id);
+
+      expect(found).not.toBeNull();
+      expect(found!.name).toBe('Find Me');
+    });
+
     it('getAllLocations returns array', async () => {
       await service.createLocation({ name: 'Location 1' });
       await service.createLocation({ name: 'Location 2' });
@@ -280,6 +293,26 @@ describe('IStoryBibleService Contract', () => {
 
       expect(Array.isArray(locations)).toBe(true);
       expect(locations.length).toBe(2);
+    });
+
+    it('updateLocation returns updated location', async () => {
+      const created = await service.createLocation({ name: 'Original' });
+      const updated = await service.updateLocation(created.id, { name: 'Updated' });
+
+      expect(updated.name).toBe('Updated');
+      expect(updated.id).toBe(created.id);
+    });
+
+    it('updateLocation throws for non-existent id', async () => {
+      await expect(service.updateLocation('L999', { name: 'Test' })).rejects.toThrow();
+    });
+
+    it('deleteLocation removes the location', async () => {
+      const created = await service.createLocation({ name: 'Delete Me' });
+      await service.deleteLocation(created.id);
+
+      const found = await service.getLocation(created.id);
+      expect(found).toBeNull();
     });
   });
 
@@ -298,6 +331,78 @@ describe('IStoryBibleService Contract', () => {
       expect(faction).toHaveProperty('updatedAt');
       expect(faction.id).toMatch(/^F\d+$/);
     });
+
+    it('getFaction returns null for non-existent id', async () => {
+      const faction = await service.getFaction('F999');
+      expect(faction).toBeNull();
+    });
+
+    it('getFaction returns the created faction', async () => {
+      const created = await service.createFaction({
+        name: 'Find Me',
+        type: 'military',
+        status: 'active',
+        stanceToMC: 'friendly',
+      });
+      const found = await service.getFaction(created.id);
+
+      expect(found).not.toBeNull();
+      expect(found!.name).toBe('Find Me');
+    });
+
+    it('getAllFactions returns array', async () => {
+      await service.createFaction({
+        name: 'Faction 1',
+        type: 'guild',
+        status: 'active',
+        stanceToMC: 'neutral',
+      });
+      await service.createFaction({
+        name: 'Faction 2',
+        type: 'cult',
+        status: 'hidden',
+        stanceToMC: 'hostile',
+      });
+
+      const factions = await service.getAllFactions();
+
+      expect(Array.isArray(factions)).toBe(true);
+      expect(factions.length).toBe(2);
+    });
+
+    it('updateFaction returns updated faction', async () => {
+      const created = await service.createFaction({
+        name: 'Original',
+        type: 'guild',
+        status: 'active',
+        stanceToMC: 'neutral',
+      });
+      const updated = await service.updateFaction(created.id, {
+        name: 'Updated',
+        stanceToMC: 'friendly',
+      });
+
+      expect(updated.name).toBe('Updated');
+      expect(updated.stanceToMC).toBe('friendly');
+      expect(updated.id).toBe(created.id);
+    });
+
+    it('updateFaction throws for non-existent id', async () => {
+      await expect(service.updateFaction('F999', { name: 'Test' })).rejects.toThrow();
+    });
+
+    it('deleteFaction removes the faction', async () => {
+      const created = await service.createFaction({
+        name: 'Delete Me',
+        type: 'guild',
+        status: 'active',
+        stanceToMC: 'neutral',
+      });
+      await service.deleteFaction(created.id);
+
+      const found = await service.getFaction(created.id);
+      expect(found).toBeNull();
+    });
   });
 
   describe('Arc Operations', () => {
@@ -315,6 +420,65 @@ describe('IStoryBibleService Contract', () => {
       expect(arc).toHaveProperty('status', 'planned');
       expect(arc).toHaveProperty('progress', 0);
       expect(arc.id).toMatch(/^ARC\d+$/);
+    });
+
+    it('getArc returns null for non-existent id', async () => {
+      const arc = await service.getArc('ARC999');
+      expect(arc).toBeNull();
+    });
+
+    it('getArc returns the created arc', async () => {
+      const created = await service.createArc({
+        name: 'Find Me',
+        type: 'sub',
+        status: 'active',
+        progress: 50,
+      });
+      const found = await service.getArc(created.id);
+
+      expect(found).not.toBeNull();
+      expect(found!.name).toBe('Find Me');
+    });
+
+    it('getAllArcs returns array', async () => {
+      await service.createArc({ name: 'Arc 1', type: 'main', status: 'active', progress: 0 });
+      await service.createArc({ name: 'Arc 2', type: 'sub', status: 'planned', progress: 0 });
+
+      const arcs = await service.getAllArcs();
+
+      expect(Array.isArray(arcs)).toBe(true);
+      expect(arcs.length).toBe(2);
+    });
+
+    it('updateArc returns updated arc', async () => {
+      const created = await service.createArc({
+        name: 'Original',
+        type: 'main',
+        status: 'planned',
+        progress: 0,
+      });
+      const updated = await service.updateArc(created.id, { name: 'Updated', progress: 25 });
+
+      expect(updated.name).toBe('Updated');
+      expect(updated.progress).toBe(25);
+      expect(updated.id).toBe(created.id);
+    });
+
+    it('updateArc throws for non-existent id', async () => {
+      await expect(service.updateArc('ARC999', { name: 'Test' })).rejects.toThrow();
+    });
+
+    it('deleteArc removes the arc', async () => {
+      const created = await service.createArc({
+        name: 'Delete Me',
+        type: 'sub',
+        status: 'planned',
+        progress: 0,
+      });
+      await service.deleteArc(created.id);
+
+      const found = await service.getArc(created.id);
+      expect(found).toBeNull();
     });
   });
 
@@ -431,6 +595,95 @@ describe('IStoryBibleService Contract', () => {
 
       expect(Array.isArray(events)).toBe(true);
       expect(events.length).toBe(2);
+    });
+
+    it('deleteTimelineEvent removes the event', async () => {
+      const event1 = await service.createTimelineEvent({ description: 'Keep Me' });
+      const event2 = await service.createTimelineEvent({ description: 'Delete Me' });
+
+      await service.deleteTimelineEvent(event2.id);
+
+      const events = await service.getTimelineEvents();
+      expect(events.length).toBe(1);
+      expect(events[0].description).toBe('Keep Me');
+    });
+  });
+
+  describe('Relationship CRUD Operations', () => {
+    let char1Id: string;
+    let char2Id: string;
+    let char3Id: string;
+
+    beforeEach(async () => {
+      const char1 = await service.createCharacter({ name: 'Character A', role: 'main' });
+      const char2 = await service.createCharacter({ name: 'Character B', role: 'supporting' });
+      const char3 = await service.createCharacter({ name: 'Character C', role: 'antagonist' });
+      char1Id = char1.id;
+      char2Id = char2.id;
+      char3Id = char3.id;
+    });
+
+    it('getRelationship returns null for non-existent id', async () => {
+      const relationship = await service.getRelationship(9999);
+      expect(relationship).toBeNull();
+    });
+
+    it('getRelationship returns the created relationship', async () => {
+      const created = await service.createRelationship({
+        sourceId: char1Id,
+        targetId: char2Id,
+        type: 'companion',
+      });
+      const found = await service.getRelationship(created.id);
+
+      expect(found).not.toBeNull();
+      expect(found!.sourceId).toBe(char1Id);
+      expect(found!.targetId).toBe(char2Id);
+    });
+
+    it('updateRelationship returns updated relationship', async () => {
+      const created = await service.createRelationship({
+        sourceId: char1Id,
+        targetId: char2Id,
+        type: 'companion',
+      });
+      const updated = await service.updateRelationship(created.id, { type: 'rival' });
+
+      expect(updated.type).toBe('rival');
+      expect(updated.id).toBe(created.id);
+    });
+
+    it('updateRelationship throws for non-existent id', async () => {
+      await expect(service.updateRelationship(9999, { type: 'enemy' })).rejects.toThrow();
+    });
+
+    it('deleteRelationship removes the relationship', async () => {
+      const created = await service.createRelationship({
+        sourceId: char1Id,
+        targetId: char2Id,
+        type: 'companion',
+      });
+      await service.deleteRelationship(created.id);
+
+      const found = await service.getRelationship(created.id);
+      expect(found).toBeNull();
+    });
+
+    it('getRelationshipsForCharacter includes both directions', async () => {
+      await service.createRelationship({
+        sourceId: char1Id,
+        targetId: char2Id,
+        type: 'companion',
+      });
+      await service.createRelationship({
+        sourceId: char3Id,
+        targetId: char1Id,
+        type: 'rival',
+      });
+
+      const relationships = await service.getRelationshipsForCharacter(char1Id);
+
+      expect(relationships.length).toBe(2);
     });
   });
 });

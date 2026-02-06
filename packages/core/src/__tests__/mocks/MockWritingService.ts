@@ -25,6 +25,15 @@ import type {
   Version,
 } from '../../types/entities.js';
 
+/**
+ * Internal type for version content storage.
+ * Used to properly type version content in mock implementation.
+ */
+interface VersionContent {
+  content: string;
+  wordCount: number;
+}
+
 export class MockWritingService implements IWritingService {
   private chapters: Map<ChapterId, Chapter> = new Map();
   private volumes: Map<VolumeId, Volume> = new Map();
@@ -248,8 +257,8 @@ export class MockWritingService implements IWritingService {
       throw new Error('Version not found');
     }
 
-    const c1 = v1.content as { content: string; wordCount: number };
-    const c2 = v2.content as { content: string; wordCount: number };
+    const c1 = v1.content as VersionContent;
+    const c2 = v2.content as VersionContent;
 
     return {
       added: Math.max(0, c2.wordCount - c1.wordCount),
@@ -269,7 +278,7 @@ export class MockWritingService implements IWritingService {
       throw new Error(`Version not found: ${versionId}`);
     }
 
-    const restoredContent = version.content as { content: string; wordCount: number };
+    const restoredContent = version.content as VersionContent;
     chapter.content = restoredContent.content;
     chapter.wordCount = restoredContent.wordCount;
     chapter.updatedAt = this.now();
