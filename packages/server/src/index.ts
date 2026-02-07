@@ -6,24 +6,28 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
 import { VERSION } from '@inxtone/core';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 export const DEFAULT_PORT = 3456;
 
 export interface ServerOptions {
   port?: number;
   logger?: boolean;
+  staticDir?: string; // Path to web build directory
 }
 
 /**
  * Create and configure the Fastify server
  *
- * @param port - Port number (default: 3456)
+ * @param options - Server configuration options
  * @returns Configured Fastify instance (not yet listening)
  */
-export async function createServer(_port: number = DEFAULT_PORT): Promise<FastifyInstance> {
+export async function createServer(options: ServerOptions = {}): Promise<FastifyInstance> {
   const server = Fastify({
-    logger: true,
+    logger: options.logger ?? true,
   });
 
   // Register CORS for development
@@ -57,7 +61,46 @@ export async function createServer(_port: number = DEFAULT_PORT): Promise<Fastif
     };
   });
 
+  // Serve static files from web build (if available)
+  const staticDir = options.staticDir ?? findWebBuildDir();
+  if (staticDir && fs.existsSync(staticDir)) {
+    await server.register(fastifyStatic, {
+      root: staticDir,
+      prefix: '/',
+      // Serve index.html for SPA routes
+      wildcard: false,
+    });
+
+    // SPA fallback - serve index.html for non-API routes
+    server.setNotFoundHandler((request, reply) => {
+      if (!request.url.startsWith('/api')) {
+        return reply.sendFile('index.html');
+      }
+      return reply.status(404).send({ error: 'Not found' });
+    });
+  }
+
   return server;
+}
+
+/**
+ * Attempt to find the web build directory
+ */
+function findWebBuildDir(): string | undefined {
+  // Try common locations relative to server package
+  const candidates = [
+    path.join(process.cwd(), 'packages', 'web', 'dist'),
+    path.join(process.cwd(), '..', 'web', 'dist'),
+    path.join(import.meta.dirname, '..', '..', 'web', 'dist'),
+  ];
+
+  for (const dir of candidates) {
+    if (fs.existsSync(dir)) {
+      return dir;
+    }
+  }
+
+  return undefined;
 }
 
 /**
@@ -65,7 +108,7 @@ export async function createServer(_port: number = DEFAULT_PORT): Promise<Fastif
  */
 export async function startServer(options: ServerOptions = {}): Promise<FastifyInstance> {
   const port = options.port ?? DEFAULT_PORT;
-  const server = await createServer(port);
+  const server = await createServer(options);
 
   await server.listen({ port, host: '0.0.0.0' });
 

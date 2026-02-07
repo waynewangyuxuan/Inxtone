@@ -48,7 +48,7 @@ export async function serve(options: ServeOptions): Promise<void> {
   const { createServer } = await import('@inxtone/server');
 
   try {
-    const server = await createServer(port);
+    const server = await createServer({ port });
 
     // Start listening
     await server.listen({ port, host: '0.0.0.0' });

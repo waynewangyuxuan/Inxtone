@@ -6,11 +6,8 @@
 
 ## High Priority (M1 Remaining)
 
-- [ ] **Update test mocks** - Align MockEventBus, MockWritingService, MockStoryBibleService, MockConfigService with Phase 2 interfaces
-- [ ] **Complete test infrastructure** - Mock factory, test-db util, pnpm test:contracts script
-- [ ] **CLI shell** - inxtone --version, --help, init, serve commands (functional)
-- [ ] **Server shell** - Fastify serving web build, static files, WebSocket setup
-- [ ] **Web shell** - AppShell component, routing, empty dashboard
+- [ ] **Manual testing** - Build all packages, test CLI flow (init → serve → web UI)
+- [ ] **M1 merge to main** - Final review, squash-merge ms1 → main
 
 ## Medium Priority
 
@@ -42,3 +39,7 @@
 - [x] Fix ESLint v9 compatibility — typescript-eslint v8 (2026-02-05)
 - [x] Create Regulation.md content (2026-02-05)
 - [x] M1 Phase 4: Database Schema — Database class, MigrationRunner, 18 tables, FTS5 (2026-02-05)
+- [x] M1 Phase 5: CLI Shell — init, serve, version, help commands + 9 tests (2026-02-05)
+- [x] M1 Phase 6: Server + Web Shell — static serving, SPA fallback, AppShell, 4 pages (2026-02-05)
+- [x] Update test mocks — MockEventBus AppEvent[], CreateCharacterInput literal unions (2026-02-05)
+- [x] Codebase cleanup — ESM fixes, lint fixes, stale file removal (2026-02-05)

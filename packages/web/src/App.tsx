@@ -1,17 +1,25 @@
+/**
+ * App - Root Component
+ *
+ * Sets up routing and global providers
+ */
+
 import React from 'react';
-import { VERSION } from '@inxtone/core';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AppShell } from './components/layout';
+import { Dashboard, StoryBible, Write, Settings } from './pages';
 
 export function App(): React.ReactElement {
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Inxtone</h1>
-        <p>AI-Native Storytelling Framework</p>
-        <span className="version">v{VERSION}</span>
-      </header>
-      <main className="app-main">
-        <p>Welcome to Inxtone. Start writing your story.</p>
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<AppShell />}>
+          <Route index element={<Dashboard />} />
+          <Route path="bible" element={<StoryBible />} />
+          <Route path="write" element={<Write />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
