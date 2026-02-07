@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@inxtone/core": "workspace:*",
+    "@inxtone/server": "workspace:*",
     "ink": "^5.0.0",
     "react": "^18.3.0",
     "commander": "^12.0.0",

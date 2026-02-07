@@ -3,7 +3,8 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -22,7 +23,9 @@
     "sourceMap": true,
     "paths": {
       "@inxtone/core": ["./packages/core/src"],
-      "@inxtone/core/*": ["./packages/core/src/*"]
+      "@inxtone/core/*": ["./packages/core/src/*"],
+      "@inxtone/server": ["./packages/server/src"],
+      "@inxtone/tui": ["./packages/tui/src"]
     }
   },
   "exclude": ["node_modules", "dist", "**/dist"]
