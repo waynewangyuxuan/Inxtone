@@ -137,13 +137,7 @@ export interface Character extends Timestamps {
 // Relationships
 // ===========================================
 
-export type RelationshipType =
-  | 'companion'
-  | 'rival'
-  | 'enemy'
-  | 'mentor'
-  | 'confidant'
-  | 'lover';
+export type RelationshipType = 'companion' | 'rival' | 'enemy' | 'mentor' | 'confidant' | 'lover';
 
 export interface Relationship extends Timestamps {
   id: number;

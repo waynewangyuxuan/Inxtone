@@ -54,7 +54,13 @@ describe('core', () => {
     // Type-level tests - if these compile, the types are exported correctly
     const character: Partial<Character> = { name: 'Test', role: 'main' };
     const chapter: Partial<Chapter> = { id: 1, status: 'draft', wordCount: 0 };
-    const arc: Partial<Arc> = { id: 'ARC001', name: 'Test Arc', type: 'main', status: 'planned', progress: 0 };
+    const arc: Partial<Arc> = {
+      id: 'ARC001',
+      name: 'Test Arc',
+      type: 'main',
+      status: 'planned',
+      progress: 0,
+    };
 
     expect(character.name).toBe('Test');
     expect(chapter.id).toBe(1);
