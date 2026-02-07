@@ -232,6 +232,9 @@
 - [ ] TD-019: errors/ 独立单元测试
 - [x] TD-020: errors 从主包 index.ts 导出（Phase 3）✅
 - [ ] TD-021: wrapError 命名/行为修正
+- [ ] TD-022: 更新 03_ai_service.md Provider 配置 → Gemini 2.5 Pro only (文档已更新)
+- [ ] TD-023: services.ts IAIService 接口 — MVP 实现只做 GeminiProvider，Provider 抽象保留
+- [ ] TD-024: WritingGoal/WritingSession 相关接口保留但不在 M3 实现
 
 ### M4+ 处理
 - [ ] TD-010 ~ TD-016

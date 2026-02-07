@@ -1,0 +1,43 @@
+/**
+ * Card Styles
+ */
+
+.card {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-base), transform var(--transition-fast);
+}
+
+.hoverable:hover {
+  border-color: var(--color-border-hover);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  transform: translateY(-2px);
+}
+
+.selected {
+  border-color: var(--color-accent);
+}
+
+.header {
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.body {
+  padding: var(--space-lg);
+}
+
+.footer {
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}

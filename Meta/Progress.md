@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-02-07 (continued)
+
+### Completed
+- **M2 Phase 4: Web UI Fixes** — Comprehensive code review and bug fixes for Story Bible UI
+  - **Critical fixes (6 items)**:
+    - `CharacterForm.tsx`: Full modal with create/edit modes, all fields (name*, role*, appearance, 3-layer motivation, conflictType, template, voiceSamples)
+    - `RelationshipForm.tsx`: Modal with character selects + Wayne Principles fields (joinReason, independentGoal, disagreeScenarios, leaveScenarios, mcNeeds)
+    - `WorldSettings.tsx`: Inline editing with toggle mode, array editors for levels/rules/constraints, key-value editor for social rules
+    - `useDeleteForeshadowing` hook: Fixed broken delete functionality in ForeshadowingList
+    - Error handling: Added `onError` callbacks with `showError()` helper to all 26 mutations across 9 hook files
+    - 6 lightweight forms created (Location, Faction, Timeline, Arc, Foreshadowing, Hook) and integrated into List components — **completely removed all `window.prompt()` usage**
+  - **High priority fixes (5 items)**:
+    - API client status checks: Added `res.ok` validation before JSON parsing in all 5 API methods (apiGet, apiPost, apiPatch, apiPut, apiDelete)
+    - Query key cache consistency: Added `normalizeFilters()` helper to 4 hooks (useCharacters, useRelationships, useHooks, useForeshadowing) to prevent duplicate cache entries from undefined filter values
+    - Delete mutation invalidation: Fixed 5 delete mutations to use `queryClient.removeQueries()` on detail cache instead of just invalidating list
+    - RelationshipList performance: Memoized character name map with `useMemo` + `useCallback` for O(1) lookups instead of O(n) linear search
+    - Type guards: Added `error instanceof Error` checks for safe error message display
+  - **Medium priority fixes (1 item)**:
+    - CrudTable: Removed redundant row onClick handler, added try/catch error handling to delete operation
+  - **Files modified**: 40+ files (15 created, 25+ modified)
+    - Created 8 form components + 1 utility file
+    - Modified 9 hook files (error handling + cache fixes)
+    - Modified 8 List components (form integration)
+    - Modified 1 API client + 1 CrudTable component
+  - All critical issues resolved, UI fully functional with proper error handling and design system compliance
+
+### Decisions Made
+- All forms use Modal component from design system (no more window.prompt)
+- Error messages use centralized `showError()` helper for consistency
+- Delete mutations remove detail cache to prevent stale data after entity deletion
+- Query keys normalized to prevent cache fragmentation from filter variations
+
+### Next
+- Begin M2 Phase 4 remaining work: StoryBible main page integration, tab navigation, remaining domain UI
+
+---
+
 ## 2026-02-07
 
 ### Completed
