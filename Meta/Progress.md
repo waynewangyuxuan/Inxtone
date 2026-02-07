@@ -4,6 +4,30 @@
 
 ---
 
+## 2026-02-06
+
+### Completed
+- **M1 sign-off** — Merged PR #1 (ms1 → main), M1 status → Complete
+- **Milestone roadmap planning (M2–M5)** — Drafted full MVP roadmap
+  - M2: Story Bible Core (3 weeks, target 2026-03-21)
+  - M3: Writing Workspace + AI Integration (3 weeks, target 2026-04-11)
+  - M4: Search & Quality (2 weeks, target 2026-04-25)
+  - M5: Export & Polish / MVP Release (2 weeks, target 2026-05-09)
+- **Updated Milestone index** — Meta.md now tracks all 5 milestones with status/target/duration
+
+### Decisions Made
+- MVP timeline: ~12 weeks (M1 complete → M5 release by early May 2026)
+- M2 starts with Repository Layer → Service Layer → API → Web UI → CLI
+- AI integration (Gemini) deferred to M3
+- Semantic search (sqlite-vec) deferred to M4
+- EPUB/PDF export deferred to post-MVP
+
+### Next
+- Begin M2 Phase 1: Repository Layer (Character, World, Relationship)
+- Update M1.md task checkboxes to reflect completion
+
+---
+
 ## 2026-02-05 (Session 4–5)
 
 ### Completed

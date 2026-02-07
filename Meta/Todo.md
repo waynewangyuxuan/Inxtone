@@ -4,10 +4,14 @@
 
 ---
 
-## High Priority (M1 Remaining)
+## High Priority (M2 — Story Bible Core)
 
-- [ ] **Manual testing** - Build all packages, test CLI flow (init → serve → web UI)
-- [ ] **M1 merge to main** - Final review, squash-merge ms1 → main
+- [ ] **M2 Phase 1: Repository Layer** — CharacterRepository, WorldRepository, RelationshipRepository
+- [ ] **M2 Phase 2: Service Layer** — StoryBibleService implementation + EventBus integration
+- [ ] **M2 Phase 3: API Layer** — /api/characters, /api/world, /api/relationships endpoints
+- [ ] **M2 Phase 4: Web UI** — Character, World, Relationship pages
+- [ ] **M2 Phase 5: CLI Commands** — `inxtone bible list/show/search`
+- [ ] **M2 Phase 6: Testing & Polish** — E2E tests, performance testing
 
 ## Medium Priority
 
@@ -43,3 +47,5 @@
 - [x] M1 Phase 6: Server + Web Shell — static serving, SPA fallback, AppShell, 4 pages (2026-02-05)
 - [x] Update test mocks — MockEventBus AppEvent[], CreateCharacterInput literal unions (2026-02-05)
 - [x] Codebase cleanup — ESM fixes, lint fixes, stale file removal (2026-02-05)
+- [x] M1 merge to main — PR #1 merged (2026-02-06)
+- [x] Draft M2–M5 milestone plans (2026-02-06)

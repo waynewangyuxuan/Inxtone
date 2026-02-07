@@ -28,9 +28,13 @@ Draft → Active → Complete → Archived
 
 ## Index
 
-| Milestone | Title | Status | Target |
-|-----------|-------|--------|--------|
-| [M1](M1.md) | Project Scaffolding | Draft | 2026-02-28 |
+| Milestone | Title | Status | Target | Duration |
+|-----------|-------|--------|--------|----------|
+| [M1](M1.md) | Foundation + Interface Contract | Complete | 2026-02-28 | 2 weeks |
+| [M2](M2.md) | Story Bible Core | Draft | 2026-03-21 | 3 weeks |
+| [M3](M3.md) | Writing Workspace | Draft | 2026-04-11 | 3 weeks |
+| [M4](M4.md) | Search & Quality | Draft | 2026-04-25 | 2 weeks |
+| [M5](M5.md) | Export & Polish (MVP) | Draft | 2026-05-09 | 2 weeks |
 
 ## Creating a New Milestone
 
