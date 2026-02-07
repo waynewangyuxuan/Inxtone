@@ -93,6 +93,12 @@
 - **影响**: 数据库数据损坏时无法检测
 - **方案**: 结合 TD-006，使用 zod schema 验证
 
+### TD-019: errors/ 模块缺少独立单元测试
+- **位置**: `packages/core/src/errors/index.ts`
+- **问题**: 错误类型体系无独立测试，只通过 StoryBibleService 间接覆盖
+- **影响**: `toJSON()`, `wrapError()`, type guards (`isInxtoneError` 等), `getStatusCode()`, `getErrorCode()` 未直接测试
+- **方案**: 创建 `packages/core/src/errors/__tests__/index.test.ts`，覆盖所有错误类型构造、序列化、辅助函数
+
 ---
 
 ## 🟡 P2 - 应在 M3 前修复
@@ -181,6 +187,18 @@
 - **影响**: 无法按其他字段或升序排列
 - **方案**: 添加 `SortOptions` 参数
 
+### TD-020: errors 未从主包 index.ts 导出
+- **位置**: `packages/core/src/index.ts`
+- **问题**: 错误类型只从 `@inxtone/core/services` 间接导出，主入口 `@inxtone/core` 不导出
+- **影响**: 纯 TS 的错误类是通用的，Web 层也可能需要使用（如类型守卫判断 API 返回错误）
+- **方案**: 在 `index.ts` 添加 `export * from './errors/index.js';`
+
+### TD-021: wrapError 命名与行为不一致
+- **位置**: `packages/core/src/errors/index.ts` `wrapError()`
+- **问题**: 当传入 `InxtoneError` 时直接原样返回，不附加新的 context 信息
+- **影响**: 函数名暗示会包装错误并附加上下文，但实际未做
+- **方案**: 重命名为 `ensureInxtoneError()` 更准确，或修改实现使其真正附加 context
+
 ---
 
 ## ✅ P0 - Phase 2 Code Review 已修复
@@ -203,8 +221,8 @@
 - [x] TD-001: ArcRepository（Phase 1 补充）✅
 - [x] TD-002: ForeshadowingRepository（Phase 1 补充）✅
 - [x] TD-003: HookRepository（Phase 1 补充）✅
-- [ ] TD-004: Service 层事务处理（Phase 2）
-- [ ] TD-005: 错误类型体系（Phase 2）
+- [x] TD-004: Service 层事务处理（Phase 2）✅
+- [x] TD-005: 错误类型体系（Phase 2）✅
 - [x] TD-017: Timeline 事件类型（Phase 2 Review）✅
 - [x] TD-018: Foreshadowing 事件类型修正（Phase 2 Review）✅
 
@@ -213,6 +231,9 @@
 - [ ] TD-007: 移除强制类型转换
 - [ ] TD-008: 分页支持
 - [ ] TD-009: ID 生成改进
+- [ ] TD-019: errors/ 独立单元测试
+- [ ] TD-020: errors 从主包 index.ts 导出
+- [ ] TD-021: wrapError 命名/行为修正
 
 ### M4+ 处理
 - [ ] TD-010 ~ TD-016
@@ -235,8 +256,100 @@
 
 ---
 
+---
+
+## ✅ TD-004 & TD-005 已完成
+
+### TD-004: Service 层事务处理 ✅
+- **解决**: `StoryBibleService.deleteCharacter()` 使用 `db.transaction()` 包装
+- **实现**: Database 依赖注入到 StoryBibleServiceDeps
+- **示例**:
+  ```typescript
+  const result = this.deps.db.transaction(() => {
+    this.deps.relationshipRepo.deleteByCharacter(id);
+    this.deps.characterRepo.delete(id);
+  });
+  if (!result.success) {
+    throw new TransactionError('Failed to delete character', result.error);
+  }
+  ```
+- **完成日期**: 2026-02-07
+
+### TD-005: 错误类型体系 ✅
+- **解决**: 创建 `packages/core/src/errors/index.ts`
+- **错误类型**:
+  - `InxtoneError` - 抽象基类，含 statusCode 和 code
+  - `EntityNotFoundError` (404) - 实体未找到
+  - `ValidationError` (400) - 验证失败
+  - `DuplicateEntityError` (409) - 重复实体
+  - `InvalidOperationError` (400) - 无效操作
+  - `ReferenceNotFoundError` (400) - 引用实体未找到
+  - `SelfReferenceError` (400) - 自引用错误
+  - `DatabaseError` (500) - 数据库错误
+  - `TransactionError` (500) - 事务错误
+- **特性**:
+  - HTTP 状态码映射，便于 API 层处理
+  - `toJSON()` 方法用于 API 响应序列化
+  - 类型守卫函数便于错误检测
+- **完成日期**: 2026-02-07
+
+---
+
+## 🔮 Phase 3 准备 - Server Package 评估
+
+### 📊 当前状态
+- **路径**: `packages/server/`
+- **框架**: Fastify 4.x
+- **现有功能**:
+  - `/api/health` - 健康检查
+  - `/api` - API 信息
+  - 静态文件服务 (SPA 支持)
+- **依赖**: `@fastify/cors`, `@fastify/static`, `@fastify/websocket`
+
+### 📋 Phase 3 所需结构
+
+```
+packages/server/src/
+├── index.ts              # 主入口 (已有)
+├── routes/
+│   ├── index.ts          # 路由注册
+│   ├── storyBible.ts     # Story Bible API
+│   ├── writing.ts        # Writing API (M3)
+│   └── health.ts         # 健康检查 (从 index.ts 抽取)
+├── handlers/
+│   └── storyBible/       # Story Bible 处理器
+│       ├── characters.ts
+│       ├── relationships.ts
+│       ├── locations.ts
+│       └── ...
+├── middleware/
+│   ├── errorHandler.ts   # 错误处理 (使用 TD-005 错误类型)
+│   └── validation.ts     # 请求验证
+├── schemas/              # Fastify JSON Schema
+│   ├── storyBible.ts
+│   └── common.ts
+└── plugins/
+    └── database.ts       # 数据库插件 (DI)
+```
+
+### ✅ 就绪项
+1. **错误类型系统**: `InxtoneError` 带 statusCode，可直接映射 HTTP 状态
+2. **服务层**: `StoryBibleService` 41 个方法完整实现
+3. **事务支持**: 复杂操作有原子性保障
+4. **Fastify**: 已配置 CORS、静态文件、WebSocket
+
+### 🎯 Phase 3 首要任务
+1. 创建 routes 目录结构
+2. 实现 errorHandler middleware
+3. 实现 Story Bible API endpoints
+4. 添加请求验证 schemas
+
+---
+
 *最后更新: 2026-02-07*
 *评估范围: M2 Phase 1 Repository Layer + Phase 2 Service Layer*
 *Phase 1 P0 技术债: 3/3 已完成 ✅*
+*Phase 2 P0 技术债: 2/2 已完成 ✅*
 *Phase 2 Code Review P0: 2/2 已修复 ✅*
+*TD-004/TD-005 Code Review: P1 1项, P2 2项 → M3 处理*
 *详细报告: CODE_REVIEW_M2_PHASE2.md*

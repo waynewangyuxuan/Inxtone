@@ -55,12 +55,21 @@ import type { TimelineEventRepository } from '../db/repositories/TimelineEventRe
 import type { ArcRepository } from '../db/repositories/ArcRepository.js';
 import type { ForeshadowingRepository } from '../db/repositories/ForeshadowingRepository.js';
 import type { HookRepository } from '../db/repositories/HookRepository.js';
+import type { Database } from '../db/Database.js';
+import {
+  EntityNotFoundError,
+  ValidationError,
+  ReferenceNotFoundError,
+  SelfReferenceError,
+  TransactionError,
+} from '../errors/index.js';
 
 /**
  * Dependencies for StoryBibleService.
  * Uses dependency injection for testability.
  */
 export interface StoryBibleServiceDeps {
+  db: Database;
   characterRepo: CharacterRepository;
   relationshipRepo: RelationshipRepository;
   worldRepo: WorldRepository;
@@ -157,12 +166,12 @@ export class StoryBibleService implements IStoryBibleService {
   async updateCharacter(id: CharacterId, input: UpdateCharacterInput): Promise<Character> {
     const existing = this.deps.characterRepo.findById(id);
     if (!existing) {
-      throw new Error(`Character ${id} not found`);
+      throw new EntityNotFoundError('Character', id);
     }
 
     // Validate update input
     if (input.name?.trim() === '') {
-      throw new Error('Character name cannot be empty');
+      throw new ValidationError('Character name cannot be empty', 'name');
     }
 
     const character = this.deps.characterRepo.update(id, input);
@@ -179,14 +188,20 @@ export class StoryBibleService implements IStoryBibleService {
   async deleteCharacter(id: CharacterId): Promise<void> {
     const character = this.deps.characterRepo.findById(id);
     if (!character) {
-      throw new Error(`Character ${id} not found`);
+      throw new EntityNotFoundError('Character', id);
     }
 
-    // Delete related relationships first
-    this.deps.relationshipRepo.deleteByCharacter(id);
+    // Use transaction to ensure atomicity
+    const result = this.deps.db.transaction(() => {
+      // Delete related relationships first
+      this.deps.relationshipRepo.deleteByCharacter(id);
+      // Delete character
+      this.deps.characterRepo.delete(id);
+    });
 
-    // Delete character
-    this.deps.characterRepo.delete(id);
+    if (!result.success) {
+      throw new TransactionError('Failed to delete character', result.error);
+    }
 
     this.deps.eventBus.emit({
       type: 'CHARACTER_DELETED',
@@ -203,16 +218,18 @@ export class StoryBibleService implements IStoryBibleService {
 
   private validateCharacterInput(input: CreateCharacterInput): void {
     if (!input.name || input.name.trim() === '') {
-      throw new Error('Character name is required');
+      throw new ValidationError('Character name is required', 'name');
     }
 
     if (!input.role) {
-      throw new Error('Character role is required');
+      throw new ValidationError('Character role is required', 'role');
     }
 
     const validRoles: CharacterRole[] = ['main', 'supporting', 'antagonist', 'mentioned'];
     if (!validRoles.includes(input.role)) {
-      throw new Error(`Invalid character role: ${input.role}`);
+      throw new ValidationError(`Invalid character role: ${input.role}`, 'role', {
+        value: input.role,
+      });
     }
   }
 
@@ -249,7 +266,7 @@ export class StoryBibleService implements IStoryBibleService {
   ): Promise<Relationship> {
     const existing = this.deps.relationshipRepo.findById(id);
     if (!existing) {
-      throw new Error(`Relationship ${id} not found`);
+      throw new EntityNotFoundError('Relationship', id);
     }
 
     const relationship = this.deps.relationshipRepo.update(id, input);
@@ -266,7 +283,7 @@ export class StoryBibleService implements IStoryBibleService {
   async deleteRelationship(id: number): Promise<void> {
     const relationship = this.deps.relationshipRepo.findById(id);
     if (!relationship) {
-      throw new Error(`Relationship ${id} not found`);
+      throw new EntityNotFoundError('Relationship', id);
     }
 
     this.deps.relationshipRepo.delete(id);
@@ -279,11 +296,11 @@ export class StoryBibleService implements IStoryBibleService {
 
   private validateRelationshipInput(input: CreateRelationshipInput): void {
     if (!input.sourceId || !input.targetId) {
-      throw new Error('Source and target character IDs are required');
+      throw new ValidationError('Source and target character IDs are required');
     }
 
     if (input.sourceId === input.targetId) {
-      throw new Error('Cannot create relationship with self');
+      throw new SelfReferenceError('Relationship', 'sourceId', 'targetId');
     }
 
     // Verify both characters exist
@@ -291,15 +308,17 @@ export class StoryBibleService implements IStoryBibleService {
     const target = this.deps.characterRepo.findById(input.targetId);
 
     if (!source) {
-      throw new Error(`Source character ${input.sourceId} not found`);
+      throw new ReferenceNotFoundError('Character', input.sourceId, 'sourceId');
     }
     if (!target) {
-      throw new Error(`Target character ${input.targetId} not found`);
+      throw new ReferenceNotFoundError('Character', input.targetId, 'targetId');
     }
 
     const validTypes = ['companion', 'rival', 'enemy', 'mentor', 'confidant', 'lover'] as const;
     if (!validTypes.includes(input.type)) {
-      throw new Error(`Invalid relationship type: ${input.type}`);
+      throw new ValidationError(`Invalid relationship type: ${input.type}`, 'type', {
+        value: input.type,
+      });
     }
   }
 
@@ -347,7 +366,7 @@ export class StoryBibleService implements IStoryBibleService {
 
   async createLocation(input: CreateLocationInput): Promise<Location> {
     if (!input.name || input.name.trim() === '') {
-      throw new Error('Location name is required');
+      throw new ValidationError('Location name is required', 'name');
     }
 
     const location = this.deps.locationRepo.create(input);
@@ -371,11 +390,11 @@ export class StoryBibleService implements IStoryBibleService {
   async updateLocation(id: LocationId, input: Partial<CreateLocationInput>): Promise<Location> {
     const existing = this.deps.locationRepo.findById(id);
     if (!existing) {
-      throw new Error(`Location ${id} not found`);
+      throw new EntityNotFoundError('Location', id);
     }
 
     if (input.name?.trim() === '') {
-      throw new Error('Location name cannot be empty');
+      throw new ValidationError('Location name cannot be empty', 'name');
     }
 
     const location = this.deps.locationRepo.update(id, input);
@@ -392,7 +411,7 @@ export class StoryBibleService implements IStoryBibleService {
   async deleteLocation(id: LocationId): Promise<void> {
     const location = this.deps.locationRepo.findById(id);
     if (!location) {
-      throw new Error(`Location ${id} not found`);
+      throw new EntityNotFoundError('Location', id);
     }
 
     this.deps.locationRepo.delete(id);
@@ -409,14 +428,14 @@ export class StoryBibleService implements IStoryBibleService {
 
   async createFaction(input: CreateFactionInput): Promise<Faction> {
     if (!input.name || input.name.trim() === '') {
-      throw new Error('Faction name is required');
+      throw new ValidationError('Faction name is required', 'name');
     }
 
     // Validate leader exists if provided
     if (input.leaderId) {
       const leader = this.deps.characterRepo.findById(input.leaderId);
       if (!leader) {
-        throw new Error(`Leader character ${input.leaderId} not found`);
+        throw new ReferenceNotFoundError('Character', input.leaderId, 'leaderId');
       }
     }
 
@@ -441,18 +460,18 @@ export class StoryBibleService implements IStoryBibleService {
   async updateFaction(id: FactionId, input: Partial<CreateFactionInput>): Promise<Faction> {
     const existing = this.deps.factionRepo.findById(id);
     if (!existing) {
-      throw new Error(`Faction ${id} not found`);
+      throw new EntityNotFoundError('Faction', id);
     }
 
     if (input.name?.trim() === '') {
-      throw new Error('Faction name cannot be empty');
+      throw new ValidationError('Faction name cannot be empty', 'name');
     }
 
     // Validate leader exists if provided
     if (input.leaderId) {
       const leader = this.deps.characterRepo.findById(input.leaderId);
       if (!leader) {
-        throw new Error(`Leader character ${input.leaderId} not found`);
+        throw new ReferenceNotFoundError('Character', input.leaderId, 'leaderId');
       }
     }
 
@@ -470,7 +489,7 @@ export class StoryBibleService implements IStoryBibleService {
   async deleteFaction(id: FactionId): Promise<void> {
     const faction = this.deps.factionRepo.findById(id);
     if (!faction) {
-      throw new Error(`Faction ${id} not found`);
+      throw new EntityNotFoundError('Faction', id);
     }
 
     this.deps.factionRepo.delete(id);
@@ -487,7 +506,7 @@ export class StoryBibleService implements IStoryBibleService {
 
   async createTimelineEvent(input: CreateTimelineEventInput): Promise<TimelineEvent> {
     if (!input.description || input.description.trim() === '') {
-      throw new Error('Timeline event description is required');
+      throw new ValidationError('Timeline event description is required', 'description');
     }
 
     const event = this.deps.timelineEventRepo.create(input);
@@ -507,7 +526,7 @@ export class StoryBibleService implements IStoryBibleService {
   async deleteTimelineEvent(id: number): Promise<void> {
     const event = this.deps.timelineEventRepo.findById(id);
     if (!event) {
-      throw new Error(`Timeline event ${id} not found`);
+      throw new EntityNotFoundError('TimelineEvent', id);
     }
 
     this.deps.timelineEventRepo.delete(id);
@@ -524,7 +543,7 @@ export class StoryBibleService implements IStoryBibleService {
 
   async createArc(input: CreateArcInput): Promise<Arc> {
     if (!input.name || input.name.trim() === '') {
-      throw new Error('Arc name is required');
+      throw new ValidationError('Arc name is required', 'name');
     }
 
     const arc = this.deps.arcRepo.create(input);
@@ -548,11 +567,11 @@ export class StoryBibleService implements IStoryBibleService {
   async updateArc(id: ArcId, input: Partial<CreateArcInput> & { progress?: number }): Promise<Arc> {
     const existing = this.deps.arcRepo.findById(id);
     if (!existing) {
-      throw new Error(`Arc ${id} not found`);
+      throw new EntityNotFoundError('Arc', id);
     }
 
     if (input.name?.trim() === '') {
-      throw new Error('Arc name cannot be empty');
+      throw new ValidationError('Arc name cannot be empty', 'name');
     }
 
     const arc = this.deps.arcRepo.update(id, input);
@@ -569,7 +588,7 @@ export class StoryBibleService implements IStoryBibleService {
   async deleteArc(id: ArcId): Promise<void> {
     const arc = this.deps.arcRepo.findById(id);
     if (!arc) {
-      throw new Error(`Arc ${id} not found`);
+      throw new EntityNotFoundError('Arc', id);
     }
 
     this.deps.arcRepo.delete(id);
@@ -586,7 +605,7 @@ export class StoryBibleService implements IStoryBibleService {
 
   async createForeshadowing(input: CreateForeshadowingInput): Promise<Foreshadowing> {
     if (!input.content || input.content.trim() === '') {
-      throw new Error('Foreshadowing content is required');
+      throw new ValidationError('Foreshadowing content is required', 'content');
     }
 
     const foreshadowing = this.deps.foreshadowingRepo.create(input);
@@ -659,12 +678,12 @@ export class StoryBibleService implements IStoryBibleService {
 
   async createHook(input: CreateHookInput): Promise<Hook> {
     if (!input.content || input.content.trim() === '') {
-      throw new Error('Hook content is required');
+      throw new ValidationError('Hook content is required', 'content');
     }
 
     const validTypes = ['opening', 'arc', 'chapter'] as const;
     if (!validTypes.includes(input.type)) {
-      throw new Error(`Invalid hook type: ${input.type}`);
+      throw new ValidationError(`Invalid hook type: ${input.type}`, 'type', { value: input.type });
     }
 
     const hook = this.deps.hookRepo.create(input);
@@ -688,11 +707,11 @@ export class StoryBibleService implements IStoryBibleService {
   async updateHook(id: HookId, input: Partial<CreateHookInput>): Promise<Hook> {
     const existing = this.deps.hookRepo.findById(id);
     if (!existing) {
-      throw new Error(`Hook ${id} not found`);
+      throw new EntityNotFoundError('Hook', id);
     }
 
     if (input.content?.trim() === '') {
-      throw new Error('Hook content cannot be empty');
+      throw new ValidationError('Hook content cannot be empty', 'content');
     }
 
     const hook = this.deps.hookRepo.update(id, input);
@@ -709,7 +728,7 @@ export class StoryBibleService implements IStoryBibleService {
   async deleteHook(id: HookId): Promise<void> {
     const hook = this.deps.hookRepo.findById(id);
     if (!hook) {
-      throw new Error(`Hook ${id} not found`);
+      throw new EntityNotFoundError('Hook', id);
     }
 
     this.deps.hookRepo.delete(id);

@@ -7,3 +7,6 @@
 export { EventBus } from './EventBus.js';
 export { StoryBibleService } from './StoryBibleService.js';
 export type { StoryBibleServiceDeps } from './StoryBibleService.js';
+
+// Re-export errors for convenience
+export * from '../errors/index.js';

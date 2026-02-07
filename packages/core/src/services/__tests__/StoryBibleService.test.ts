@@ -18,6 +18,12 @@ import { ForeshadowingRepository } from '../../db/repositories/ForeshadowingRepo
 import { HookRepository } from '../../db/repositories/HookRepository.js';
 import { EventBus } from '../EventBus.js';
 import { StoryBibleService } from '../StoryBibleService.js';
+import {
+  EntityNotFoundError,
+  ValidationError,
+  ReferenceNotFoundError,
+  SelfReferenceError,
+} from '../../errors/index.js';
 
 describe('StoryBibleService', () => {
   let db: Database;
@@ -29,6 +35,7 @@ describe('StoryBibleService', () => {
     db.connect();
     eventBus = new EventBus();
     service = new StoryBibleService({
+      db,
       characterRepo: new CharacterRepository(db),
       relationshipRepo: new RelationshipRepository(db),
       worldRepo: new WorldRepository(db),
@@ -219,7 +226,7 @@ describe('StoryBibleService', () => {
             targetId: char.id,
             type: 'companion',
           })
-        ).rejects.toThrow('Cannot create relationship with self');
+        ).rejects.toThrow(SelfReferenceError);
       });
 
       it('should reject when source character does not exist', async () => {
@@ -231,7 +238,7 @@ describe('StoryBibleService', () => {
             targetId: char.id,
             type: 'companion',
           })
-        ).rejects.toThrow('Source character C999 not found');
+        ).rejects.toThrow(ReferenceNotFoundError);
       });
 
       it('should reject when target character does not exist', async () => {
@@ -243,7 +250,7 @@ describe('StoryBibleService', () => {
             targetId: 'C999',
             type: 'companion',
           })
-        ).rejects.toThrow('Target character C999 not found');
+        ).rejects.toThrow(ReferenceNotFoundError);
       });
 
       it('should reject invalid relationship type', async () => {
@@ -417,7 +424,7 @@ describe('StoryBibleService', () => {
 
       it('should throw when leader does not exist', async () => {
         await expect(service.createFaction({ name: '天山派', leaderId: 'C999' })).rejects.toThrow(
-          'Leader character C999 not found'
+          ReferenceNotFoundError
         );
       });
 
@@ -442,7 +449,7 @@ describe('StoryBibleService', () => {
         const factionId = factions[0].id;
 
         await expect(service.updateFaction(factionId, { leaderId: 'C999' })).rejects.toThrow(
-          'Leader character C999 not found'
+          ReferenceNotFoundError
         );
       });
 
