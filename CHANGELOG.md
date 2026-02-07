@@ -7,25 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Initial project structure with Meta/ folder hierarchy
-- CLAUDE.md project entry point
-- ADR system for architectural decisions
-- Milestone tracking system
-- GitHub CI/CD workflow (pnpm + Node.js)
-- GitHub issue templates
-
-### Changed
-- Migrated documentation from `docs/design/` to `Meta/` structure
-- Split long documents using doc-split conventions
-
-## [0.1.0] - TBD
+## [0.1.0] - 2026-02-05
 
 ### Added
-- Initial release (planned)
-- CLI scaffolding (`inxtone init`, `inxtone serve`)
-- Basic SQLite database setup
-- Minimal web UI shell
+- **Monorepo setup** — pnpm workspaces with 4 packages (core, tui, server, web)
+- **TypeScript strict mode** — across all packages with ESLint v9 + Prettier
+- **Interface contract system** — 7 service interfaces, 60+ typed events, full API types
+- **Test infrastructure** — Vitest with 247 tests, contract tests, mock services
+- **Database layer** — SQLite via better-sqlite3, migration system, 18 core tables, FTS5 search
+- **CLI** — `inxtone init`, `inxtone serve`, `--version`, `--help` via Commander.js + Ink
+- **HTTP server** — Fastify with CORS, health check, static file serving, SPA fallback
+- **Web UI shell** — React 18 + Vite, AppShell layout, 4 page stubs (Dashboard, Story Bible, Write, Settings)
+- **Design system** — CSS custom properties (dark theme, gold accents, responsive)
+- **Pre-commit hooks** — husky + lint-staged (eslint, prettier, typecheck)
+- **Documentation** — Meta/ folder hierarchy, ADR system, milestone tracking, CLAUDE.md
 
 ---
 
