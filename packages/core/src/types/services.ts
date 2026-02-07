@@ -123,6 +123,35 @@ export interface CreateRelationshipInput {
   mcNeeds?: string;
 }
 
+/** Options for creating a location */
+export interface CreateLocationInput {
+  name: string;
+  type?: string;
+  significance?: string;
+  atmosphere?: string;
+  details?: Record<string, unknown>;
+}
+
+/** Options for creating a faction */
+export interface CreateFactionInput {
+  name: string;
+  type?: string;
+  status?: string;
+  leaderId?: CharacterId;
+  stanceToMC?: 'friendly' | 'neutral' | 'hostile';
+  goals?: string[];
+  resources?: string[];
+  internalConflict?: string;
+}
+
+/** Options for creating a timeline event */
+export interface CreateTimelineEventInput {
+  eventDate?: string;
+  description: string;
+  relatedCharacters?: CharacterId[];
+  relatedLocations?: LocationId[];
+}
+
 /** Options for creating foreshadowing */
 export interface CreateForeshadowingInput {
   content: string;
@@ -165,21 +194,21 @@ export interface IStoryBibleService {
   setSocialRules(rules: Record<string, string>): Promise<void>;
 
   // === Locations ===
-  createLocation(input: Omit<Location, 'id' | 'createdAt' | 'updatedAt'>): Promise<Location>;
+  createLocation(input: CreateLocationInput): Promise<Location>;
   getLocation(id: LocationId): Promise<Location | null>;
   getAllLocations(): Promise<Location[]>;
-  updateLocation(id: LocationId, input: Partial<Location>): Promise<Location>;
+  updateLocation(id: LocationId, input: Partial<CreateLocationInput>): Promise<Location>;
   deleteLocation(id: LocationId): Promise<void>;
 
   // === Factions ===
-  createFaction(input: Omit<Faction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Faction>;
+  createFaction(input: CreateFactionInput): Promise<Faction>;
   getFaction(id: FactionId): Promise<Faction | null>;
   getAllFactions(): Promise<Faction[]>;
-  updateFaction(id: FactionId, input: Partial<Faction>): Promise<Faction>;
+  updateFaction(id: FactionId, input: Partial<CreateFactionInput>): Promise<Faction>;
   deleteFaction(id: FactionId): Promise<void>;
 
   // === Timeline ===
-  createTimelineEvent(input: Omit<TimelineEvent, 'id' | 'createdAt'>): Promise<TimelineEvent>;
+  createTimelineEvent(input: CreateTimelineEventInput): Promise<TimelineEvent>;
   getTimelineEvents(): Promise<TimelineEvent[]>;
   deleteTimelineEvent(id: number): Promise<void>;
 

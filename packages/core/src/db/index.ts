@@ -13,3 +13,14 @@ export { MigrationRunner } from './MigrationRunner.js';
 export type { Migration, MigrationResult } from './MigrationRunner.js';
 
 export { migrations } from './migrations/index.js';
+
+// Repositories
+export {
+  BaseRepository,
+  CharacterRepository,
+  RelationshipRepository,
+  WorldRepository,
+  LocationRepository,
+  FactionRepository,
+  TimelineEventRepository,
+} from './repositories/index.js';
