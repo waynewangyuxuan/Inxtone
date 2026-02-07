@@ -9,6 +9,8 @@ import type {
   Character,
   CharacterId,
   CharacterRole,
+  ConflictType,
+  CharacterTemplate,
   Relationship,
   Location,
   LocationId,
@@ -164,8 +166,8 @@ export interface CreateCharacterRequest {
     hidden?: string;
     core?: string;
   };
-  conflictType?: string;
-  template?: string;
+  conflictType?: ConflictType;
+  template?: CharacterTemplate;
   firstAppearance?: ChapterId;
 }
 export type CreateCharacterResponse = ApiResponse<Character>;

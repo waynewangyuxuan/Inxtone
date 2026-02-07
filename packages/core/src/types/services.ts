@@ -9,6 +9,8 @@ import type {
   Character,
   CharacterId,
   CharacterRole,
+  ConflictType,
+  CharacterTemplate,
   Relationship,
   Location,
   LocationId,
@@ -72,9 +74,7 @@ export interface FilterCondition<T> {
 }
 
 /** Result wrapper for operations that can fail */
-export type Result<T, E = Error> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+export type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E };
 
 // ===========================================
 // StoryBibleService
@@ -91,8 +91,8 @@ export interface CreateCharacterInput {
     hidden?: string;
     core?: string;
   };
-  conflictType?: string;
-  template?: string;
+  conflictType?: ConflictType;
+  template?: CharacterTemplate;
   firstAppearance?: ChapterId;
 }
 
@@ -195,7 +195,11 @@ export interface IStoryBibleService {
   getForeshadowing(id: ForeshadowingId): Promise<Foreshadowing | null>;
   getAllForeshadowing(): Promise<Foreshadowing[]>;
   getActiveForeshadowing(): Promise<Foreshadowing[]>;
-  addForeshadowingHint(id: ForeshadowingId, chapter: ChapterId, text: string): Promise<Foreshadowing>;
+  addForeshadowingHint(
+    id: ForeshadowingId,
+    chapter: ChapterId,
+    text: string
+  ): Promise<Foreshadowing>;
   resolveForeshadowing(id: ForeshadowingId, resolvedChapter: ChapterId): Promise<Foreshadowing>;
   abandonForeshadowing(id: ForeshadowingId): Promise<Foreshadowing>;
 
@@ -356,10 +360,7 @@ export interface IAIService {
   /**
    * Continue writing from the current point
    */
-  continueScene(
-    chapterId: ChapterId,
-    options?: AIGenerationOptions
-  ): AsyncIterable<AIStreamChunk>;
+  continueScene(chapterId: ChapterId, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk>;
 
   /**
    * Generate dialogue for characters
@@ -382,18 +383,12 @@ export interface IAIService {
   /**
    * Brainstorm ideas
    */
-  brainstorm(
-    topic: string,
-    options?: AIGenerationOptions
-  ): AsyncIterable<AIStreamChunk>;
+  brainstorm(topic: string, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk>;
 
   /**
    * Ask a question about the story bible
    */
-  askStoryBible(
-    question: string,
-    options?: AIGenerationOptions
-  ): AsyncIterable<AIStreamChunk>;
+  askStoryBible(question: string, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk>;
 
   /**
    * Generic completion with custom prompt
@@ -408,18 +403,12 @@ export interface IAIService {
   /**
    * Build context for a chapter
    */
-  buildContext(
-    chapterId: ChapterId,
-    additionalItems?: ContextItem[]
-  ): Promise<BuiltContext>;
+  buildContext(chapterId: ChapterId, additionalItems?: ContextItem[]): Promise<BuiltContext>;
 
   /**
    * Search for relevant context items
    */
-  searchRelevantContext(
-    query: string,
-    maxItems?: number
-  ): Promise<ContextItem[]>;
+  searchRelevantContext(query: string, maxItems?: number): Promise<ContextItem[]>;
 
   // === Provider Management ===
   /**
@@ -550,7 +539,9 @@ export interface IQualityService {
   /**
    * Get all available rules
    */
-  getAvailableRules(): Promise<Array<{ id: string; name: string; description: string; enabled: boolean }>>;
+  getAvailableRules(): Promise<
+    Array<{ id: string; name: string; description: string; enabled: boolean }>
+  >;
 
   /**
    * Enable/disable a rule
