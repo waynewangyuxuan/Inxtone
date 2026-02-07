@@ -4,6 +4,31 @@
 
 ---
 
+## 2026-02-07
+
+### Completed
+- **M2 Phase 1: Repository Layer** — All 7 repositories implemented with full test coverage
+  - `BaseRepository`: shared utilities (ID generation, JSON parsing, count/exists/delete)
+  - `CharacterRepository`: CRUD + FTS5 search + role filtering + name search (237 lines)
+  - `WorldRepository`: singleton upsert pattern, setPowerSystem/setSocialRules (140 lines)
+  - `RelationshipRepository`: bidirectional tracking, Wayne Principles fields, cascade delete (265 lines)
+  - `LocationRepository`: CRUD + type filtering + name search (188 lines)
+  - `FactionRepository`: CRUD + stance/leader/type/status queries + clearLeader (270 lines)
+  - `TimelineEventRepository`: CRUD + date range + character/location lookups + addCharacter/removeCharacter (246 lines)
+  - 341 tests passing (6 test files, all repos covered)
+- **Input types unified** — Moved `CreateLocationInput`, `CreateFactionInput`, `CreateTimelineEventInput` to `services.ts` as single source of truth; updated `IStoryBibleService` to use named types instead of `Omit<...>`
+- **Bug fixes** — Fixed `firstAppearance` type mismatch (DB TEXT column → number conversion in mapRow), fixed flaky timestamp test
+
+### Decisions Made
+- Input types for all entities live in `services.ts` (single source), shared by repo and service layers
+- TimelineEventRepository added as bonus (not in original Phase 1 spec, needed for Phase 2)
+- Repository layer is synchronous (no async/await); service layer will be async
+
+### Next
+- Begin M2 Phase 2: Service Layer (EventBus + StoryBibleService)
+
+---
+
 ## 2026-02-06
 
 ### Completed

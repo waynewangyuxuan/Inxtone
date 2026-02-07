@@ -6,7 +6,7 @@
 
 ## High Priority (M2 — Story Bible Core)
 
-- [ ] **M2 Phase 1: Repository Layer** — CharacterRepository, WorldRepository, RelationshipRepository
+- [x] **M2 Phase 1: Repository Layer** — 7 repositories + 341 tests (2026-02-07)
 - [ ] **M2 Phase 2: Service Layer** — StoryBibleService implementation + EventBus integration
 - [ ] **M2 Phase 3: API Layer** — /api/characters, /api/world, /api/relationships endpoints
 - [ ] **M2 Phase 4: Web UI** — Character, World, Relationship pages
