@@ -20,10 +20,14 @@ import type {
   PowerSystem,
   Arc,
   ArcId,
+  ArcStatus,
+  ArcSection,
   Foreshadowing,
   ForeshadowingId,
   Hook,
   HookId,
+  HookType,
+  HookStyle,
   Volume,
   VolumeId,
   Chapter,
@@ -161,6 +165,27 @@ export interface CreateForeshadowingInput {
   term?: 'short' | 'mid' | 'long';
 }
 
+/** Options for creating an arc */
+export interface CreateArcInput {
+  name: string;
+  type: 'main' | 'sub';
+  chapterStart?: ChapterId;
+  chapterEnd?: ChapterId;
+  status?: ArcStatus;
+  sections?: ArcSection[];
+  characterArcs?: Record<CharacterId, string>;
+  mainArcRelation?: string;
+}
+
+/** Options for creating a hook */
+export interface CreateHookInput {
+  type: HookType;
+  content: string;
+  chapterId?: ChapterId;
+  hookType?: HookStyle;
+  strength?: number;
+}
+
 /** Character with relationships loaded */
 export interface CharacterWithRelations extends Character {
   relationships: Array<Relationship & { targetName: string }>;
@@ -213,10 +238,10 @@ export interface IStoryBibleService {
   deleteTimelineEvent(id: number): Promise<void>;
 
   // === Arcs ===
-  createArc(input: Omit<Arc, 'id' | 'createdAt' | 'updatedAt'>): Promise<Arc>;
+  createArc(input: CreateArcInput): Promise<Arc>;
   getArc(id: ArcId): Promise<Arc | null>;
   getAllArcs(): Promise<Arc[]>;
-  updateArc(id: ArcId, input: Partial<Arc>): Promise<Arc>;
+  updateArc(id: ArcId, input: Partial<CreateArcInput> & { progress?: number }): Promise<Arc>;
   deleteArc(id: ArcId): Promise<void>;
 
   // === Foreshadowing ===
@@ -233,10 +258,10 @@ export interface IStoryBibleService {
   abandonForeshadowing(id: ForeshadowingId): Promise<Foreshadowing>;
 
   // === Hooks ===
-  createHook(input: Omit<Hook, 'id' | 'createdAt'>): Promise<Hook>;
+  createHook(input: CreateHookInput): Promise<Hook>;
   getHook(id: HookId): Promise<Hook | null>;
   getHooksForChapter(chapterId: ChapterId): Promise<Hook[]>;
-  updateHook(id: HookId, input: Partial<Hook>): Promise<Hook>;
+  updateHook(id: HookId, input: Partial<CreateHookInput>): Promise<Hook>;
   deleteHook(id: HookId): Promise<void>;
 }
 

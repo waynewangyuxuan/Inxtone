@@ -10,7 +10,7 @@
 
 | 维度 | 评分 | 说明 |
 |------|------|------|
-| 业务完整性 | ⭐⭐⭐⭐ | 覆盖 M2 核心需求，但缺少 Arc/Foreshadowing/Hook |
+| 业务完整性 | ⭐⭐⭐⭐⭐ | 完整覆盖 M2 核心需求，10 个 Repository 全部就绪 |
 | 代码清晰度 | ⭐⭐⭐⭐⭐ | 命名规范、注释完整、结构一致 |
 | 耦合设计 | ⭐⭐⭐ | Repository 独立，但缺少跨表协调机制 |
 | 类型安全 | ⭐⭐⭐ | 有强制类型转换，JSON 解析不安全 |
@@ -20,25 +20,24 @@
 
 ---
 
-## 🔴 P0 - 必须在 M2 结束前修复
+## ✅ P0 - 已修复
 
-### TD-001: 缺少 ArcRepository
-- **位置**: `packages/core/src/db/repositories/`
-- **问题**: `IStoryBibleService` 接口定义了 Arc 相关方法，但 Repository 未实现
-- **影响**: Phase 2 Service 层无法实现 Arc 功能
-- **方案**: 创建 `ArcRepository.ts`，参考 FactionRepository 模式
+### TD-001: ~~缺少 ArcRepository~~ ✅ 已完成
+- **解决**: 创建 `ArcRepository.ts`
+- **功能**: 主线/支线 Arc 管理、角色弧线映射、进度追踪
+- **完成日期**: 2026-02-07
 
-### TD-002: 缺少 ForeshadowingRepository
-- **位置**: `packages/core/src/db/repositories/`
-- **问题**: 伏笔管理是 Story Bible 核心功能，Repository 未实现
-- **影响**: 无法实现伏笔的 planted → hinted → resolved 生命周期
-- **方案**: 创建 `ForeshadowingRepository.ts`，需要特殊方法如 `getActive()`, `resolve()`
+### TD-002: ~~缺少 ForeshadowingRepository~~ ✅ 已完成
+- **解决**: 创建 `ForeshadowingRepository.ts`
+- **功能**: 伏笔生命周期管理 (planted → hinted → resolved/abandoned)
+- **方法**: `findActive()`, `findOverdue()`, `addHint()`, `resolve()`, `abandon()`, `getStats()`
+- **完成日期**: 2026-02-07
 
-### TD-003: 缺少 HookRepository
-- **位置**: `packages/core/src/db/repositories/`
-- **问题**: Hook 管理 Repository 未实现
-- **影响**: 无法追踪章节钩子
-- **方案**: 创建 `HookRepository.ts`
+### TD-003: ~~缺少 HookRepository~~ ✅ 已完成
+- **解决**: 创建 `HookRepository.ts`
+- **功能**: 章节钩子管理、强度追踪
+- **方法**: `findByChapter()`, `findStrong()`, `findWeak()`, `updateStrength()`, `getStats()`
+- **完成日期**: 2026-02-07
 
 ---
 
@@ -184,14 +183,30 @@
 
 ---
 
+## ✅ P0 - Phase 2 Code Review 已修复
+
+### TD-017: ~~Timeline 事件类型缺失~~ ✅ 已修复
+- **解决**: 添加 `TimelineEventCreatedEvent`, `TimelineEventDeletedEvent` 到 events.ts
+- **完成日期**: 2026-02-07
+
+### TD-018: ~~Foreshadowing 事件类型错误~~ ✅ 已修复
+- **解决**:
+  - `addForeshadowingHint()` 改为 emit `FORESHADOWING_HINT_ADDED`
+  - `abandonForeshadowing()` 改为 emit `FORESHADOWING_ABANDONED`
+- **完成日期**: 2026-02-07
+
+---
+
 ## 📋 实施计划
 
 ### M2 期间处理
-- [ ] TD-001: ArcRepository（Phase 1 补充）
-- [ ] TD-002: ForeshadowingRepository（Phase 1 补充）
-- [ ] TD-003: HookRepository（Phase 1 补充）
+- [x] TD-001: ArcRepository（Phase 1 补充）✅
+- [x] TD-002: ForeshadowingRepository（Phase 1 补充）✅
+- [x] TD-003: HookRepository（Phase 1 补充）✅
 - [ ] TD-004: Service 层事务处理（Phase 2）
 - [ ] TD-005: 错误类型体系（Phase 2）
+- [x] TD-017: Timeline 事件类型（Phase 2 Review）✅
+- [x] TD-018: Foreshadowing 事件类型修正（Phase 2 Review）✅
 
 ### M3 期间处理
 - [ ] TD-006: zod JSON 验证
@@ -221,4 +236,7 @@
 ---
 
 *最后更新: 2026-02-07*
-*评估范围: M2 Phase 1 Repository Layer*
+*评估范围: M2 Phase 1 Repository Layer + Phase 2 Service Layer*
+*Phase 1 P0 技术债: 3/3 已完成 ✅*
+*Phase 2 Code Review P0: 2/2 已修复 ✅*
+*详细报告: CODE_REVIEW_M2_PHASE2.md*

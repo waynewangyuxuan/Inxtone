@@ -7,6 +7,18 @@
 ## 2026-02-07
 
 ### Completed
+- **M2 Phase 2: Service Layer** — EventBus + StoryBibleService fully implemented and tested
+  - `EventBus`: pub/sub with metadata injection (UUID + timestamp), sync/async emit, error isolation, onAny/off/removeAllListeners (192 lines)
+  - `StoryBibleService`: 41-method service layer with DI (10 repos + EventBus), input validation, 27 event emission points covering all CRUD operations (720 lines)
+  - Code review: 6 issues found and fixed
+    - Unified `CreateArcInput`/`CreateHookInput` to `services.ts` (single source of truth)
+    - Fixed event shapes in `events.ts` to match runtime emission (added `changes?` fields, Timeline events, Foreshadowing-specific events)
+    - Fixed Hook ID prefix inconsistency (`HK` consistently)
+    - Removed `Parameters<>` workaround in StoryBibleService
+    - Fixed `ForeshadowingRepository.getStats()` SQL returning null instead of 0 (COALESCE fix)
+  - 3 bonus repositories: `ArcRepository` (52 tests), `ForeshadowingRepository` (52 tests), `HookRepository` (47 tests)
+  - Integration tests: EventBus (37 tests), StoryBibleService (61 tests)
+  - 590 total tests passing across 21 test files (up from 341)
 - **M2 Phase 1: Repository Layer** — All 7 repositories implemented with full test coverage
   - `BaseRepository`: shared utilities (ID generation, JSON parsing, count/exists/delete)
   - `CharacterRepository`: CRUD + FTS5 search + role filtering + name search (237 lines)
@@ -25,7 +37,7 @@
 - Repository layer is synchronous (no async/await); service layer will be async
 
 ### Next
-- Begin M2 Phase 2: Service Layer (EventBus + StoryBibleService)
+- Begin M2 Phase 3: API Layer (Fastify routes for StoryBibleService)
 
 ---
 

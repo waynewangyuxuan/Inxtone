@@ -11,6 +11,8 @@ import type {
   UpdateCharacterInput,
   CreateRelationshipInput,
   CreateForeshadowingInput,
+  CreateArcInput,
+  CreateHookInput,
   CharacterWithRelations,
 } from '../../types/services.js';
 
@@ -335,11 +337,19 @@ export class MockStoryBibleService implements IStoryBibleService {
 
   // === Arcs ===
 
-  async createArc(input: Omit<Arc, 'id' | 'createdAt' | 'updatedAt'>): Promise<Arc> {
+  async createArc(input: CreateArcInput): Promise<Arc> {
     const id = `ARC${String(this.arcs.size + 1).padStart(3, '0')}`;
     const arc: Arc = {
-      ...input,
       id,
+      name: input.name,
+      type: input.type,
+      status: input.status ?? 'planned',
+      progress: 0,
+      chapterStart: input.chapterStart,
+      chapterEnd: input.chapterEnd,
+      sections: input.sections,
+      characterArcs: input.characterArcs,
+      mainArcRelation: input.mainArcRelation,
       createdAt: this.now(),
       updatedAt: this.now(),
     };
@@ -355,7 +365,7 @@ export class MockStoryBibleService implements IStoryBibleService {
     return Array.from(this.arcs.values());
   }
 
-  async updateArc(id: ArcId, input: Partial<Arc>): Promise<Arc> {
+  async updateArc(id: ArcId, input: Partial<CreateArcInput> & { progress?: number }): Promise<Arc> {
     const arc = this.arcs.get(id);
     if (!arc) {
       throw new Error(`Arc not found: ${id}`);
@@ -463,11 +473,15 @@ export class MockStoryBibleService implements IStoryBibleService {
 
   // === Hooks ===
 
-  async createHook(input: Omit<Hook, 'id' | 'createdAt'>): Promise<Hook> {
-    const id = `H${String(this.hooks.size + 1).padStart(3, '0')}`;
+  async createHook(input: CreateHookInput): Promise<Hook> {
+    const id = `HK${String(this.hooks.size + 1).padStart(3, '0')}`;
     const hook: Hook = {
-      ...input,
       id,
+      type: input.type,
+      content: input.content,
+      chapterId: input.chapterId,
+      hookType: input.hookType,
+      strength: input.strength,
       createdAt: this.now(),
     };
     this.hooks.set(id, hook);
@@ -482,7 +496,7 @@ export class MockStoryBibleService implements IStoryBibleService {
     return Array.from(this.hooks.values()).filter((h) => h.chapterId === chapterId);
   }
 
-  async updateHook(id: HookId, input: Partial<Hook>): Promise<Hook> {
+  async updateHook(id: HookId, input: Partial<CreateHookInput>): Promise<Hook> {
     const hook = this.hooks.get(id);
     if (!hook) {
       throw new Error(`Hook not found: ${id}`);

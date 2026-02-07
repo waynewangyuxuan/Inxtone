@@ -23,4 +23,7 @@ export {
   LocationRepository,
   FactionRepository,
   TimelineEventRepository,
+  ArcRepository,
+  ForeshadowingRepository,
+  HookRepository,
 } from './repositories/index.js';

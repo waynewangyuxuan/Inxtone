@@ -11,3 +11,6 @@ export { WorldRepository } from './WorldRepository.js';
 export { LocationRepository } from './LocationRepository.js';
 export { FactionRepository } from './FactionRepository.js';
 export { TimelineEventRepository } from './TimelineEventRepository.js';
+export { ArcRepository } from './ArcRepository.js';
+export { ForeshadowingRepository } from './ForeshadowingRepository.js';
+export { HookRepository } from './HookRepository.js';

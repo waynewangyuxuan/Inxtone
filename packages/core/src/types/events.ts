@@ -9,8 +9,10 @@ import type {
   Character,
   CharacterId,
   Relationship,
+  World,
   Location,
   Faction,
+  TimelineEvent,
   Arc,
   Foreshadowing,
   Hook,
@@ -84,7 +86,7 @@ export interface CharacterCreatedEvent extends EventMeta {
 export interface CharacterUpdatedEvent extends EventMeta {
   type: 'CHARACTER_UPDATED';
   character: Character;
-  changes: string[];
+  changes: Record<string, unknown>;
 }
 
 export interface CharacterDeletedEvent extends EventMeta {
@@ -104,6 +106,7 @@ export interface RelationshipCreatedEvent extends EventMeta {
 export interface RelationshipUpdatedEvent extends EventMeta {
   type: 'RELATIONSHIP_UPDATED';
   relationship: Relationship;
+  changes?: Record<string, unknown>;
 }
 
 export interface RelationshipDeletedEvent extends EventMeta {
@@ -117,7 +120,8 @@ export interface RelationshipDeletedEvent extends EventMeta {
 
 export interface WorldUpdatedEvent extends EventMeta {
   type: 'WORLD_UPDATED';
-  section: 'rules' | 'locations' | 'factions' | 'timeline' | 'all';
+  world?: World;
+  changes?: Record<string, unknown>;
 }
 
 export interface LocationCreatedEvent extends EventMeta {
@@ -128,6 +132,7 @@ export interface LocationCreatedEvent extends EventMeta {
 export interface LocationUpdatedEvent extends EventMeta {
   type: 'LOCATION_UPDATED';
   location: Location;
+  changes?: Record<string, unknown>;
 }
 
 export interface LocationDeletedEvent extends EventMeta {
@@ -143,11 +148,26 @@ export interface FactionCreatedEvent extends EventMeta {
 export interface FactionUpdatedEvent extends EventMeta {
   type: 'FACTION_UPDATED';
   faction: Faction;
+  changes?: Record<string, unknown>;
 }
 
 export interface FactionDeletedEvent extends EventMeta {
   type: 'FACTION_DELETED';
   factionId: string;
+}
+
+// ===========================================
+// Timeline Events
+// ===========================================
+
+export interface TimelineEventCreatedEvent extends EventMeta {
+  type: 'TIMELINE_EVENT_CREATED';
+  event: TimelineEvent;
+}
+
+export interface TimelineEventDeletedEvent extends EventMeta {
+  type: 'TIMELINE_EVENT_DELETED';
+  eventId: number;
 }
 
 // ===========================================
@@ -162,6 +182,7 @@ export interface ArcCreatedEvent extends EventMeta {
 export interface ArcUpdatedEvent extends EventMeta {
   type: 'ARC_UPDATED';
   arc: Arc;
+  changes?: Record<string, unknown>;
 }
 
 export interface ArcDeletedEvent extends EventMeta {
@@ -183,6 +204,7 @@ export interface ForeshadowingHintAddedEvent extends EventMeta {
 export interface ForeshadowingResolvedEvent extends EventMeta {
   type: 'FORESHADOWING_RESOLVED';
   foreshadowing: Foreshadowing;
+  resolvedChapter: ChapterId;
 }
 
 export interface ForeshadowingAbandonedEvent extends EventMeta {
@@ -198,6 +220,7 @@ export interface HookCreatedEvent extends EventMeta {
 export interface HookUpdatedEvent extends EventMeta {
   type: 'HOOK_UPDATED';
   hook: Hook;
+  changes?: Record<string, unknown>;
 }
 
 export interface HookDeletedEvent extends EventMeta {
@@ -502,6 +525,9 @@ export type AppEvent =
   | FactionCreatedEvent
   | FactionUpdatedEvent
   | FactionDeletedEvent
+  // Timeline
+  | TimelineEventCreatedEvent
+  | TimelineEventDeletedEvent
   // Plot
   | ArcCreatedEvent
   | ArcUpdatedEvent
@@ -598,6 +624,8 @@ export const BROADCAST_EVENTS: EventType[] = [
   'FACTION_CREATED',
   'FACTION_UPDATED',
   'FACTION_DELETED',
+  'TIMELINE_EVENT_CREATED',
+  'TIMELINE_EVENT_DELETED',
   'ARC_CREATED',
   'ARC_UPDATED',
   'ARC_DELETED',
