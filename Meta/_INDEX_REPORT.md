@@ -20,7 +20,7 @@
 
 ## Recently Split Documents
 
-### ✅ Architecture/02_BUSINESS_LOGIC.md → BusinessLogic/ (21 files)
+### ✅ ~~Architecture/02_BUSINESS_LOGIC.md~~ → BusinessLogic/ (21 files) — *原文件已删除*
 
 | File | Lines | Status |
 |------|-------|--------|
@@ -91,7 +91,7 @@ These documents need further splitting using doc-split skill:
 | **Design/Animation.md** | 160 | ⚠️ Slightly over |
 | **Design/Components.md** | 245 | Split by component type |
 | **Architecture/01_INTERACTION.md** | 248 | Split into TUI/WebGUI |
-| ~~**Architecture/02_BUSINESS_LOGIC.md**~~ | ~~1639~~ | ✅ **SPLIT COMPLETE** |
+| ~~**Architecture/02_BUSINESS_LOGIC.md**~~ | ~~1639~~ | ✅ **SPLIT COMPLETE, 原文件已删除** |
 | **Architecture/03_COMPUTER_LOGIC.md** | 208 | Split into AI/Search |
 | **Architecture/04_DATA_LAYER.md** | 848 | **HIGH PRIORITY** |
 | **Architecture/05_ARCHITECTURE.md** | 745 | **HIGH PRIORITY** |
@@ -112,7 +112,7 @@ These documents need further splitting using doc-split skill:
 ## Splitting Priority
 
 ### Immediate (>500 lines)
-1. ~~`02_BUSINESS_LOGIC.md` (1639)~~ → ✅ BusinessLogic/ folder **DONE**
+1. ~~`02_BUSINESS_LOGIC.md` (1639)~~ → ✅ BusinessLogic/ folder **DONE, 原文件已删除**
 2. `04_DATA_LAYER.md` (848) → DataLayer/ folder
 3. `05_ARCHITECTURE.md` (745) → ModuleDesign/ folder
 4. `06_ARCHITECTURE_DEEP_DIVE.md` (697) → DeepDive/ folder

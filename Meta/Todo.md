@@ -4,17 +4,16 @@
 
 ---
 
-## High Priority
+## High Priority (M1 Remaining)
 
-- [ ] **Create Regulation.md content** - Define code style, PR process, testing requirements
-- [ ] **Split Product.md** - 1037 lines exceeds 150 line limit
-- [ ] **Split Design.md** - 722 lines exceeds 150 line limit
-- [ ] **Split Architecture documents** - All 6 docs exceed limits
-- [ ] **Split Module documents** - All 10 modules exceed limits
+- [ ] **Manual testing** - Build all packages, test CLI flow (init → serve → web UI)
+- [ ] **M1 merge to main** - Final review, squash-merge ms1 → main
 
 ## Medium Priority
 
-- [ ] **Set up pre-commit hooks** - Configure husky for linting
+- [ ] **Split Product.md** - 1037 lines exceeds 150 line limit
+- [ ] **Split Design.md** - 722 lines exceeds 150 line limit
+- [ ] **Split Module documents** - All 10 modules exceed limits
 - [ ] **Add release workflow** - GitHub Actions for releases
 - [ ] **Create CONTRIBUTING.md** - Detailed contribution guide
 - [ ] **Set up Codecov** - Code coverage reporting
@@ -29,9 +28,18 @@
 
 ## Completed
 
-*Move completed items here with completion date*
-
 - [x] Initialize project structure (2026-02-05)
 - [x] Create CLAUDE.md (2026-02-05)
 - [x] Set up ADR system (2026-02-05)
 - [x] Set up Milestone system (2026-02-05)
+- [x] M1 Phase 1: Project Setup — monorepo, TS, ESLint, Vitest (2026-02-05)
+- [x] M1 Phase 2: Interface Contract — all types and interfaces (2026-02-05)
+- [x] Split Architecture documents 04, 05, 06 (2026-02-05)
+- [x] Set up pre-commit hooks — husky + lint-staged (2026-02-05)
+- [x] Fix ESLint v9 compatibility — typescript-eslint v8 (2026-02-05)
+- [x] Create Regulation.md content (2026-02-05)
+- [x] M1 Phase 4: Database Schema — Database class, MigrationRunner, 18 tables, FTS5 (2026-02-05)
+- [x] M1 Phase 5: CLI Shell — init, serve, version, help commands + 9 tests (2026-02-05)
+- [x] M1 Phase 6: Server + Web Shell — static serving, SPA fallback, AppShell, 4 pages (2026-02-05)
+- [x] Update test mocks — MockEventBus AppEvent[], CreateCharacterInput literal unions (2026-02-05)
+- [x] Codebase cleanup — ESM fixes, lint fixes, stale file removal (2026-02-05)
