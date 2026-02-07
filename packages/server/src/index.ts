@@ -8,8 +8,12 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import { VERSION } from '@inxtone/core';
+import type { IStoryBibleService } from '@inxtone/core';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+
+import { errorHandler } from './middleware/errorHandler.js';
+import { registerRoutes } from './routes/index.js';
 
 export const DEFAULT_PORT = 3456;
 
@@ -17,6 +21,12 @@ export interface ServerOptions {
   port?: number;
   logger?: boolean;
   staticDir?: string; // Path to web build directory
+
+  // Dependency injection for testing/customization
+  storyBibleService?: IStoryBibleService;
+
+  // Database path for production bootstrap
+  dbPath?: string;
 }
 
 /**
@@ -29,6 +39,9 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
   const server = Fastify({
     logger: options.logger ?? true,
   });
+
+  // Register global error handler
+  server.setErrorHandler(errorHandler);
 
   // Register CORS for development
   await server.register(cors, {
@@ -51,8 +64,17 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
       version: VERSION,
       endpoints: {
         health: '/api/health',
-        // Future endpoints will be added here
-        // storyBible: '/api/story-bible',
+        // Story Bible API
+        characters: '/api/characters',
+        relationships: '/api/relationships',
+        world: '/api/world',
+        locations: '/api/locations',
+        factions: '/api/factions',
+        timeline: '/api/timeline',
+        arcs: '/api/arcs',
+        foreshadowing: '/api/foreshadowing',
+        hooks: '/api/hooks',
+        // Future endpoints
         // writing: '/api/writing',
         // ai: '/api/ai',
         // quality: '/api/quality',
@@ -60,6 +82,13 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
       },
     };
   });
+
+  // Register Story Bible API routes if service is provided
+  if (options.storyBibleService) {
+    await registerRoutes(server, {
+      storyBibleService: options.storyBibleService,
+    });
+  }
 
   // Serve static files from web build (if available)
   const staticDir = options.staticDir ?? findWebBuildDir();
@@ -76,7 +105,10 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
       if (!request.url.startsWith('/api')) {
         return reply.sendFile('index.html');
       }
-      return reply.status(404).send({ error: 'Not found' });
+      return reply.status(404).send({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Endpoint not found' },
+      });
     });
   }
 
@@ -117,6 +149,7 @@ export async function startServer(options: ServerOptions = {}): Promise<FastifyI
 
 // Re-export types for consumers
 export type { FastifyInstance };
+export type { RouteDeps } from './routes/index.js';
 
 // CLI entry point - only runs when executed directly
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;

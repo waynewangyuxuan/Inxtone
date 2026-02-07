@@ -16,3 +16,6 @@ export * from './api.js';
 
 // Event types - EventBus event definitions
 export * from './events.js';
+
+// Error types - For consistent error handling across layers
+export * from '../errors/index.js';

@@ -208,6 +208,7 @@ export interface IStoryBibleService {
   // === Relationships ===
   createRelationship(input: CreateRelationshipInput): Promise<Relationship>;
   getRelationship(id: number): Promise<Relationship | null>;
+  getAllRelationships(): Promise<Relationship[]>;
   getRelationshipsForCharacter(characterId: CharacterId): Promise<Relationship[]>;
   updateRelationship(id: number, input: Partial<CreateRelationshipInput>): Promise<Relationship>;
   deleteRelationship(id: number): Promise<void>;
@@ -260,6 +261,7 @@ export interface IStoryBibleService {
   // === Hooks ===
   createHook(input: CreateHookInput): Promise<Hook>;
   getHook(id: HookId): Promise<Hook | null>;
+  getAllHooks(): Promise<Hook[]>;
   getHooksForChapter(chapterId: ChapterId): Promise<Hook[]>;
   updateHook(id: HookId, input: Partial<CreateHookInput>): Promise<Hook>;
   deleteHook(id: HookId): Promise<void>;

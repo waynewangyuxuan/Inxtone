@@ -7,6 +7,18 @@
 ## 2026-02-07
 
 ### Completed
+- **M2 Phase 3: API Layer** — Fastify REST routes for all 9 Story Bible domains
+  - 45 endpoints across 9 route files: characters (7), relationships (5), world (3), locations (5), factions (5), timeline (3), arcs (5), foreshadowing (7), hooks (5)
+  - Error handler middleware: maps `InxtoneError.statusCode` to HTTP responses
+  - Response utilities: `success<T>(data)` and `error(code, message)` helpers
+  - Route factory pattern with DI: `(deps: RouteDeps) => FastifyPluginAsync`
+  - Server bootstrap: DI via `ServerOptions.storyBibleService`, conditional route registration
+  - Interface additions: `getAllRelationships()`, `getAllHooks()` on `IStoryBibleService`
+  - `tsup.config.ts`: added `src/services/index.ts` entry for `@inxtone/core/services` export
+  - `core/src/index.ts`: added `export * from './errors/index.js'` (resolves TD-020)
+  - 76 route integration tests (9 test files), all passing via `fastify.inject()`
+  - API deviations documented in `docs/API_DEVIATIONS.md`
+  - 666 total tests passing across 30 test files (up from 590)
 - **M2 Phase 2: Service Layer** — EventBus + StoryBibleService fully implemented and tested
   - `EventBus`: pub/sub with metadata injection (UUID + timestamp), sync/async emit, error isolation, onAny/off/removeAllListeners (192 lines)
   - `StoryBibleService`: 41-method service layer with DI (10 repos + EventBus), input validation, 27 event emission points covering all CRUD operations (720 lines)
@@ -37,7 +49,7 @@
 - Repository layer is synchronous (no async/await); service layer will be async
 
 ### Next
-- Begin M2 Phase 3: API Layer (Fastify routes for StoryBibleService)
+- Begin M2 Phase 4: Web UI (Character, World, Relationship pages)
 
 ---
 

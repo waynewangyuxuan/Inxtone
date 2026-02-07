@@ -7,8 +7,8 @@
 ## High Priority (M2 — Story Bible Core)
 
 - [x] **M2 Phase 1: Repository Layer** — 7 repositories + 341 tests (2026-02-07)
-- [ ] **M2 Phase 2: Service Layer** — StoryBibleService implementation + EventBus integration
-- [ ] **M2 Phase 3: API Layer** — /api/characters, /api/world, /api/relationships endpoints
+- [x] **M2 Phase 2: Service Layer** — EventBus + StoryBibleService + 61 tests (2026-02-07)
+- [x] **M2 Phase 3: API Layer** — 45 endpoints, 9 domains, 76 route tests (2026-02-07)
 - [ ] **M2 Phase 4: Web UI** — Character, World, Relationship pages
 - [ ] **M2 Phase 5: CLI Commands** — `inxtone bible list/show/search`
 - [ ] **M2 Phase 6: Testing & Polish** — E2E tests, performance testing

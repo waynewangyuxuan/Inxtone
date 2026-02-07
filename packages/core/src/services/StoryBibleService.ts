@@ -256,6 +256,10 @@ export class StoryBibleService implements IStoryBibleService {
     return this.deps.relationshipRepo.findById(id);
   }
 
+  async getAllRelationships(): Promise<Relationship[]> {
+    return this.deps.relationshipRepo.findAll();
+  }
+
   async getRelationshipsForCharacter(characterId: CharacterId): Promise<Relationship[]> {
     return this.deps.relationshipRepo.findByCharacter(characterId);
   }
@@ -698,6 +702,10 @@ export class StoryBibleService implements IStoryBibleService {
 
   async getHook(id: HookId): Promise<Hook | null> {
     return this.deps.hookRepo.findById(id);
+  }
+
+  async getAllHooks(): Promise<Hook[]> {
+    return this.deps.hookRepo.findAll();
   }
 
   async getHooksForChapter(chapterId: ChapterId): Promise<Hook[]> {

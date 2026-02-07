@@ -187,11 +187,9 @@
 - **影响**: 无法按其他字段或升序排列
 - **方案**: 添加 `SortOptions` 参数
 
-### TD-020: errors 未从主包 index.ts 导出
-- **位置**: `packages/core/src/index.ts`
-- **问题**: 错误类型只从 `@inxtone/core/services` 间接导出，主入口 `@inxtone/core` 不导出
-- **影响**: 纯 TS 的错误类是通用的，Web 层也可能需要使用（如类型守卫判断 API 返回错误）
-- **方案**: 在 `index.ts` 添加 `export * from './errors/index.js';`
+### TD-020: ~~errors 未从主包 index.ts 导出~~ ✅ 已修复
+- **解决**: 在 `packages/core/src/index.ts` 添加 `export * from './errors/index.js'`
+- **完成日期**: 2026-02-07
 
 ### TD-021: wrapError 命名与行为不一致
 - **位置**: `packages/core/src/errors/index.ts` `wrapError()`
@@ -232,7 +230,7 @@
 - [ ] TD-008: 分页支持
 - [ ] TD-009: ID 生成改进
 - [ ] TD-019: errors/ 独立单元测试
-- [ ] TD-020: errors 从主包 index.ts 导出
+- [x] TD-020: errors 从主包 index.ts 导出（Phase 3）✅
 - [ ] TD-021: wrapError 命名/行为修正
 
 ### M4+ 处理
@@ -347,9 +345,10 @@ packages/server/src/
 ---
 
 *最后更新: 2026-02-07*
-*评估范围: M2 Phase 1 Repository Layer + Phase 2 Service Layer*
+*评估范围: M2 Phase 1–3 (Repository + Service + API)*
 *Phase 1 P0 技术债: 3/3 已完成 ✅*
 *Phase 2 P0 技术债: 2/2 已完成 ✅*
 *Phase 2 Code Review P0: 2/2 已修复 ✅*
-*TD-004/TD-005 Code Review: P1 1项, P2 2项 → M3 处理*
+*Phase 3 修复: TD-020 ✅*
+*剩余 M3 处理: TD-006, TD-007, TD-008, TD-009, TD-019, TD-021*
 *详细报告: CODE_REVIEW_M2_PHASE2.md*

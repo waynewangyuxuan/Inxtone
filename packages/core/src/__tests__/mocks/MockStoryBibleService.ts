@@ -171,6 +171,10 @@ export class MockStoryBibleService implements IStoryBibleService {
     return this.relationships.get(id) ?? null;
   }
 
+  async getAllRelationships(): Promise<Relationship[]> {
+    return Array.from(this.relationships.values());
+  }
+
   async getRelationshipsForCharacter(characterId: CharacterId): Promise<Relationship[]> {
     return Array.from(this.relationships.values()).filter(
       (r) => r.sourceId === characterId || r.targetId === characterId
@@ -490,6 +494,10 @@ export class MockStoryBibleService implements IStoryBibleService {
 
   async getHook(id: HookId): Promise<Hook | null> {
     return this.hooks.get(id) ?? null;
+  }
+
+  async getAllHooks(): Promise<Hook[]> {
+    return Array.from(this.hooks.values());
   }
 
   async getHooksForChapter(chapterId: ChapterId): Promise<Hook[]> {
