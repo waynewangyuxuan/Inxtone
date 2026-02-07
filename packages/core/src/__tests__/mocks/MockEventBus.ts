@@ -11,7 +11,7 @@ import type { AppEvent, EventType, EventByType } from '../../types/events.js';
 export class MockEventBus implements IEventBus {
   private handlers: Map<string, Set<EventHandler>> = new Map();
   private wildcardHandlers: Set<EventHandler> = new Set();
-  private eventHistory: Array<{ type: string } & Record<string, unknown>> = [];
+  private eventHistory: AppEvent[] = [];
   private eventIdCounter = 1;
 
   on<T>(eventType: string, handler: EventHandler<T>): Unsubscribe {
@@ -46,8 +46,8 @@ export class MockEventBus implements IEventBus {
       _timestamp: Date.now(),
     };
 
-    // Store in history
-    this.eventHistory.push(fullEvent);
+    // Store in history (cast is safe: we add EventMeta fields above)
+    this.eventHistory.push(fullEvent as AppEvent);
 
     // Notify specific handlers (sync)
     const handlers = this.handlers.get(event.type);
@@ -78,8 +78,8 @@ export class MockEventBus implements IEventBus {
       _timestamp: Date.now(),
     };
 
-    // Store in history
-    this.eventHistory.push(fullEvent);
+    // Store in history (cast is safe: we add EventMeta fields above)
+    this.eventHistory.push(fullEvent as AppEvent);
 
     // Notify specific handlers (async)
     const handlers = this.handlers.get(event.type);
@@ -119,7 +119,7 @@ export class MockEventBus implements IEventBus {
    * Get all emitted events for test assertions.
    * @returns A copy of the event history array
    */
-  getEventHistory(): Array<{ type: string } & Record<string, unknown>> {
+  getEventHistory(): AppEvent[] {
     return [...this.eventHistory];
   }
 
@@ -127,13 +127,13 @@ export class MockEventBus implements IEventBus {
    * Get events of a specific type
    */
   getEventsOfType<T extends EventType>(eventType: T): EventByType<T>[] {
-    return this.eventHistory.filter((e) => e.type === eventType) as EventByType<T>[];
+    return this.eventHistory.filter((e): e is EventByType<T> => e.type === eventType);
   }
 
   /**
    * Get the last emitted event
    */
-  getLastEvent(): ({ type: string } & Record<string, unknown>) | undefined {
+  getLastEvent(): AppEvent | undefined {
     return this.eventHistory[this.eventHistory.length - 1];
   }
 
@@ -142,8 +142,9 @@ export class MockEventBus implements IEventBus {
    */
   getLastEventOfType<T extends EventType>(eventType: T): EventByType<T> | undefined {
     for (let i = this.eventHistory.length - 1; i >= 0; i--) {
-      if (this.eventHistory[i].type === eventType) {
-        return this.eventHistory[i] as EventByType<T>;
+      const event = this.eventHistory[i];
+      if (event.type === eventType) {
+        return event as EventByType<T>;
       }
     }
     return undefined;
@@ -195,10 +196,10 @@ export class MockEventBus implements IEventBus {
         reject(new Error(`Timeout waiting for event: ${eventType}`));
       }, timeout);
 
-      const unsubscribe = this.on(eventType, (event) => {
+      const unsubscribe = this.on<EventByType<T>>(eventType, (event) => {
         clearTimeout(timer);
         unsubscribe();
-        resolve(event as EventByType<T>);
+        resolve(event);
       });
     });
   }
