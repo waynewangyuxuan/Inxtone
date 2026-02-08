@@ -4,6 +4,55 @@
 
 ---
 
+## 2026-02-07 (Phase 5: CLI Commands)
+
+### Completed
+- **M2 Phase 5: CLI Bible Commands** — Full CLI interface for browsing Story Bible via terminal
+  - **3 subcommands implemented**:
+    - `inxtone bible list [type]` — List all entities or filter by type (characters, relationships, locations, factions, timeline, arcs, foreshadowing, hooks)
+    - `inxtone bible show <type> <id>` — Show detailed information about a specific entity with formatted output
+    - `inxtone bible search <query>` — Full-text search across characters, locations, and factions
+  - **Rich CLI formatting**:
+    - Colored output with chalk (cyan headers, yellow highlights, gray metadata)
+    - Emoji icons for each entity type (👤 📍 🛡️ ⏱️ 📖 🔮 🪝)
+    - Structured display with proper indentation and spacing
+    - Error handling with helpful error messages
+  - **Implementation details**:
+    - `packages/tui/src/commands/bible.ts`: 524 lines, single-file implementation
+    - Initializes StoryBibleService with all 9 repositories from local `inxtone.db`
+    - Validates entity types and IDs before queries
+    - All async service calls properly awaited
+  - **Integration**:
+    - Updated `cli.tsx` to register bible command group
+    - Added exports to `commands/index.ts`
+    - Builds successfully, all TypeScript checks pass
+  - **Testing**: Manual testing confirmed all commands work correctly with empty databases and error states
+
+### Decisions Made
+- Bible commands operate on local `inxtone.db` in current directory (no remote/server mode)
+- Error messages guide users to valid entity types when invalid type provided
+- Search is case-insensitive and filters across name/significance fields
+- Output formatting uses emojis for visual categorization
+
+### Next
+- M2 Phase 6: Testing & Polish (write automated tests, performance testing, documentation)
+
+---
+
+## 2026-02-07 (Web UI Fixes & Dashboard)
+
+### Completed
+- **Dashboard stats integration** — Dashboard now displays actual character count from database
+- **Character creation cache fix** — Fixed "Character null not found" 404 error after creating characters
+  - Root cause: `closeForm()` only cleared `formMode` but not `selectedId`, causing stale detail queries
+  - Fix: Updated `useStoryBibleStore.closeForm()` to clear both `formMode` and `selectedId`
+  - Dashboard: Added `useCharacters()` hook to display real-time character count instead of hardcoded 0
+
+### Next
+- Continue with M2 Phase 5: CLI Commands (already started)
+
+---
+
 ## 2026-02-07 (continued)
 
 ### Completed
