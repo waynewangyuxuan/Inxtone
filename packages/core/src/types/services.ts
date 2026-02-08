@@ -33,6 +33,8 @@ import type {
   Chapter,
   ChapterId,
   ChapterStatus,
+  ChapterOutline,
+  VolumeStatus,
   WritingGoal,
   WritingSession,
   Version,
@@ -271,16 +273,50 @@ export interface IStoryBibleService {
 // WritingService
 // ===========================================
 
+/** Options for creating a volume */
+export interface CreateVolumeInput {
+  name?: string;
+  theme?: string;
+  coreConflict?: string;
+  mcGrowth?: string;
+  chapterStart?: ChapterId;
+  chapterEnd?: ChapterId;
+  status?: VolumeStatus;
+}
+
+/** Options for updating a volume */
+export type UpdateVolumeInput = Partial<CreateVolumeInput>;
+
 /** Options for creating a chapter */
 export interface CreateChapterInput {
   volumeId?: VolumeId;
   arcId?: ArcId;
   title?: string;
+  status?: ChapterStatus;
   outline?: {
     goal?: string;
     scenes?: string[];
     hookEnding?: string;
   };
+  characters?: CharacterId[];
+  locations?: LocationId[];
+  foreshadowingHinted?: ForeshadowingId[];
+}
+
+/** Options for updating a chapter */
+export interface UpdateChapterInput {
+  volumeId?: VolumeId | null;
+  arcId?: ArcId | null;
+  title?: string;
+  status?: ChapterStatus;
+  outline?: ChapterOutline;
+  characters?: CharacterId[];
+  locations?: LocationId[];
+  foreshadowingPlanted?: ForeshadowingId[];
+  foreshadowingHinted?: ForeshadowingId[];
+  foreshadowingResolved?: ForeshadowingId[];
+  emotionCurve?: string;
+  tension?: string;
 }
 
 /** Options for saving chapter content */
@@ -311,21 +347,21 @@ export interface WritingStats {
  */
 export interface IWritingService {
   // === Volumes ===
-  createVolume(input: Omit<Volume, 'id' | 'createdAt' | 'updatedAt'>): Promise<Volume>;
-  getVolume(id: VolumeId): Promise<Volume | null>;
+  createVolume(input: CreateVolumeInput): Promise<Volume>;
+  getVolume(id: VolumeId): Promise<Volume>;
   getAllVolumes(): Promise<Volume[]>;
-  updateVolume(id: VolumeId, input: Partial<Volume>): Promise<Volume>;
+  updateVolume(id: VolumeId, input: UpdateVolumeInput): Promise<Volume>;
   deleteVolume(id: VolumeId): Promise<void>;
 
   // === Chapters ===
   createChapter(input: CreateChapterInput): Promise<Chapter>;
-  getChapter(id: ChapterId): Promise<Chapter | null>;
-  getChapterWithContent(id: ChapterId): Promise<Chapter | null>;
+  getChapter(id: ChapterId): Promise<Chapter>;
+  getChapterWithContent(id: ChapterId): Promise<Chapter>;
   getAllChapters(): Promise<Chapter[]>;
   getChaptersByVolume(volumeId: VolumeId): Promise<Chapter[]>;
   getChaptersByArc(arcId: ArcId): Promise<Chapter[]>;
   getChaptersByStatus(status: ChapterStatus): Promise<Chapter[]>;
-  updateChapter(id: ChapterId, input: Partial<Chapter>): Promise<Chapter>;
+  updateChapter(id: ChapterId, input: UpdateChapterInput): Promise<Chapter>;
   deleteChapter(id: ChapterId): Promise<void>;
   reorderChapters(chapterIds: ChapterId[]): Promise<void>;
 
@@ -335,27 +371,27 @@ export interface IWritingService {
   getTotalWordCount(): Promise<number>;
 
   // === Version Control ===
-  createVersion(chapterId: ChapterId, summary?: string): Promise<Version>;
+  createVersion(input: { chapterId: ChapterId; changeSummary?: string }): Promise<Version>;
   getVersions(chapterId: ChapterId): Promise<Version[]>;
-  getVersion(versionId: number): Promise<Version | null>;
+  getVersion(versionId: number): Promise<Version>;
   compareVersions(versionId1: number, versionId2: number): Promise<VersionDiff>;
   rollbackToVersion(chapterId: ChapterId, versionId: number): Promise<Chapter>;
   cleanupOldVersions(olderThanDays: number): Promise<number>;
 
-  // === Writing Goals ===
+  // === Writing Goals (deferred to post-M3) ===
   setDailyGoal(targetWords: number): Promise<WritingGoal>;
   setChapterGoal(chapterId: ChapterId, targetWords: number): Promise<WritingGoal>;
   getActiveGoals(): Promise<WritingGoal[]>;
   updateGoalProgress(goalId: number, wordsWritten: number): Promise<WritingGoal>;
   completeGoal(goalId: number): Promise<WritingGoal>;
 
-  // === Writing Sessions ===
+  // === Writing Sessions (deferred to post-M3) ===
   startSession(chapterId?: ChapterId): Promise<WritingSession>;
   endSession(sessionId: number): Promise<WritingSession>;
   getSession(sessionId: number): Promise<WritingSession | null>;
   getTodaySessions(): Promise<WritingSession[]>;
 
-  // === Statistics ===
+  // === Statistics (deferred to post-M3) ===
   getWritingStats(startDate: string, endDate: string): Promise<WritingStats>;
   getCurrentStreak(): Promise<number>;
 }

@@ -4,6 +4,58 @@
 
 ---
 
+## 2026-02-07 (M3 Phase 1: Writing Service) [WIP]
+
+### Completed
+- **WritingRepository** (`packages/core/src/db/repositories/WritingRepository.ts`, 738 lines)
+  - Volume CRUD (5 methods): create, findById, findAll, update, delete
+  - Chapter CRUD (9 methods): create, findById, findWithContent, findAll, findByVolume, findByArc, findByStatus, update, delete, reorder (stub)
+  - Content operations (3 methods): saveContent (with word count), getWordCount, getTotalWordCount
+  - Version management (5 methods): createVersion, findVersionsByChapter, findVersionById, deleteVersion, cleanupOldVersions (stratified retention)
+  - FK cleanup (3 methods): cleanupCharacterReferences, cleanupLocationReferences, cleanupForeshadowingReferences
+  - Word count supports CJK + English mixed content
+  - Performance: content field excluded from list queries (findChapterById vs findChapterWithContent)
+- **WritingService** (`packages/core/src/services/WritingService.ts`, 650 lines)
+  - 25 active methods implementing IWritingService interface
+  - FK validation: volumeId, arcId, characters[], locations[], foreshadowingHinted[]
+  - Chapter status state machine: outline → draft → revision → done (sequential enforcement)
+  - Version control: manual version, rollback with backup (source: 'rollback_backup')
+  - EventBus integration: 10 event types (CHAPTER_CREATED/UPDATED/SAVED/DELETED/ROLLED_BACK/STATUS_CHANGED, CHAPTERS_REORDERED, VOLUME_CREATED/UPDATED/DELETED, VERSION_CREATED, VERSIONS_CLEANED_UP)
+  - Cascade delete: deleteVolume removes all chapters in volume
+  - Deferred stubs: Goals, Sessions, Stats (11 methods throw with clear message)
+- **Event types updated** (`packages/core/src/types/events.ts`)
+  - Added 9 new event interfaces for Writing module
+  - Updated AppEvent union type and BROADCAST_EVENTS list
+- **Type system updated** (`packages/core/src/types/services.ts`)
+  - Added CreateVolumeInput, UpdateVolumeInput, UpdateChapterInput types
+  - Extended CreateChapterInput with status, characters, locations, foreshadowingHinted
+  - Aligned IWritingService interface: createVersion uses object param, return types match implementation
+- **Tests** (50 repo tests + 77 service tests = 127 new tests)
+  - WritingRepository: 50 tests (Volume CRUD 8, Chapter CRUD 12, Content 8, Versions 12, FK Cleanup 10)
+  - WritingService: 77 tests (Volumes 15, Chapters 25, Content 12, Versions 25)
+  - All 818 tests passing, typecheck clean (0 errors)
+
+### Decisions Made
+- Chapter status transitions are sequential forward only (outline→draft→revision→done), backward transitions always allowed
+- saveContent returns chapter without content field (performance optimization, use getChapterWithContent for full data)
+- Version cleanup only targets 'auto' source by default, preserves manual/ai_backup/rollback_backup
+- Deferred methods (Goals, Sessions, Stats) throw clear errors rather than returning empty data
+- Reorder chapters is a validation-only stub (no position column in DB yet)
+
+### Code Review Fixes Applied
+- Fixed 30 TypeScript errors (missing types, interface mismatches, exactOptionalPropertyTypes)
+- Fixed 3 test failures (saveContent return expectations, cleanup sourceFilter)
+- Fixed rollback backup source ('ai_backup' → 'rollback_backup' per doc spec)
+- Fixed VolumeStatus enum value ('completed' → 'complete')
+- Added state machine transition enforcement
+- Aligned deferred stubs with IWritingService signatures
+
+### Next
+- M3 Phase 2: AI Service (GeminiProvider, ContextBuilder, PromptAssembler)
+- M3 Phase 3: Plot System API + Writing API endpoints
+
+---
+
 ## 2026-02-07 (M2 Phase 6: Testing & Polish) ✅
 
 ### Completed

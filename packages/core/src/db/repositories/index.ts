@@ -14,3 +14,4 @@ export { TimelineEventRepository } from './TimelineEventRepository.js';
 export { ArcRepository } from './ArcRepository.js';
 export { ForeshadowingRepository } from './ForeshadowingRepository.js';
 export { HookRepository } from './HookRepository.js';
+export { WritingRepository } from './WritingRepository.js';
