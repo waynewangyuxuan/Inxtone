@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-02-07 (Demo Seed Data)
+
+### Completed
+- **Demo Story Seed Script** — Comprehensive dataset for showcasing all Story Bible features
+  - **Story**: 《墨渊记》Ink Abyss Chronicles — Xianxia cultivation story with 6 characters
+  - **Dataset includes**:
+    - 6 characters with full profiles (林墨/MC, 苏澜/love interest, 云阙/antagonist, 白霜/mentor, 墨殿主/villain, 小竹/support)
+    - 7 relationships with Wayne Principles fields (mentor, lover, rival, enemy, companion, confidant relationships)
+    - World settings: 5-level power system (墨道修炼体系) + 6 social rules
+    - 4 locations with atmosphere (青墨峰, 墨渊城, 墨海, 墨殿)
+    - 3 factions (青云宗, 墨殿, 散修联盟) with goals and internal conflicts
+    - 5 timeline events spanning 100 years
+    - 2 story arcs (main 30-chapter arc + sub arc with sections)
+    - 3 foreshadowing items (long/mid/short term payoffs)
+    - 4 hooks (opening, arc-level, chapter hooks)
+  - **Implementation**: `packages/core/src/db/seeds/demo-story.ts` (652 lines)
+    - Exports typed data constants for all 9 Story Bible domains
+    - `seedDemoStory()` function with proper ID mapping and insertion order
+    - Rich console output with emojis and progress indicators
+    - Handles ID substitution for relationships, factions, timeline events
+    - Error handling and database cleanup
+  - **Usage**: `pnpm --filter @inxtone/core seed:demo`
+  - **Purpose**: Complete dataset for UI fine-tuning and feature showcasing
+
+### Decisions Made
+- Uses in-memory database (`:memory:`) for non-destructive testing
+- Character IDs mapped from placeholder (C001, C002) to actual generated IDs
+- Location IDs mapped similarly (L001, L002, etc.)
+- All 9 repositories initialized with proper dependency injection
+- Simplified data structure (removed fields not in Create input types like `arc`, `facets`, `evolution`, `progress`, `hints`)
+
+### Next
+- UI fine-tuning with demo data loaded
+- Visual polish and design refinements
+
+---
+
 ## 2026-02-07 (Phase 5: CLI Commands)
 
 ### Completed
