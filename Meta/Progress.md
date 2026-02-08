@@ -29,7 +29,8 @@
   - **Purpose**: Complete dataset for UI fine-tuning and feature showcasing
 
 ### Decisions Made
-- Uses in-memory database (`:memory:`) for non-destructive testing
+- Writes to `~/.inxtone/data.db` (same database as dev server) for persistent demo data
+- Supports custom path via `DB_PATH` environment variable
 - Character IDs mapped from placeholder (C001, C002) to actual generated IDs
 - Location IDs mapped similarly (L001, L002, etc.)
 - All 9 repositories initialized with proper dependency injection

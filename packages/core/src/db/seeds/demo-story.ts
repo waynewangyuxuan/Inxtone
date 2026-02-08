@@ -429,9 +429,11 @@ export const demoHooks: CreateHookInput[] = [
 /**
  * Seed the database with demo data
  *
- * Usage: pnpm seed:demo
+ * Usage:
+ *   pnpm seed:demo                    # Seeds to ~/.inxtone/data.db (dev server database)
+ *   DB_PATH=inxtone.db pnpm seed:demo # Seeds to custom path
  */
-export async function seedDemoStory(): Promise<void> {
+export async function seedDemoStory(dbPath?: string): Promise<void> {
   // Dynamic imports to avoid circular dependencies
   const {
     Database,
@@ -446,11 +448,25 @@ export async function seedDemoStory(): Promise<void> {
     HookRepository,
   } = await import('../../db/index.js');
   const { StoryBibleService, EventBus } = await import('../../services/index.js');
+  const path = await import('node:path');
+  const fs = await import('node:fs');
+  const os = await import('node:os');
 
-  console.log('🌱 Starting demo story seed...\n');
+  // Use provided path, env var, or default to ~/.inxtone/data.db (same as dev server)
+  const finalDbPath =
+    dbPath ?? process.env.DB_PATH ?? path.join(os.homedir(), '.inxtone', 'data.db');
+
+  // Ensure directory exists
+  const dbDir = path.dirname(finalDbPath);
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+
+  console.log('🌱 Starting demo story seed...');
+  console.log(`📁 Database: ${finalDbPath}\n`);
 
   // Initialize database and service
-  const db = new Database({ path: ':memory:', migrate: true });
+  const db = new Database({ path: finalDbPath, migrate: true });
   db.connect();
   const eventBus = new EventBus();
   const service = new StoryBibleService({
@@ -593,9 +609,11 @@ export async function seedDemoStory(): Promise<void> {
     console.log('✅ Hooks created\n');
 
     console.log('🎉 Demo story "墨渊记 Ink Abyss Chronicles" seed completed!');
-    console.log('\nRun the web UI to explore:');
-    console.log('  pnpm dev');
-    console.log('  Then navigate to http://localhost:5173/story-bible\n');
+    console.log(`\n📦 Data saved to: ${finalDbPath}`);
+    console.log('\nExplore the data:');
+    console.log('  • Web UI: pnpm dev → http://localhost:5173/bible');
+    console.log('  • CLI: inxtone bible list');
+    console.log('  • CLI: inxtone bible show character C001\n');
   } catch (error) {
     console.error('❌ Seed failed:', error);
     throw error;

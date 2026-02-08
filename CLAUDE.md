@@ -47,7 +47,7 @@ The project includes a comprehensive demo story **《墨渊记》Ink Abyss Chron
 
 **Usage:**
 ```bash
-# Seed demo data (uses in-memory database, non-destructive)
+# Seed demo data (writes to ~/.inxtone/data.db)
 pnpm --filter @inxtone/core seed:demo
 
 # Then explore via CLI
@@ -56,7 +56,7 @@ inxtone bible show character C001
 
 # Or via Web UI
 pnpm dev
-# Navigate to http://localhost:5173/story-bible
+# Navigate to http://localhost:5173/bible
 ```
 
 ## Documentation
