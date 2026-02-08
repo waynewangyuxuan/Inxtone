@@ -31,7 +31,8 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "tsx src/db/cli/migrate.ts"
+    "db:migrate": "tsx src/db/cli/migrate.ts",
+    "seed:demo": "tsx src/db/seeds/demo-story.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",

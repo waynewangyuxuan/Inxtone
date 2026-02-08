@@ -109,45 +109,25 @@ export function CharacterList(): React.ReactElement {
               <Card
                 key={character.id}
                 onClick={() => handleSelect(character.id)}
-                className={selectedId === character.id ? 'selected' : ''}
+                selected={selectedId === character.id}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  <h3 style={{ margin: 0, color: 'var(--color-gold)' }}>{character.name}</h3>
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.cardTitle}>{character.name}</h3>
                   <RoleBadge role={character.role} />
                 </div>
                 {character.appearance && (
-                  <p
-                    style={{
-                      margin: '0 0 1rem',
-                      fontSize: 'var(--font-sm)',
-                      color: 'var(--color-text-secondary)',
-                    }}
-                  >
+                  <p className={styles.cardDescription}>
                     {character.appearance.slice(0, 100)}
                     {character.appearance.length > 100 ? '...' : ''}
                   </p>
                 )}
                 {character.motivation?.surface && (
-                  <p
-                    style={{
-                      margin: '0 0 1rem',
-                      fontSize: 'var(--font-sm)',
-                      color: 'var(--color-text-muted)',
-                      fontStyle: 'italic',
-                    }}
-                  >
+                  <p className={styles.cardMeta}>
                     Goal: {character.motivation.surface.slice(0, 80)}
                     {character.motivation.surface.length > 80 ? '...' : ''}
                   </p>
                 )}
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className={styles.cardActions}>
                   <Button
                     variant="ghost"
                     size="sm"
