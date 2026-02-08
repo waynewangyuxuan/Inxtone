@@ -487,6 +487,8 @@ VersionStrategy:
     - minor_typo_fix          # 小修改
     - auto_save_draft         # 自动保存的草稿
 
+> **注意**: M3 已改为 manual save，auto_save 版本类型不再使用。详见 M3.md。
+
   # 版本保留策略
   retention:
     keep_all: false           # 不保留所有版本

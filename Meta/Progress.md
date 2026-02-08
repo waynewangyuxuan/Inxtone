@@ -4,6 +4,228 @@
 
 ---
 
+## 2026-02-07 (M2 Phase 6: Testing & Polish) ✅
+
+### Completed
+- **M2 Phase 6: Testing & Polish** — M2 Story Bible Core is now complete!
+  - **CLI Bible Command Tests** (`packages/tui/src/__tests__/bible.test.ts`):
+    - 17 integration tests for `bible list/show/search` commands
+    - Tests cover all entity types (characters, relationships, locations, factions, timeline, arcs, foreshadowing, hooks)
+    - Validates output formatting, error handling, and search functionality
+    - All tests pass with real database integration
+  - **Performance Test Infrastructure**:
+    - Performance seed script (`packages/core/src/db/seeds/perf-test.ts`): generates 120 characters, 240 relationships, 30 locations, 20 factions
+    - Script: `pnpm --filter @inxtone/core seed:perf`
+    - Data generation completes in < 0.1s
+  - **Performance Tests** (`packages/core/src/__tests__/performance.test.ts`):
+    - 12 performance benchmarks covering:
+      - Character loading: 120 chars in 0ms ✨
+      - FTS5 search: < 50ms (6-21 results in 0ms) ✨
+      - Relationship queries: 240 rels in 1ms
+      - Batch operations: 0.1-0.2ms per character (create/update/delete)
+      - Concurrent queries: 4 parallel queries in 2ms
+      - Database size: 0.37MB for 120 characters + 240 relationships
+      - FTS5 index verification: 130 entries
+    - All performance targets met with significant margin
+  - **Test Suite Summary**:
+    - **695 total tests** across 32 test files (up from 666)
+    - Added: 17 CLI tests + 12 performance tests
+    - 100% passing, duration 1.28s
+    - Coverage: Repository (9 files), Service (2 files), API (9 files), Contract (4 files), DB (3 files), TUI (2 files), Performance (1 file)
+
+### Decisions Made
+- Browser UI E2E tests deferred to post-M2 (requires Playwright/Cypress setup, diminishing returns vs comprehensive integration tests)
+- Performance benchmarks validate production readiness: sub-millisecond operations, efficient FTS5 indexing
+- CLI bible commands fully testable via integration tests with real database
+
+### M2 Completion Metrics
+- **6 Phases completed**: Repository → Service → API → Web UI → CLI → Testing & Polish
+- **695 tests passing** across all layers
+- **45 REST API endpoints** for 9 Story Bible domains
+- **Full Web UI** with forms, error handling, design system compliance
+- **3 CLI commands** for browsing Story Bible via terminal
+- **Comprehensive documentation**: Demo seed data + performance benchmarks
+- **Production-ready performance**: 120+ characters, < 100ms queries, 0.37MB database
+
+### Next
+- Begin M3 planning (Writing Workspace + AI Integration)
+- Update milestone roadmap with M2 completion
+
+---
+
+## 2026-02-07 (Demo Seed Data)
+
+### Completed
+- **Demo Story Seed Script** — Comprehensive dataset for showcasing all Story Bible features
+  - **Story**: 《墨渊记》Ink Abyss Chronicles — Xianxia cultivation story with 6 characters
+  - **Dataset includes**:
+    - 6 characters with full profiles (林墨/MC, 苏澜/love interest, 云阙/antagonist, 白霜/mentor, 墨殿主/villain, 小竹/support)
+    - 7 relationships with Wayne Principles fields (mentor, lover, rival, enemy, companion, confidant relationships)
+    - World settings: 5-level power system (墨道修炼体系) + 6 social rules
+    - 4 locations with atmosphere (青墨峰, 墨渊城, 墨海, 墨殿)
+    - 3 factions (青云宗, 墨殿, 散修联盟) with goals and internal conflicts
+    - 5 timeline events spanning 100 years
+    - 2 story arcs (main 30-chapter arc + sub arc with sections)
+    - 3 foreshadowing items (long/mid/short term payoffs)
+    - 4 hooks (opening, arc-level, chapter hooks)
+  - **Implementation**: `packages/core/src/db/seeds/demo-story.ts` (652 lines)
+    - Exports typed data constants for all 9 Story Bible domains
+    - `seedDemoStory()` function with proper ID mapping and insertion order
+    - Rich console output with emojis and progress indicators
+    - Handles ID substitution for relationships, factions, timeline events
+    - Error handling and database cleanup
+  - **Usage**: `pnpm --filter @inxtone/core seed:demo`
+  - **Purpose**: Complete dataset for UI fine-tuning and feature showcasing
+
+### Decisions Made
+- Writes to `~/.inxtone/data.db` (same database as dev server) for persistent demo data
+- Supports custom path via `DB_PATH` environment variable
+- Character IDs mapped from placeholder (C001, C002) to actual generated IDs
+- Location IDs mapped similarly (L001, L002, etc.)
+- All 9 repositories initialized with proper dependency injection
+- Simplified data structure (removed fields not in Create input types like `arc`, `facets`, `evolution`, `progress`, `hints`)
+
+### Next
+- UI fine-tuning with demo data loaded
+- Visual polish and design refinements
+
+---
+
+## 2026-02-07 (Phase 5: CLI Commands)
+
+### Completed
+- **M2 Phase 5: CLI Bible Commands** — Full CLI interface for browsing Story Bible via terminal
+  - **3 subcommands implemented**:
+    - `inxtone bible list [type]` — List all entities or filter by type (characters, relationships, locations, factions, timeline, arcs, foreshadowing, hooks)
+    - `inxtone bible show <type> <id>` — Show detailed information about a specific entity with formatted output
+    - `inxtone bible search <query>` — Full-text search across characters, locations, and factions
+  - **Rich CLI formatting**:
+    - Colored output with chalk (cyan headers, yellow highlights, gray metadata)
+    - Emoji icons for each entity type (👤 📍 🛡️ ⏱️ 📖 🔮 🪝)
+    - Structured display with proper indentation and spacing
+    - Error handling with helpful error messages
+  - **Implementation details**:
+    - `packages/tui/src/commands/bible.ts`: 524 lines, single-file implementation
+    - Initializes StoryBibleService with all 9 repositories from local `inxtone.db`
+    - Validates entity types and IDs before queries
+    - All async service calls properly awaited
+  - **Integration**:
+    - Updated `cli.tsx` to register bible command group
+    - Added exports to `commands/index.ts`
+    - Builds successfully, all TypeScript checks pass
+  - **Testing**: Manual testing confirmed all commands work correctly with empty databases and error states
+
+### Decisions Made
+- Bible commands operate on local `inxtone.db` in current directory (no remote/server mode)
+- Error messages guide users to valid entity types when invalid type provided
+- Search is case-insensitive and filters across name/significance fields
+- Output formatting uses emojis for visual categorization
+
+### Next
+- M2 Phase 6: Testing & Polish (write automated tests, performance testing, documentation)
+
+---
+
+## 2026-02-07 (Web UI Fixes & Dashboard)
+
+### Completed
+- **Dashboard stats integration** — Dashboard now displays actual character count from database
+- **Character creation cache fix** — Fixed "Character null not found" 404 error after creating characters
+  - Root cause: `closeForm()` only cleared `formMode` but not `selectedId`, causing stale detail queries
+  - Fix: Updated `useStoryBibleStore.closeForm()` to clear both `formMode` and `selectedId`
+  - Dashboard: Added `useCharacters()` hook to display real-time character count instead of hardcoded 0
+
+### Next
+- Continue with M2 Phase 5: CLI Commands (already started)
+
+---
+
+## 2026-02-07 (continued)
+
+### Completed
+- **M2 Phase 4: Web UI Fixes** — Comprehensive code review and bug fixes for Story Bible UI
+  - **Critical fixes (6 items)**:
+    - `CharacterForm.tsx`: Full modal with create/edit modes, all fields (name*, role*, appearance, 3-layer motivation, conflictType, template, voiceSamples)
+    - `RelationshipForm.tsx`: Modal with character selects + Wayne Principles fields (joinReason, independentGoal, disagreeScenarios, leaveScenarios, mcNeeds)
+    - `WorldSettings.tsx`: Inline editing with toggle mode, array editors for levels/rules/constraints, key-value editor for social rules
+    - `useDeleteForeshadowing` hook: Fixed broken delete functionality in ForeshadowingList
+    - Error handling: Added `onError` callbacks with `showError()` helper to all 26 mutations across 9 hook files
+    - 6 lightweight forms created (Location, Faction, Timeline, Arc, Foreshadowing, Hook) and integrated into List components — **completely removed all `window.prompt()` usage**
+  - **High priority fixes (5 items)**:
+    - API client status checks: Added `res.ok` validation before JSON parsing in all 5 API methods (apiGet, apiPost, apiPatch, apiPut, apiDelete)
+    - Query key cache consistency: Added `normalizeFilters()` helper to 4 hooks (useCharacters, useRelationships, useHooks, useForeshadowing) to prevent duplicate cache entries from undefined filter values
+    - Delete mutation invalidation: Fixed 5 delete mutations to use `queryClient.removeQueries()` on detail cache instead of just invalidating list
+    - RelationshipList performance: Memoized character name map with `useMemo` + `useCallback` for O(1) lookups instead of O(n) linear search
+    - Type guards: Added `error instanceof Error` checks for safe error message display
+  - **Medium priority fixes (1 item)**:
+    - CrudTable: Removed redundant row onClick handler, added try/catch error handling to delete operation
+  - **Files modified**: 40+ files (15 created, 25+ modified)
+    - Created 8 form components + 1 utility file
+    - Modified 9 hook files (error handling + cache fixes)
+    - Modified 8 List components (form integration)
+    - Modified 1 API client + 1 CrudTable component
+  - All critical issues resolved, UI fully functional with proper error handling and design system compliance
+
+### Decisions Made
+- All forms use Modal component from design system (no more window.prompt)
+- Error messages use centralized `showError()` helper for consistency
+- Delete mutations remove detail cache to prevent stale data after entity deletion
+- Query keys normalized to prevent cache fragmentation from filter variations
+
+### Next
+- Begin M2 Phase 4 remaining work: StoryBible main page integration, tab navigation, remaining domain UI
+
+---
+
+## 2026-02-07
+
+### Completed
+- **M2 Phase 3: API Layer** — Fastify REST routes for all 9 Story Bible domains
+  - 45 endpoints across 9 route files: characters (7), relationships (5), world (3), locations (5), factions (5), timeline (3), arcs (5), foreshadowing (7), hooks (5)
+  - Error handler middleware: maps `InxtoneError.statusCode` to HTTP responses
+  - Response utilities: `success<T>(data)` and `error(code, message)` helpers
+  - Route factory pattern with DI: `(deps: RouteDeps) => FastifyPluginAsync`
+  - Server bootstrap: DI via `ServerOptions.storyBibleService`, conditional route registration
+  - Interface additions: `getAllRelationships()`, `getAllHooks()` on `IStoryBibleService`
+  - `tsup.config.ts`: added `src/services/index.ts` entry for `@inxtone/core/services` export
+  - `core/src/index.ts`: added `export * from './errors/index.js'` (resolves TD-020)
+  - 76 route integration tests (9 test files), all passing via `fastify.inject()`
+  - API deviations documented in `docs/API_DEVIATIONS.md`
+  - 666 total tests passing across 30 test files (up from 590)
+- **M2 Phase 2: Service Layer** — EventBus + StoryBibleService fully implemented and tested
+  - `EventBus`: pub/sub with metadata injection (UUID + timestamp), sync/async emit, error isolation, onAny/off/removeAllListeners (192 lines)
+  - `StoryBibleService`: 41-method service layer with DI (10 repos + EventBus), input validation, 27 event emission points covering all CRUD operations (720 lines)
+  - Code review: 6 issues found and fixed
+    - Unified `CreateArcInput`/`CreateHookInput` to `services.ts` (single source of truth)
+    - Fixed event shapes in `events.ts` to match runtime emission (added `changes?` fields, Timeline events, Foreshadowing-specific events)
+    - Fixed Hook ID prefix inconsistency (`HK` consistently)
+    - Removed `Parameters<>` workaround in StoryBibleService
+    - Fixed `ForeshadowingRepository.getStats()` SQL returning null instead of 0 (COALESCE fix)
+  - 3 bonus repositories: `ArcRepository` (52 tests), `ForeshadowingRepository` (52 tests), `HookRepository` (47 tests)
+  - Integration tests: EventBus (37 tests), StoryBibleService (61 tests)
+  - 590 total tests passing across 21 test files (up from 341)
+- **M2 Phase 1: Repository Layer** — All 7 repositories implemented with full test coverage
+  - `BaseRepository`: shared utilities (ID generation, JSON parsing, count/exists/delete)
+  - `CharacterRepository`: CRUD + FTS5 search + role filtering + name search (237 lines)
+  - `WorldRepository`: singleton upsert pattern, setPowerSystem/setSocialRules (140 lines)
+  - `RelationshipRepository`: bidirectional tracking, Wayne Principles fields, cascade delete (265 lines)
+  - `LocationRepository`: CRUD + type filtering + name search (188 lines)
+  - `FactionRepository`: CRUD + stance/leader/type/status queries + clearLeader (270 lines)
+  - `TimelineEventRepository`: CRUD + date range + character/location lookups + addCharacter/removeCharacter (246 lines)
+  - 341 tests passing (6 test files, all repos covered)
+- **Input types unified** — Moved `CreateLocationInput`, `CreateFactionInput`, `CreateTimelineEventInput` to `services.ts` as single source of truth; updated `IStoryBibleService` to use named types instead of `Omit<...>`
+- **Bug fixes** — Fixed `firstAppearance` type mismatch (DB TEXT column → number conversion in mapRow), fixed flaky timestamp test
+
+### Decisions Made
+- Input types for all entities live in `services.ts` (single source), shared by repo and service layers
+- TimelineEventRepository added as bonus (not in original Phase 1 spec, needed for Phase 2)
+- Repository layer is synchronous (no async/await); service layer will be async
+
+### Next
+- Begin M2 Phase 4: Web UI (Character, World, Relationship pages)
+
+---
+
 ## 2026-02-06
 
 ### Completed

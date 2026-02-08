@@ -30,6 +30,33 @@ pnpm test
 
 # Build for production
 pnpm build
+
+# Load demo data (optional - showcases all features)
+pnpm --filter @inxtone/core seed:demo
+```
+
+### Demo Data
+
+The project includes a comprehensive demo story **《墨渊记》Ink Abyss Chronicles** (a xianxia cultivation novel) that showcases all Story Bible features:
+
+- 6 characters with full profiles (motivation layers, voice samples, character arcs)
+- 7 relationships with Wayne Principles analysis
+- Complete world settings (5-level power system, social rules)
+- 4 locations, 3 factions, 5 timeline events
+- 2 story arcs with sections, 3 foreshadowing items, 4 hooks
+
+**Usage:**
+```bash
+# Seed demo data (writes to ~/.inxtone/data.db)
+pnpm --filter @inxtone/core seed:demo
+
+# Then explore via CLI
+inxtone bible list
+inxtone bible show character C001
+
+# Or via Web UI
+pnpm dev
+# Navigate to http://localhost:5173/bible
 ```
 
 ## Documentation

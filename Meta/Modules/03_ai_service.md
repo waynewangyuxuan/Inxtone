@@ -1,6 +1,6 @@
 # AIService 模块设计
 
-> AI 调用的核心模块：Provider 抽象、Context 构建、流式输出
+> AI 调用的核心模块：Context 构建、Gemini 调用、流式输出
 
 ---
 
@@ -8,11 +8,14 @@
 
 | 子功能 | 说明 |
 |--------|------|
-| **Provider 抽象** | 统一接口支持多个 AI 提供商 |
-| **Context 构建** | 智能组装上下文，管理 Token 限制 |
-| **Prompt 管理** | 模板化的提示词系统 |
-| **流式输出** | 实时返回生成内容 |
-| **重试与降级** | 错误处理、Provider 切换 |
+| **GeminiProvider** | Gemini 2.5 Pro 调用 (`@google/genai` SDK) |
+| **ContextBuilder** | 基于 Chapter 外键的确定性 context 组装 (核心大脑) |
+| **PromptAssembler** | 模板化的提示词系统 |
+| **流式输出** | SSE 实时返回生成内容 |
+| **错误处理** | 重试、Rate Limit 处理 |
+
+> **MVP 决策**: 只支持 Gemini 2.5 Pro，不做 Provider 抽象和 fallback。
+> 多 Provider 支持 (Claude, OpenAI) 推迟到 M4+。
 
 ---
 
@@ -64,137 +67,210 @@
     ▼ (流式返回)
 ┌─────────────────────────────────────────┐
 │ 3. 前端逐字显示                          │
-│    - 显示生成中动画                      │
+│    - 生成中: 所有 AI 按钮禁用           │
 │    - 逐 chunk 追加到预览区               │
+│    - 流中断 → 保留已收到的部分内容      │
 │    - 显示 Token 使用量                   │
 └─────────────────────────────────────────┘
     │
-    ▼ (生成完成)
+    ▼ (生成完成 或 流中断)
 ┌─────────────────────────────────────────┐
 │ 4. 用户决策                              │
 │    ┌─────────┐ ┌─────────┐ ┌─────────┐ │
-│    │  采纳   │ │ 重新生成 │ │  放弃   │ │
+│    │  采纳   │ │ 重新生成 │ │  拒绝   │ │
 │    └────┬────┘ └────┬────┘ └────┬────┘ │
 │         │           │           │       │
-│    追加到正文   重新调用AI    丢弃结果   │
+│    插入到光标  复用context+   必须填写   │
+│    位置       注入reject     拒绝理由   │
+│    (含半截)   reason重新生成            │
 └─────────────────────────────────────────┘
 ```
 
-### 2.2 Context 构建流程
+### 2.2 ContextBuilder 构建流程 (核心大脑)
+
+> **关键设计变更**: MVP 不使用语义搜索。改为基于 Chapter 实体外键的**确定性 context 组装**。
+> Chapter.characters[], Chapter.locations[], Chapter.foreshadowingHinted[] 等外键提供
+> 精确的、作者意图驱动的 context。语义搜索 (M4) 将作为增强，而非替代。
 
 ```
-输入: 当前章节 + 用户选择的额外 Context
+输入: chapterId + userInstruction
     │
     ▼
 ┌─────────────────────────────────────────┐
 │ 1. 计算可用 Token 预算                   │
 │                                         │
-│    总预算 = model.maxTokens             │
+│    总预算 = 1,000,000 (Gemini 2.5 Pro) │
 │           - reserveForOutput (4000)     │
 │           - reserveForPrompt (2000)     │
 │                                         │
-│    示例: 200000 - 4000 - 2000 = 194000  │
+│    可用: ~994,000 tokens               │
 └─────────────────────────────────────────┘
     │
     ▼
 ┌─────────────────────────────────────────┐
-│ 2. 自动收集相关内容                      │
+│ 2. 分层收集 (Layer-based Assembly)      │
 │                                         │
-│    a. 当前章节内容 (必须)               │
-│    b. 前一章节末尾 500 字 (必须)        │
-│    c. 本章大纲 (必须)                   │
-│    d. 语义搜索相关角色 (Top 3)          │
-│    e. 语义搜索相关设定 (Top 3)          │
-│    f. 用户手动选择的文件                │
-└─────────────────────────────────────────┘
-    │
-    ▼
-┌─────────────────────────────────────────┐
-│ 3. 优先级排序                            │
+│ Layer 1 — Required (必须):             │
+│    a. 当前章节 content                  │
+│    b. 当前章节 outline (goal, scenes)  │
+│    c. 前一章末尾 500 字                 │
 │                                         │
-│    优先级 (高→低):                       │
-│    1. 必须项 (current, previous, outline)│
-│    2. 用户显式选择的内容                 │
-│    3. 语义相关度 > 0.8 的内容           │
-│    4. 语义相关度 0.6-0.8 的内容         │
-│    5. 最近使用过的内容                   │
-└─────────────────────────────────────────┘
-    │
-    ▼
-┌─────────────────────────────────────────┐
-│ 4. 按优先级填充，直到达到预算            │
+│ Layer 2 — FK Expansion (批量查询):     │
+│    d. chapter.characters[]              │
+│       → CharacterRepo.findByIds([...]) │
+│       (name, appearance, motivation,   │
+│        facets, voiceSamples)           │
+│    e. chapter.locations[]               │
+│       → LocationRepo.findByIds([...]) │
+│    f. chapter.arcId → Arc 结构+进度     │
+│    g. Scoped Relationships:            │
+│       → 仅查本章角色间的直接关系        │
+│       → A↔B 有直接关系 → 包含          │
+│       → A↔B 无直接关系但 A→C→B → 包含  │
+│       → 不拉入章外角色 C 的完整档案     │
 │                                         │
-│    used = 0                             │
-│    for item in sorted_items:            │
-│        tokens = count(item)             │
-│        if used + tokens > budget:       │
-│            break                        │
-│        context.add(item)                │
-│        used += tokens                   │
+│ Layer 3 — Plot Awareness (批量查询):   │
+│    h. chapter.foreshadowingHinted[]    │
+│       → ForeshadowingRepo.findByIds() │
+│    i. 当前 Arc 的 active foreshadowing │
+│    j. 上一章的 hook → 确保连贯         │
+│                                         │
+│ Layer 4 — World Rules (世界规则):      │
+│    k. powerSystem.coreRules (总是包含) │
+│    l. socialRules (如果相关)           │
+│                                         │
+│ Layer 5 — User-Selected (用户选择):    │
+│    m. 用户在 UI 中手动添加的内容       │
 └─────────────────────────────────────────┘
     │
     ▼
 ┌─────────────────────────────────────────┐
-│ 5. 格式化输出                            │
+│ 3. 按优先级填充，直到达到预算            │
+│                                         │
+│    优先级: L1 > L2 > L3 > L4 > L5     │
+│    超出预算时从低优先级开始裁剪         │
+└─────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────┐
+│ 4. 格式化输出                            │
 │                                         │
 │    <context>                            │
 │    ## 角色档案                          │
 │    ### 林逸                             │
-│    {角色信息}                           │
+│    {完整档案: 外貌/动机/性格面}         │
+│    ### 陈浩                             │
+│    {完整档案}                           │
 │                                         │
-│    ## 相关设定                          │
-│    {设定内容}                           │
+│    ## 角色关系 (仅本章角色间)            │
+│    林逸 ↔ 陈浩: 宿敌 (始于Ch.3的羞辱)   │
+│                                         │
+│    ## 场景地点                          │
+│    宗门擂台: {描述, 氛围}               │
+│                                         │
+│    ## 剧情提醒                          │
+│    ⚠ 本章需暗示伏笔: 老爷子的真实身份   │
+│    📌 当前 Arc 进度: 73% (天才对决)     │
+│                                         │
+│    ## 世界规则                          │
+│    {力量体系核心规则}                    │
 │                                         │
 │    ## 前文                              │
 │    {前一章末尾}                         │
 │                                         │
 │    ## 本章大纲                          │
-│    {大纲要点}                           │
+│    {goal, scenes, hookEnding}           │
 │    </context>                           │
 └─────────────────────────────────────────┘
 ```
 
-### 2.3 Provider 调用与降级
+### 2.3 Gemini Provider 调用
+
+> **MVP 决策**: 单 Provider (Gemini 2.5 Pro)，不做 fallback chain。
+> Provider 抽象层保留在接口定义中 (services.ts)，但 M3 只实现 GeminiProvider。
 
 ```
 配置:
 ┌─────────────────────────────────────────┐
 │ ai_config:                               │
-│   default_provider: claude               │
-│   fallback_order: [claude, openai]      │
+│   provider: gemini                       │
+│   model: gemini-2.5-pro                 │
+│   sdk: @google/genai                    │
+│   temperature: 0.7                      │
+│   max_output_tokens: 4000               │
+│   max_input_tokens: 1_000_000           │
 │   retry_count: 3                        │
 │   retry_delay: 1000ms                   │
-│                                         │
-│   providers:                            │
-│     claude:                             │
-│       model: claude-sonnet-4-20250514   │
-│       temperature: 0.7                  │
-│     openai:                             │
-│       model: gpt-4o                     │
-│       temperature: 0.7                  │
 └─────────────────────────────────────────┘
 
 调用流程:
     │
     ▼
 ┌─────────────────────────────────────────┐
-│ for provider in fallback_order:         │
-│   │                                     │
-│   │  try:                               │
-│   │    for attempt in 1..retry_count:   │
-│   │      result = provider.call()       │
-│   │      if success: return result      │
-│   │      if RateLimit: wait & retry     │
-│   │      if Timeout: retry              │
-│   │                                     │
-│   │  catch AuthError:                   │
-│   │    → 跳过此 Provider，尝试下一个   │
-│   │                                     │
-│   │  catch NetworkError:                │
-│   │    → 重试，超过次数后尝试下一个    │
-│   │                                     │
-│ throw AllProvidersFailed                │
+│ try:                                    │
+│   for attempt in 1..retry_count:       │
+│     result = gemini.generateContent-   │
+│              Stream(prompt)            │
+│     if success: stream result          │
+│     if RateLimit: wait retry-after     │
+│     if Timeout: retry with backoff     │
+│                                         │
+│ catch AuthError:                        │
+│   → 提示用户检查 API Key              │
+│                                         │
+│ catch ContentFilter:                    │
+│   → 提示内容被过滤，建议修改输入      │
+│                                         │
+│ catch NetworkError:                     │
+│   → 重试，超过次数后提示用户          │
 └─────────────────────────────────────────┘
+```
+
+---
+
+## 2.4 四种生成模式
+
+```
+┌─────────────┬──────────────────────────────────────────┐
+│ Continue    │ 续写接下来的完整内容 (核心功能)           │
+│ (续写)      │ Accept → 插入到编辑器光标位置            │
+├─────────────┼──────────────────────────────────────────┤
+│ Dialogue    │ 只生成一段对话，专注角色交互              │
+│ (对话)      │ Accept → 插入到编辑器光标位置            │
+├─────────────┼──────────────────────────────────────────┤
+│ Describe    │ 只生成一段描写 (场景/人物/动作)          │
+│ (描写)      │ Accept → 插入到编辑器光标位置            │
+├─────────────┼──────────────────────────────────────────┤
+│ Brainstorm  │ 给用户一个续写概念/方向预览              │
+│ (头脑风暴)  │ 满意 → 基于概念执行 Continue 续写        │
+│             │ 不满意 → Reject + 理由 → Regenerate     │
+└─────────────┴──────────────────────────────────────────┘
+```
+
+### 2.5 Reject + Regenerate 流程
+
+```
+[Reject] 点击:
+  │
+  ▼
+弹出: "为什么不满意？" (必填理由)
+  │
+  ▼
+保存 { rejectedContent, rejectReason, generationType }
+  │
+  ▼
+[Regenerate] 点击:
+  │
+  ├─ 默认: 复用当前 context (不重新 build)
+  │
+  ├─ Prompt 注入:
+  │   "上次生成被拒绝。
+  │    原因: {{rejectReason}}
+  │    被拒内容: {{rejectedContent}}
+  │    请避免相同问题。"
+  │
+  └─ MVP: 始终复用当前 context (不做 AI 判断)
+      未来增强 (M4+): AI 自行判断是否需要补充
 ```
 
 ---
@@ -265,15 +341,15 @@ prompts/
        │                   │                   │
        ▼                   ▼                   ▼
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ Context     │    │  Prompt     │    │  Provider   │
-│ Builder     │    │  Templates  │    │  (Claude/   │
-│             │    │             │    │   OpenAI)   │
-└──────┬──────┘    └─────────────┘    └──────┬──────┘
-       │                                      │
-       ▼                                      │
-┌─────────────┐                               │
-│  Search     │                               │
-│  Service    │ ←── 语义搜索相关内容 ─────────┘
+│ Context     │    │  Prompt     │    │  Gemini     │
+│ Builder     │    │  Assembler  │    │  Provider   │
+│ (FK-based)  │    │             │    │  (2.5 Pro)  │
+└──────┬──────┘    └─────────────┘    └─────────────┘
+       │
+       ▼
+┌─────────────┐
+│ StoryBible  │
+│ Service     │ ←── 通过外键查找角色/地点/伏笔
 └─────────────┘
 ```
 
@@ -301,19 +377,23 @@ WebSocket:
 
 ### 5.2 Context 优先级算法
 
-```
-score = (
-    is_required ? 1000 : 0
-  + is_user_selected ? 500 : 0
-  + semantic_relevance * 100    # 0-100
-  + recency_score * 50          # 0-50
-)
+> **MVP 变更**: 不使用 semantic_relevance 评分 (M4 加入)。
+> 改为基于 Layer 的确定性优先级。
 
-recency_score =
-  最近 1 小时内使用: 50
-  最近 1 天内使用: 30
-  最近 1 周内使用: 10
-  其他: 0
+```
+Layer 优先级 (高→低):
+  Layer 1 (Required):      priority = 1000
+  Layer 2 (FK Expansion):  priority = 800
+  Layer 3 (Plot Awareness): priority = 600
+  Layer 4 (World Rules):   priority = 400
+  Layer 5 (User-Selected): priority = 200
+
+Token 预算不足时，从 Layer 5 开始裁剪。
+Layer 1 永远不被裁剪。
+
+未来增强 (M4+):
+  + semantic_relevance * 100  (语义搜索加分)
+  + recency_score * 50        (近期使用加分)
 ```
 
 ### 5.3 Token 计数策略
@@ -343,7 +423,7 @@ recency_score =
 | Network Timeout | 重试 3 次，间隔递增 |
 | Auth Error | 提示用户检查 API Key |
 | Content Filter | 提示内容被过滤，建议修改输入 |
-| All Providers Failed | 提示网络问题，建议稍后重试 |
+| Gemini 不可用 | 提示网络问题，建议稍后重试 |
 
 ---
 
@@ -356,8 +436,7 @@ recency_score =
 | `ai.token.input` | 输入 Token 数 |
 | `ai.token.output` | 输出 Token 数 |
 | `ai.error.rate` | 错误率 |
-| `ai.fallback.count` | 降级次数 |
-
 ---
 
-*Review 重点: Context 优先级算法、降级策略、Token 计数*
+*Review 重点: ContextBuilder 分层组装、批量查询策略、Scoped Relationships、Token 预算管理、SSE 流式输出*
+*MVP 决策: Gemini 2.5 Pro only, FK-based context (no semantic search), Sidebar Preview + Accept, Manual Save*

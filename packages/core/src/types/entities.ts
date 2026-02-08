@@ -375,6 +375,7 @@ export interface Version {
   entityId: string;
   content: unknown; // Full snapshot
   changeSummary?: string;
+  source: 'auto' | 'manual' | 'ai_backup' | 'rollback_backup';
   createdAt: ISODateTime;
 }
 

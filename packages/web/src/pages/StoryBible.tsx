@@ -1,41 +1,81 @@
 /**
- * Story Bible Page
+ * StoryBible Page
  *
- * Manage characters, world, and plot elements
+ * Main page for the Story Bible with tab-based navigation across 9 domains:
+ * Characters, Relationships, World, Locations, Factions, Timeline, Arcs, Foreshadowing, Hooks
  */
 
 import React from 'react';
-import styles from './Page.module.css';
+import { Tabs } from '../components/ui';
+import { useActiveTab, useStoryBibleActions } from '../stores/useStoryBibleStore';
+import type { StoryBibleTab } from '../stores/useStoryBibleStore';
+import styles from './StoryBible.module.css';
+
+// Domain components
+import { CharacterList } from './StoryBible/CharacterList';
+import { RelationshipList } from './StoryBible/RelationshipList';
+import { WorldSettings } from './StoryBible/WorldSettings';
+import { LocationList } from './StoryBible/LocationList';
+import { FactionList } from './StoryBible/FactionList';
+import { TimelineList } from './StoryBible/TimelineList';
+import { ArcList } from './StoryBible/ArcList';
+import { ForeshadowingList } from './StoryBible/ForeshadowingList';
+import { HookList } from './StoryBible/HookList';
+
+// Tab configuration
+const TABS: { id: StoryBibleTab; label: string }[] = [
+  { id: 'characters', label: 'Characters' },
+  { id: 'relationships', label: 'Relationships' },
+  { id: 'world', label: 'World' },
+  { id: 'locations', label: 'Locations' },
+  { id: 'factions', label: 'Factions' },
+  { id: 'timeline', label: 'Timeline' },
+  { id: 'arcs', label: 'Arcs' },
+  { id: 'foreshadowing', label: 'Foreshadowing' },
+  { id: 'hooks', label: 'Hooks' },
+];
+
+// Tab content components mapping
+const TAB_CONTENT: Record<StoryBibleTab, React.ComponentType> = {
+  characters: CharacterList,
+  relationships: RelationshipList,
+  world: WorldSettings,
+  locations: LocationList,
+  factions: FactionList,
+  timeline: TimelineList,
+  arcs: ArcList,
+  foreshadowing: ForeshadowingList,
+  hooks: HookList,
+};
 
 export function StoryBible(): React.ReactElement {
+  const activeTab = useActiveTab();
+  const { setTab } = useStoryBibleActions();
+
+  const handleTabChange = (tabId: string) => {
+    setTab(tabId as StoryBibleTab);
+  };
+
+  const ActiveContent = TAB_CONTENT[activeTab];
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1>Story Bible</h1>
-        <p className={styles.description}>
-          Define your characters, build your world, and plan your plot.
+        <h1 className={styles.title}>Story Bible</h1>
+        <p className={styles.subtitle}>
+          Manage your story&apos;s characters, world, and narrative elements
         </p>
       </header>
 
-      <section className={styles.section}>
-        <div className={styles.emptyState}>
-          <svg
-            className={styles.emptyIcon}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-          <h3 className={styles.emptyTitle}>No story elements yet</h3>
-          <p className={styles.emptyText}>
-            Start by creating characters, defining your world&apos;s rules, or outlining your plot
-            structure. The Story Bible keeps everything organized and consistent.
-          </p>
-        </div>
-      </section>
+      <nav className={styles.tabBar}>
+        <Tabs tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
+      </nav>
+
+      <main className={styles.content}>
+        <ActiveContent />
+      </main>
     </div>
   );
 }
+
+export default StoryBible;

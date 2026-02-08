@@ -321,7 +321,7 @@ describe('IStoryBibleService Contract', () => {
       const faction = await service.createFaction({
         name: 'Test Faction',
         type: 'guild',
-        status: 'active',
+        status: 'in_progress',
         stanceToMC: 'neutral',
       });
 
@@ -341,7 +341,7 @@ describe('IStoryBibleService Contract', () => {
       const created = await service.createFaction({
         name: 'Find Me',
         type: 'military',
-        status: 'active',
+        status: 'in_progress',
         stanceToMC: 'friendly',
       });
       const found = await service.getFaction(created.id);
@@ -354,7 +354,7 @@ describe('IStoryBibleService Contract', () => {
       await service.createFaction({
         name: 'Faction 1',
         type: 'guild',
-        status: 'active',
+        status: 'in_progress',
         stanceToMC: 'neutral',
       });
       await service.createFaction({
@@ -374,7 +374,7 @@ describe('IStoryBibleService Contract', () => {
       const created = await service.createFaction({
         name: 'Original',
         type: 'guild',
-        status: 'active',
+        status: 'in_progress',
         stanceToMC: 'neutral',
       });
       const updated = await service.updateFaction(created.id, {
@@ -395,7 +395,7 @@ describe('IStoryBibleService Contract', () => {
       const created = await service.createFaction({
         name: 'Delete Me',
         type: 'guild',
-        status: 'active',
+        status: 'in_progress',
         stanceToMC: 'neutral',
       });
       await service.deleteFaction(created.id);
@@ -411,7 +411,6 @@ describe('IStoryBibleService Contract', () => {
         name: 'Main Story Arc',
         type: 'main',
         status: 'planned',
-        progress: 0,
       });
 
       expect(arc).toHaveProperty('id');
@@ -431,8 +430,7 @@ describe('IStoryBibleService Contract', () => {
       const created = await service.createArc({
         name: 'Find Me',
         type: 'sub',
-        status: 'active',
-        progress: 50,
+        status: 'in_progress',
       });
       const found = await service.getArc(created.id);
 
@@ -441,8 +439,8 @@ describe('IStoryBibleService Contract', () => {
     });
 
     it('getAllArcs returns array', async () => {
-      await service.createArc({ name: 'Arc 1', type: 'main', status: 'active', progress: 0 });
-      await service.createArc({ name: 'Arc 2', type: 'sub', status: 'planned', progress: 0 });
+      await service.createArc({ name: 'Arc 1', type: 'main', status: 'active' });
+      await service.createArc({ name: 'Arc 2', type: 'sub', status: 'planned' });
 
       const arcs = await service.getAllArcs();
 
@@ -455,7 +453,6 @@ describe('IStoryBibleService Contract', () => {
         name: 'Original',
         type: 'main',
         status: 'planned',
-        progress: 0,
       });
       const updated = await service.updateArc(created.id, { name: 'Updated', progress: 25 });
 
@@ -473,7 +470,6 @@ describe('IStoryBibleService Contract', () => {
         name: 'Delete Me',
         type: 'sub',
         status: 'planned',
-        progress: 0,
       });
       await service.deleteArc(created.id);
 
@@ -559,7 +555,7 @@ describe('IStoryBibleService Contract', () => {
       expect(hook).toHaveProperty('type', 'chapter');
       expect(hook).toHaveProperty('content', 'What lurks in the shadows?');
       expect(hook).toHaveProperty('createdAt');
-      expect(hook.id).toMatch(/^H\d+$/);
+      expect(hook.id).toMatch(/^HK\d+$/);
     });
 
     it('getHooksForChapter returns hooks for specific chapter', async () => {

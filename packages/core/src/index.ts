@@ -8,7 +8,11 @@
 // Types and Interfaces
 export * from './types/index.js';
 
+// Error types (shared across all layers)
+export * from './errors/index.js';
+
 // Note: Database module is server-only, import via '@inxtone/core/db'
+// Note: Services module is server-only, import via '@inxtone/core/services'
 
 // Version
 export const VERSION = '0.1.0';

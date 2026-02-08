@@ -20,10 +20,14 @@ import type {
   PowerSystem,
   Arc,
   ArcId,
+  ArcStatus,
+  ArcSection,
   Foreshadowing,
   ForeshadowingId,
   Hook,
   HookId,
+  HookType,
+  HookStyle,
   Volume,
   VolumeId,
   Chapter,
@@ -123,6 +127,35 @@ export interface CreateRelationshipInput {
   mcNeeds?: string;
 }
 
+/** Options for creating a location */
+export interface CreateLocationInput {
+  name: string;
+  type?: string;
+  significance?: string;
+  atmosphere?: string;
+  details?: Record<string, unknown>;
+}
+
+/** Options for creating a faction */
+export interface CreateFactionInput {
+  name: string;
+  type?: string;
+  status?: string;
+  leaderId?: CharacterId;
+  stanceToMC?: 'friendly' | 'neutral' | 'hostile';
+  goals?: string[];
+  resources?: string[];
+  internalConflict?: string;
+}
+
+/** Options for creating a timeline event */
+export interface CreateTimelineEventInput {
+  eventDate?: string;
+  description: string;
+  relatedCharacters?: CharacterId[];
+  relatedLocations?: LocationId[];
+}
+
 /** Options for creating foreshadowing */
 export interface CreateForeshadowingInput {
   content: string;
@@ -130,6 +163,27 @@ export interface CreateForeshadowingInput {
   plantedText?: string;
   plannedPayoff?: ChapterId;
   term?: 'short' | 'mid' | 'long';
+}
+
+/** Options for creating an arc */
+export interface CreateArcInput {
+  name: string;
+  type: 'main' | 'sub';
+  chapterStart?: ChapterId;
+  chapterEnd?: ChapterId;
+  status?: ArcStatus;
+  sections?: ArcSection[];
+  characterArcs?: Record<CharacterId, string>;
+  mainArcRelation?: string;
+}
+
+/** Options for creating a hook */
+export interface CreateHookInput {
+  type: HookType;
+  content: string;
+  chapterId?: ChapterId;
+  hookType?: HookStyle;
+  strength?: number;
 }
 
 /** Character with relationships loaded */
@@ -154,6 +208,7 @@ export interface IStoryBibleService {
   // === Relationships ===
   createRelationship(input: CreateRelationshipInput): Promise<Relationship>;
   getRelationship(id: number): Promise<Relationship | null>;
+  getAllRelationships(): Promise<Relationship[]>;
   getRelationshipsForCharacter(characterId: CharacterId): Promise<Relationship[]>;
   updateRelationship(id: number, input: Partial<CreateRelationshipInput>): Promise<Relationship>;
   deleteRelationship(id: number): Promise<void>;
@@ -165,29 +220,29 @@ export interface IStoryBibleService {
   setSocialRules(rules: Record<string, string>): Promise<void>;
 
   // === Locations ===
-  createLocation(input: Omit<Location, 'id' | 'createdAt' | 'updatedAt'>): Promise<Location>;
+  createLocation(input: CreateLocationInput): Promise<Location>;
   getLocation(id: LocationId): Promise<Location | null>;
   getAllLocations(): Promise<Location[]>;
-  updateLocation(id: LocationId, input: Partial<Location>): Promise<Location>;
+  updateLocation(id: LocationId, input: Partial<CreateLocationInput>): Promise<Location>;
   deleteLocation(id: LocationId): Promise<void>;
 
   // === Factions ===
-  createFaction(input: Omit<Faction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Faction>;
+  createFaction(input: CreateFactionInput): Promise<Faction>;
   getFaction(id: FactionId): Promise<Faction | null>;
   getAllFactions(): Promise<Faction[]>;
-  updateFaction(id: FactionId, input: Partial<Faction>): Promise<Faction>;
+  updateFaction(id: FactionId, input: Partial<CreateFactionInput>): Promise<Faction>;
   deleteFaction(id: FactionId): Promise<void>;
 
   // === Timeline ===
-  createTimelineEvent(input: Omit<TimelineEvent, 'id' | 'createdAt'>): Promise<TimelineEvent>;
+  createTimelineEvent(input: CreateTimelineEventInput): Promise<TimelineEvent>;
   getTimelineEvents(): Promise<TimelineEvent[]>;
   deleteTimelineEvent(id: number): Promise<void>;
 
   // === Arcs ===
-  createArc(input: Omit<Arc, 'id' | 'createdAt' | 'updatedAt'>): Promise<Arc>;
+  createArc(input: CreateArcInput): Promise<Arc>;
   getArc(id: ArcId): Promise<Arc | null>;
   getAllArcs(): Promise<Arc[]>;
-  updateArc(id: ArcId, input: Partial<Arc>): Promise<Arc>;
+  updateArc(id: ArcId, input: Partial<CreateArcInput> & { progress?: number }): Promise<Arc>;
   deleteArc(id: ArcId): Promise<void>;
 
   // === Foreshadowing ===
@@ -204,10 +259,11 @@ export interface IStoryBibleService {
   abandonForeshadowing(id: ForeshadowingId): Promise<Foreshadowing>;
 
   // === Hooks ===
-  createHook(input: Omit<Hook, 'id' | 'createdAt'>): Promise<Hook>;
+  createHook(input: CreateHookInput): Promise<Hook>;
   getHook(id: HookId): Promise<Hook | null>;
+  getAllHooks(): Promise<Hook[]>;
   getHooksForChapter(chapterId: ChapterId): Promise<Hook[]>;
-  updateHook(id: HookId, input: Partial<Hook>): Promise<Hook>;
+  updateHook(id: HookId, input: Partial<CreateHookInput>): Promise<Hook>;
   deleteHook(id: HookId): Promise<void>;
 }
 

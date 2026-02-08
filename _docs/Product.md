@@ -145,7 +145,7 @@ Where actual content creation happens.
 | Distraction-free Editor | Clean markdown editor with chapter navigation | P0 |
 | AI Sidebar | Contextual AI assistance without leaving editor | P0 |
 | Story Bible Panel | Quick access to characters, settings, plot points | P0 |
-| Word Count & Targets | Daily/chapter/total goals with progress tracking | P1 |
+| Word Count & Targets | Daily/chapter/total goals with progress tracking | P2 (deferred) |
 | Version History | Track changes, compare versions, rollback | P1 |
 | Split View | Reference previous chapters while writing | P2 |
 
@@ -861,7 +861,7 @@ inxtone config show           # Show current config
 | Core Runtime | **Rust** | Fast, single binary, cross-platform, no runtime deps |
 | HTTP Server | Axum | Rust-native, async, lightweight |
 | Frontend | **React + Vite** | Familiar stack, fast HMR, easy to embed |
-| Editor | TipTap / CodeMirror 6 | Markdown-native, extensible |
+| Editor | **@uiw/react-md-editor** (MVP) | Lightweight (~4.6kB), quick integration; upgrade to CodeMirror 6 if needed |
 | Storage | **Markdown files** | Human-readable, git-friendly, portable |
 | Index/Search | **SQLite + FTS5** | Zero-config, fast full-text search |
 | AI | **Gemini API (BYOK)** | User provides key, no server costs |
@@ -872,15 +872,17 @@ inxtone config show           # Show current config
 
 For million-word novels, context management is critical:
 
-1. **Story Bible as Structured Markdown**: Frontmatter YAML + body content, parsed into SQLite
-2. **Chapter Summaries**: Auto-generated and cached, refreshed on edit
+1. **Story Bible in SQLite**: Structured entity data (characters, world, relationships) queryable via foreign keys
+2. **ContextBuilder (FK-based Assembly)**: Chapter metadata drives context — `chapter.characters[]`, `chapter.locations[]`, `chapter.foreshadowingHinted[]` provide deterministic, author-intent-driven context without semantic search
 3. **Full-Text Search**: SQLite FTS5 for instant search across all content
-4. **Smart Context Assembly**:
-   - Current chapter + recent 2 chapters
-   - Relevant characters (mentioned in scene)
-   - Active foreshadowing threads
-   - World rules (always included, compressed)
-5. **Token Budget Management**: User can set max context size in config
+4. **Layered Context Assembly** (MVP):
+   - Layer 1: Current chapter content + outline + previous chapter tail (required)
+   - Layer 2: FK expansion — characters, locations, arcs, relationships (auto-detected)
+   - Layer 3: Plot awareness — foreshadowing hints, arc progress, hooks (auto-detected)
+   - Layer 4: World rules — power system, social rules (always included)
+   - Layer 5: User-selected additional context
+5. **Token Budget Management**: Priority-based truncation from lowest layer; Gemini 2.5 Pro provides 1M token context window
+6. **Semantic Search (M4+)**: Embeddings-based context enhancement, additive to FK-based assembly
 
 ### 7.6 Data Privacy & Security
 
@@ -899,7 +901,7 @@ For million-word novels, context management is critical:
 - [ ] `inxtone init` — Project scaffolding
 - [ ] `inxtone serve` — Local web UI server
 - [ ] Project dashboard (list chapters, word count)
-- [ ] Chapter editor (markdown, auto-save to file)
+- [ ] Chapter editor (markdown, manual save)
 - [ ] Character cards (markdown + frontmatter)
 - [ ] World rules (basic structure)
 - [ ] Plot outliner (2 levels: Arc → Chapter)
