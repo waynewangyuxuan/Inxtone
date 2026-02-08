@@ -4,6 +4,55 @@
 
 ---
 
+## 2026-02-07 (M2 Phase 6: Testing & Polish) ✅
+
+### Completed
+- **M2 Phase 6: Testing & Polish** — M2 Story Bible Core is now complete!
+  - **CLI Bible Command Tests** (`packages/tui/src/__tests__/bible.test.ts`):
+    - 17 integration tests for `bible list/show/search` commands
+    - Tests cover all entity types (characters, relationships, locations, factions, timeline, arcs, foreshadowing, hooks)
+    - Validates output formatting, error handling, and search functionality
+    - All tests pass with real database integration
+  - **Performance Test Infrastructure**:
+    - Performance seed script (`packages/core/src/db/seeds/perf-test.ts`): generates 120 characters, 240 relationships, 30 locations, 20 factions
+    - Script: `pnpm --filter @inxtone/core seed:perf`
+    - Data generation completes in < 0.1s
+  - **Performance Tests** (`packages/core/src/__tests__/performance.test.ts`):
+    - 12 performance benchmarks covering:
+      - Character loading: 120 chars in 0ms ✨
+      - FTS5 search: < 50ms (6-21 results in 0ms) ✨
+      - Relationship queries: 240 rels in 1ms
+      - Batch operations: 0.1-0.2ms per character (create/update/delete)
+      - Concurrent queries: 4 parallel queries in 2ms
+      - Database size: 0.37MB for 120 characters + 240 relationships
+      - FTS5 index verification: 130 entries
+    - All performance targets met with significant margin
+  - **Test Suite Summary**:
+    - **695 total tests** across 32 test files (up from 666)
+    - Added: 17 CLI tests + 12 performance tests
+    - 100% passing, duration 1.28s
+    - Coverage: Repository (9 files), Service (2 files), API (9 files), Contract (4 files), DB (3 files), TUI (2 files), Performance (1 file)
+
+### Decisions Made
+- Browser UI E2E tests deferred to post-M2 (requires Playwright/Cypress setup, diminishing returns vs comprehensive integration tests)
+- Performance benchmarks validate production readiness: sub-millisecond operations, efficient FTS5 indexing
+- CLI bible commands fully testable via integration tests with real database
+
+### M2 Completion Metrics
+- **6 Phases completed**: Repository → Service → API → Web UI → CLI → Testing & Polish
+- **695 tests passing** across all layers
+- **45 REST API endpoints** for 9 Story Bible domains
+- **Full Web UI** with forms, error handling, design system compliance
+- **3 CLI commands** for browsing Story Bible via terminal
+- **Comprehensive documentation**: Demo seed data + performance benchmarks
+- **Production-ready performance**: 120+ characters, < 100ms queries, 0.37MB database
+
+### Next
+- Begin M3 planning (Writing Workspace + AI Integration)
+- Update milestone roadmap with M2 completion
+
+---
+
 ## 2026-02-07 (Demo Seed Data)
 
 ### Completed

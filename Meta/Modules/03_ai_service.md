@@ -269,9 +269,8 @@
   │    被拒内容: {{rejectedContent}}
   │    请避免相同问题。"
   │
-  └─ AI 自行判断是否需要补充 context:
-      引入新角色/地点 → 需要重新 build context
-      语气/表达调整 → 复用当前 context
+  └─ MVP: 始终复用当前 context (不做 AI 判断)
+      未来增强 (M4+): AI 自行判断是否需要补充
 ```
 
 ---
