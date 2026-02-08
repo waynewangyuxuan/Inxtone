@@ -67,6 +67,7 @@ export const useStoryBibleStore = create<StoryBibleState>((set) => ({
   closeForm: () =>
     set({
       formMode: null,
+      selectedId: null, // Clear selection when closing form
     }),
 
   reset: () => set(initialState),

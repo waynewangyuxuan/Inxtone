@@ -5,9 +5,14 @@
  */
 
 import React from 'react';
+import { useCharacters } from '../hooks/useCharacters';
 import styles from './Page.module.css';
 
 export function Dashboard(): React.ReactElement {
+  const { data: characters = [], isLoading } = useCharacters();
+
+  const characterCount = characters.length;
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -27,7 +32,7 @@ export function Dashboard(): React.ReactElement {
 
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
-            <span className={styles.statValue}>0</span>
+            <span className={styles.statValue}>{isLoading ? '...' : characterCount}</span>
             <span className={styles.statLabel}>Characters</span>
           </div>
           <div className={styles.statCard}>
