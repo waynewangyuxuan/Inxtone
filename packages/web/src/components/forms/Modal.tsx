@@ -5,6 +5,7 @@
  */
 
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './Modal.module.css';
 import { Button } from '../ui/Button';
 
@@ -54,7 +55,10 @@ export function Modal({
 
   if (!isOpen) return null;
 
-  return (
+  const portalTarget = typeof document !== 'undefined' ? document.body : null;
+  if (!portalTarget) return null;
+
+  return createPortal(
     <div className={styles.overlay} onClick={loading ? undefined : onClose}>
       <div className={`${styles.modal} ${styles[size]}`} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
@@ -82,6 +86,7 @@ export function Modal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    portalTarget
   );
 }

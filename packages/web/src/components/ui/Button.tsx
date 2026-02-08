@@ -18,6 +18,7 @@ export function Button({
   variant = 'primary',
   size = 'md',
   loading = false,
+  type = 'button',
   disabled,
   className,
   children,
@@ -34,7 +35,7 @@ export function Button({
     .join(' ');
 
   return (
-    <button className={classNames} disabled={disabled ?? loading} {...props}>
+    <button type={type} className={classNames} disabled={disabled ?? loading} {...props}>
       {loading ? <span className={styles.spinner} /> : null}
       <span className={loading ? styles.hiddenText : ''}>{children}</span>
     </button>

@@ -76,6 +76,8 @@ export function CharacterForm(): React.ReactElement | null {
   const selectedId = useSelectedId();
   const { closeForm } = useStoryBibleActions();
 
+  console.log('CharacterForm render:', { formMode, selectedId });
+
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 

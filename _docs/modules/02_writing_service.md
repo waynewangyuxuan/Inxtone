@@ -1,3 +1,5 @@
+> ⚠️ **此文件为旧版副本**。最新版本请参考 `Meta/Modules/02_writing_service.md`。
+
 # WritingService 模块设计
 
 > 管理写作流程：章节编辑、版本控制、写作目标

@@ -82,11 +82,14 @@ export function RelationshipList(): React.ReactElement {
 
   if (!hasRelationships) {
     return (
-      <EmptyState
-        title="No relationships yet"
-        description="Define relationships between your characters to build a rich social network."
-        action={{ label: 'Add Relationship', onClick: handleCreate }}
-      />
+      <>
+        <EmptyState
+          title="No relationships yet"
+          description="Define relationships between your characters to build a rich social network."
+          action={{ label: 'Add Relationship', onClick: handleCreate }}
+        />
+        <RelationshipForm />
+      </>
     );
   }
 

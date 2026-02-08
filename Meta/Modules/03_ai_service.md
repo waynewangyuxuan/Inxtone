@@ -67,19 +67,22 @@
     ▼ (流式返回)
 ┌─────────────────────────────────────────┐
 │ 3. 前端逐字显示                          │
-│    - 显示生成中动画                      │
+│    - 生成中: 所有 AI 按钮禁用           │
 │    - 逐 chunk 追加到预览区               │
+│    - 流中断 → 保留已收到的部分内容      │
 │    - 显示 Token 使用量                   │
 └─────────────────────────────────────────┘
     │
-    ▼ (生成完成)
+    ▼ (生成完成 或 流中断)
 ┌─────────────────────────────────────────┐
 │ 4. 用户决策                              │
 │    ┌─────────┐ ┌─────────┐ ┌─────────┐ │
-│    │  采纳   │ │ 重新生成 │ │  放弃   │ │
+│    │  采纳   │ │ 重新生成 │ │  拒绝   │ │
 │    └────┬────┘ └────┬────┘ └────┬────┘ │
 │         │           │           │       │
-│    追加到正文   重新调用AI    丢弃结果   │
+│    插入到光标  复用context+   必须填写   │
+│    位置       注入reject     拒绝理由   │
+│    (含半截)   reason重新生成            │
 └─────────────────────────────────────────┘
 ```
 
@@ -112,18 +115,23 @@
 │    b. 当前章节 outline (goal, scenes)  │
 │    c. 前一章末尾 500 字                 │
 │                                         │
-│ Layer 2 — FK Expansion (外键展开):     │
-│    d. chapter.characters[] → 完整角色档案│
+│ Layer 2 — FK Expansion (批量查询):     │
+│    d. chapter.characters[]              │
+│       → CharacterRepo.findByIds([...]) │
 │       (name, appearance, motivation,   │
 │        facets, voiceSamples)           │
-│    e. chapter.locations[] → 地点描述    │
+│    e. chapter.locations[]               │
+│       → LocationRepo.findByIds([...]) │
 │    f. chapter.arcId → Arc 结构+进度     │
-│    g. 角色间 relationships              │
-│       (含 Wayne Principles 字段)       │
+│    g. Scoped Relationships:            │
+│       → 仅查本章角色间的直接关系        │
+│       → A↔B 有直接关系 → 包含          │
+│       → A↔B 无直接关系但 A→C→B → 包含  │
+│       → 不拉入章外角色 C 的完整档案     │
 │                                         │
-│ Layer 3 — Plot Awareness (剧情感知):   │
+│ Layer 3 — Plot Awareness (批量查询):   │
 │    h. chapter.foreshadowingHinted[]    │
-│       → 本章应暗示的伏笔内容           │
+│       → ForeshadowingRepo.findByIds() │
 │    i. 当前 Arc 的 active foreshadowing │
 │    j. 上一章的 hook → 确保连贯         │
 │                                         │
@@ -154,7 +162,7 @@
 │    ### 陈浩                             │
 │    {完整档案}                           │
 │                                         │
-│    ## 角色关系                          │
+│    ## 角色关系 (仅本章角色间)            │
 │    林逸 ↔ 陈浩: 宿敌 (始于Ch.3的羞辱)   │
 │                                         │
 │    ## 场景地点                          │
@@ -216,6 +224,54 @@
 │ catch NetworkError:                     │
 │   → 重试，超过次数后提示用户          │
 └─────────────────────────────────────────┘
+```
+
+---
+
+## 2.4 四种生成模式
+
+```
+┌─────────────┬──────────────────────────────────────────┐
+│ Continue    │ 续写接下来的完整内容 (核心功能)           │
+│ (续写)      │ Accept → 插入到编辑器光标位置            │
+├─────────────┼──────────────────────────────────────────┤
+│ Dialogue    │ 只生成一段对话，专注角色交互              │
+│ (对话)      │ Accept → 插入到编辑器光标位置            │
+├─────────────┼──────────────────────────────────────────┤
+│ Describe    │ 只生成一段描写 (场景/人物/动作)          │
+│ (描写)      │ Accept → 插入到编辑器光标位置            │
+├─────────────┼──────────────────────────────────────────┤
+│ Brainstorm  │ 给用户一个续写概念/方向预览              │
+│ (头脑风暴)  │ 满意 → 基于概念执行 Continue 续写        │
+│             │ 不满意 → Reject + 理由 → Regenerate     │
+└─────────────┴──────────────────────────────────────────┘
+```
+
+### 2.5 Reject + Regenerate 流程
+
+```
+[Reject] 点击:
+  │
+  ▼
+弹出: "为什么不满意？" (必填理由)
+  │
+  ▼
+保存 { rejectedContent, rejectReason, generationType }
+  │
+  ▼
+[Regenerate] 点击:
+  │
+  ├─ 默认: 复用当前 context (不重新 build)
+  │
+  ├─ Prompt 注入:
+  │   "上次生成被拒绝。
+  │    原因: {{rejectReason}}
+  │    被拒内容: {{rejectedContent}}
+  │    请避免相同问题。"
+  │
+  └─ AI 自行判断是否需要补充 context:
+      引入新角色/地点 → 需要重新 build context
+      语气/表达调整 → 复用当前 context
 ```
 
 ---
@@ -383,5 +439,5 @@ Layer 1 永远不被裁剪。
 | `ai.error.rate` | 错误率 |
 ---
 
-*Review 重点: ContextBuilder 分层组装、Token 预算管理、SSE 流式输出*
-*MVP 决策: Gemini 2.5 Pro only, FK-based context (no semantic search), Sidebar Preview + Accept*
+*Review 重点: ContextBuilder 分层组装、批量查询策略、Scoped Relationships、Token 预算管理、SSE 流式输出*
+*MVP 决策: Gemini 2.5 Pro only, FK-based context (no semantic search), Sidebar Preview + Accept, Manual Save*

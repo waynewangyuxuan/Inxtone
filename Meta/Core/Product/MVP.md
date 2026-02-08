@@ -16,7 +16,7 @@
 - [ ] `inxtone serve` — HTTP Server + TUI
 - [ ] `inxtone serve --no-tui` — Headless mode
 - [ ] Project dashboard (list chapters, word count)
-- [ ] Chapter editor (markdown, auto-save)
+- [ ] Chapter editor (markdown, manual save)
 - [ ] Character cards (structured data in SQLite)
 - [ ] World rules (basic structure)
 - [ ] Plot outliner (2 levels: Arc → Chapter)

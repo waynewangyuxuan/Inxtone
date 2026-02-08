@@ -99,6 +99,30 @@
 - **影响**: `toJSON()`, `wrapError()`, type guards (`isInxtoneError` 等), `getStatusCode()`, `getErrorCode()` 未直接测试
 - **方案**: 创建 `packages/core/src/errors/__tests__/index.test.ts`，覆盖所有错误类型构造、序列化、辅助函数
 
+### TD-029: Version 实体缺少 source 字段
+- **位置**: `packages/core/src/types/entities.ts` (Line 372-379)
+- **问题**: TypeScript Version 实体缺少 `source` 字段，但数据库 schema 和 VersionCreatedEvent 都有
+- **影响**:
+  - 类型安全缺失，无法检查 source 字段使用
+  - Rollback 逻辑需要区分版本来源（避免 rollback 到 rollback_backup）
+  - 查询时丢失类型提示
+- **方案**:
+  ```typescript
+  export interface Version {
+    id: number;
+    entityType: EntityType;
+    entityId: string;
+    content: unknown;
+    changeSummary?: string;
+    source: 'auto' | 'manual' | 'ai_backup' | 'rollback_backup'; // 添加此行
+    createdAt: ISODateTime;
+  }
+  ```
+- **相关**:
+  - 数据库 Schema (正确): `packages/core/src/db/migrations/001_initial_schema.ts:361`
+  - Event Type (正确): `packages/core/src/types/events.ts:481`
+  - GitHub Issue: #16
+
 ---
 
 ## 🟡 P2 - 应在 M3 前修复
@@ -235,6 +259,11 @@
 - [ ] TD-022: 更新 03_ai_service.md Provider 配置 → Gemini 2.5 Pro only (文档已更新)
 - [ ] TD-023: services.ts IAIService 接口 — MVP 实现只做 GeminiProvider，Provider 抽象保留
 - [ ] TD-024: WritingGoal/WritingSession 相关接口保留但不在 M3 实现
+- [ ] TD-025: Repository 层新增 `findByIds()` 批量查询方法 (Character, Location, Foreshadowing)
+- [ ] TD-026: FK cleanup — 删除实体时清理章节引用 (Service 层 db.transaction)
+- [ ] TD-027: RelationshipRepo 新增 `findByCharacters(ids[])` 批量查询 + Scoped Relationship 过滤
+- [ ] TD-028: 02_writing_service.md — auto-save 移除，改为 manual save (文档已更新)
+- [ ] TD-029: Version 实体添加 source 字段 (Issue #16)
 
 ### M4+ 处理
 - [ ] TD-010 ~ TD-016

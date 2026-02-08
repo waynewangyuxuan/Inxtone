@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import styles from './ConfirmDialog.module.css';
 import { Button } from './Button';
 
@@ -33,7 +34,10 @@ export function ConfirmDialog({
 }: ConfirmDialogProps): React.ReactElement | null {
   if (!isOpen) return null;
 
-  return (
+  const portalTarget = typeof document !== 'undefined' ? document.body : null;
+  if (!portalTarget) return null;
+
+  return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>{title}</h3>
@@ -47,6 +51,7 @@ export function ConfirmDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    portalTarget
   );
 }

@@ -901,7 +901,7 @@ For million-word novels, context management is critical:
 - [ ] `inxtone init` — Project scaffolding
 - [ ] `inxtone serve` — Local web UI server
 - [ ] Project dashboard (list chapters, word count)
-- [ ] Chapter editor (markdown, auto-save to file)
+- [ ] Chapter editor (markdown, manual save)
 - [ ] Character cards (markdown + frontmatter)
 - [ ] World rules (basic structure)
 - [ ] Plot outliner (2 levels: Arc → Chapter)

@@ -59,11 +59,14 @@ export function CharacterList(): React.ReactElement {
 
   if (!characters || characters.length === 0) {
     return (
-      <EmptyState
-        title="No characters yet"
-        description="Create your first character to start building your story's cast."
-        action={{ label: 'Create Character', onClick: handleCreate }}
-      />
+      <>
+        <EmptyState
+          title="No characters yet"
+          description="Create your first character to start building your story's cast."
+          action={{ label: 'Create Character', onClick: handleCreate }}
+        />
+        <CharacterForm />
+      </>
     );
   }
 
