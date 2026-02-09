@@ -1,41 +1,83 @@
 /**
- * Write Page
+ * Write Page — Three-panel chapter editor
  *
- * Chapter editor with AI assistance
+ * Left: Chapter list + Story Bible quick-ref
+ * Center: Markdown editor with toolbar
+ * Right: AI sidebar (collapsible)
  */
 
 import React from 'react';
-import styles from './Page.module.css';
+import { Tabs } from '../components/ui';
+import type { Tab } from '../components/ui';
+import {
+  useSelectedChapterId,
+  useAIPanelOpen,
+  useLeftPanelTab,
+  useEditorActions,
+} from '../stores/useEditorStore';
+import { useChapterWithContent, useSaveContent } from '../hooks';
+import { ChapterListPanel } from './Write/ChapterListPanel';
+import { StoryBiblePanel } from './Write/StoryBiblePanel';
+import { ChapterForm } from './Write/ChapterForm';
+import { EditorPanel } from './Write/EditorPanel';
+import { AISidebar } from './Write/AISidebar';
+import styles from './Write.module.css';
+
+const LEFT_TABS: Tab[] = [
+  { id: 'chapters', label: 'Chapters' },
+  { id: 'bible', label: 'Bible' },
+];
 
 export function Write(): React.ReactElement {
-  return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <h1>Write</h1>
-        <p className={styles.description}>Craft your chapters with AI-powered assistance.</p>
-      </header>
+  const selectedId = useSelectedChapterId();
+  const aiPanelOpen = useAIPanelOpen();
+  const leftPanelTab = useLeftPanelTab();
+  const { setLeftPanelTab } = useEditorActions();
 
-      <section className={styles.section}>
-        <div className={styles.emptyState}>
-          <svg
-            className={styles.emptyIcon}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path d="M12 19l7-7 3 3-7 7-3-3z" />
-            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-            <path d="M2 2l7.586 7.586" />
-            <circle cx="11" cy="11" r="2" />
-          </svg>
-          <h3 className={styles.emptyTitle}>No chapters yet</h3>
-          <p className={styles.emptyText}>
-            Create your first chapter to start writing. The AI will help you maintain consistency
-            with your Story Bible as you write.
-          </p>
+  // For accept: append AI text to chapter content
+  const { data: chapter } = useChapterWithContent(selectedId);
+  const saveMutation = useSaveContent();
+
+  const handleAIAccept = React.useCallback(
+    (text: string) => {
+      if (selectedId == null) return;
+      const currentContent = chapter?.content ?? '';
+      const newContent = currentContent + (currentContent ? '\n\n' : '') + text;
+      saveMutation.mutate({
+        chapterId: selectedId,
+        content: newContent,
+        createVersion: false,
+      });
+    },
+    [selectedId, chapter?.content, saveMutation]
+  );
+
+  return (
+    <div className={styles.writePage}>
+      <div className={styles.leftPanel}>
+        <div className={styles.leftTabs}>
+          <Tabs
+            tabs={LEFT_TABS}
+            activeTab={leftPanelTab}
+            onChange={(id) => setLeftPanelTab(id as 'chapters' | 'bible')}
+          />
         </div>
-      </section>
+        <div className={styles.leftContent}>
+          {leftPanelTab === 'chapters' ? <ChapterListPanel /> : <StoryBiblePanel />}
+        </div>
+      </div>
+
+      <div className={styles.centerPanel}>
+        <EditorPanel />
+      </div>
+
+      {aiPanelOpen && selectedId != null && (
+        <div className={styles.rightPanel}>
+          <AISidebar onAccept={handleAIAccept} />
+        </div>
+      )}
+
+      <ChapterForm />
     </div>
   );
 }

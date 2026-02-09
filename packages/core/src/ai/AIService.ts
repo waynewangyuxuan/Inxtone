@@ -102,7 +102,9 @@ export class AIService implements IAIService {
       chapterId,
       options,
       (context, chapter) => {
-        const formattedContext = this.contextBuilder.formatContext(context.items);
+        // Filter out chapter_content — it's passed separately as current_content (#20)
+        const contextWithoutCurrent = context.items.filter((i) => i.type !== 'chapter_content');
+        const formattedContext = this.contextBuilder.formatContext(contextWithoutCurrent);
         return this.promptAssembler.assemble('continue', {
           context: formattedContext,
           current_content: chapter.content ?? '',
@@ -351,6 +353,17 @@ export class AIService implements IAIService {
                     done: false,
                     value: { type: 'error', error: `Chapter ${chapterId} not found.` },
                   };
+                }
+
+                // Create ai_backup version before generation (#22)
+                if (chapter.content) {
+                  self.deps.writingRepo.createVersion({
+                    entityType: 'chapter',
+                    entityId: String(chapterId),
+                    content: { content: chapter.content, wordCount: chapter.wordCount },
+                    changeSummary: 'AI generation backup',
+                    source: 'ai_backup',
+                  });
                 }
 
                 const context = self.contextBuilder.build(chapterId);

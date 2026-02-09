@@ -4,6 +4,79 @@
 
 ---
 
+## 2026-02-08 (M3 Phase 4: Chapter Editor UI) ✅
+
+### Completed
+- **Three-panel layout** replacing Write page stub
+  - Left panel (280px): Chapters tab + Story Bible tab with arc filter
+  - Center panel (flex): MDEditor with toolbar
+  - Right panel (360px, collapsible): AI sidebar with SSE streaming
+- **Foundation layer** (4 files)
+  - `useChapters.ts`: React Query hooks — chapters (CRUD + filters), volumes, versions, context
+  - `useEditorStore.ts`: Zustand store — selection, dirty tracking, AI state, UI preferences
+  - `aiStream.ts`: SSE streaming utility via `fetch()` + `ReadableStream` (POST endpoints)
+  - Updated `hooks/index.ts` barrel exports
+- **ChapterListPanel**: Arc-filtered chapter list with status badges, word count, delete with confirm
+- **StoryBiblePanel**: Collapsible sections showing chapter FK refs (characters, locations, foreshadowing)
+- **ChapterForm**: Create/edit modal following CharacterForm pattern
+- **EditorPanel**: `@uiw/react-md-editor` with dark gold theme overrides
+  - Ctrl+S / Cmd+S save with version creation
+  - Dirty tracking + `beforeunload` guard
+  - Save indicator with time-ago display
+- **EditorToolbar**: Chapter title (clickable to edit), status badge, word count, save button, AI toggle
+- **AISidebar**: Continue + Brainstorm quick actions, prompt input, streaming response, accept/reject/regenerate
+- **ContextPreview**: Built context items grouped by layer (L1-L5) with token count
+- **StreamingResponse**: Auto-scrolling response area with pulsing loading indicator
+- **RejectReasonModal**: Required reason input on reject, feeds into regenerate
+- **Word count**: CJK chars counted individually, English by whitespace split
+- Build: 0 TS errors, 984 tests pass, full build clean
+
+### New Files (19)
+| File | Purpose |
+|------|---------|
+| `packages/web/src/hooks/useChapters.ts` | React Query hooks for chapters, volumes, versions, context |
+| `packages/web/src/stores/useEditorStore.ts` | Zustand store for editor UI state |
+| `packages/web/src/lib/aiStream.ts` | SSE streaming fetch utility |
+| `packages/web/src/pages/Write.module.css` | Three-panel layout styles |
+| `packages/web/src/pages/Write/ChapterListPanel.tsx` | Chapter list with arc filter |
+| `packages/web/src/pages/Write/ChapterListPanel.module.css` | |
+| `packages/web/src/pages/Write/StoryBiblePanel.tsx` | Chapter FK quick-ref |
+| `packages/web/src/pages/Write/StoryBiblePanel.module.css` | |
+| `packages/web/src/pages/Write/ChapterForm.tsx` | Create/edit chapter modal |
+| `packages/web/src/pages/Write/EditorPanel.tsx` | MDEditor wrapper |
+| `packages/web/src/pages/Write/EditorPanel.module.css` | Dark gold theme overrides |
+| `packages/web/src/pages/Write/EditorToolbar.tsx` | Toolbar with save, word count, AI toggle |
+| `packages/web/src/pages/Write/EditorToolbar.module.css` | |
+| `packages/web/src/pages/Write/AISidebar.tsx` | AI panel orchestrator |
+| `packages/web/src/pages/Write/AISidebar.module.css` | |
+| `packages/web/src/pages/Write/ContextPreview.tsx` | Context items display |
+| `packages/web/src/pages/Write/ContextPreview.module.css` | |
+| `packages/web/src/pages/Write/StreamingResponse.tsx` | Streaming response area |
+| `packages/web/src/pages/Write/StreamingResponse.module.css` | |
+| `packages/web/src/pages/Write/RejectReasonModal.tsx` | Reject reason modal |
+| `packages/web/src/pages/Write/RejectReasonModal.module.css` | |
+
+### Modified Files (3)
+| File | Change |
+|------|--------|
+| `packages/web/package.json` | Added `@uiw/react-md-editor` dependency |
+| `packages/web/src/pages/Write.tsx` | Replaced stub with three-panel orchestrator |
+| `packages/web/src/hooks/index.ts` | Added chapter/volume/version/context hook exports |
+
+### Deferred to Post-Phase 4
+- Dialogue/Describe AI modes (need character selector, location+mood picker UI)
+- Context item toggle on/off (L2-L5 controllable)
+- "Add to AI context" from Story Bible panel
+- Brainstorm → Accept → auto-Continue flow
+- Accept at cursor position (currently appends at end)
+- Chapter drag-and-drop reordering
+- Volume management UI
+
+### Next
+- M3 Phase 5: Plot UI (Arc Outliner, Foreshadowing Tracker)
+
+---
+
 ## 2026-02-08 (M3 Phase 3: Writing API Routes) ✅
 
 ### Completed

@@ -36,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Zod schema validation on all request bodies
   - Server bootstrap: WritingService creation with shared repos + EventBus
   - 39 integration tests, 976 total tests across 41 test files
+- **M3 Phase 4: Chapter Editor UI** — Three-panel writing workspace
+  - Three-panel layout: chapter sidebar (280px), markdown editor (flex), AI sidebar (360px, collapsible)
+  - `@uiw/react-md-editor` with dark gold theme, Ctrl+S save, dirty tracking, word count
+  - Chapter list with arc filter, Story Bible quick-ref panel, create/edit chapter modal
+  - AI sidebar: Continue + Brainstorm with SSE streaming, accept/reject/regenerate flow
+  - Context preview with layer grouping (L1-L5), streaming response with auto-scroll
+  - Zustand store + React Query hooks for state management
+  - 19 new files, 984 tests passing, build clean
 
 ## [0.1.0] - 2026-02-05
 

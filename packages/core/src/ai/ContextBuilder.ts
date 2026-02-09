@@ -425,7 +425,7 @@ export class ContextBuilder {
   /**
    * Get relationships between chapter characters (scoped — only direct relationships).
    */
-  private getScopedRelationships(characterIds: CharacterId[]): Relationship[] {
+  getScopedRelationships(characterIds: CharacterId[]): Relationship[] {
     const relationships: Relationship[] = [];
     const seen = new Set<number>();
 
@@ -455,7 +455,7 @@ export class ContextBuilder {
   /**
    * Format a character entity into a readable context string.
    */
-  private formatCharacter(character: Character): string {
+  formatCharacter(character: Character): string {
     const parts = [`### ${character.name} (${character.role})`];
 
     if (character.appearance) parts.push(`外貌: ${character.appearance}`);
