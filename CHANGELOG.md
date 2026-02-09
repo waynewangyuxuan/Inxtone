@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **M3.5: Hackathon Submission** — Gemini 3 Hackathon deployment readiness
+  - English AI prompts: all 5 templates + context builder labels translated
+  - BYOK API key architecture: per-request `X-Gemini-Key` header, `POST /api/ai/verify-key` endpoint
+  - API Key Dialog: first-visit modal with masked display, verify flow, skip option
+  - Seed Loader: raw SQL seeds (EN + ZH) with full chapters, `GET /api/seed/status`, `POST /load`, `POST /clear`
+  - Welcome Screen: 3-card first-run UX (English Demo / Chinese Demo / Start Empty)
+  - Settings page: functional API key management + seed data controls
+  - Dockerfile: multi-stage build (node:20-slim + pnpm + better-sqlite3)
+  - 1001 tests passing across 42 files
 - **M2: Story Bible Core** — Full Story Bible system with 9 domains
   - Repository layer: 7 repositories (Character, World, Relationship, Location, Faction, TimelineEvent, Arc, Foreshadowing, Hook) with FTS5 search
   - Service layer: StoryBibleService (41 methods) + EventBus (pub/sub with metadata injection)

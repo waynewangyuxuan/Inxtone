@@ -539,6 +539,12 @@ export interface IAIService {
    */
   searchRelevantContext(query: string, maxItems?: number): Promise<ContextItem[]>;
 
+  // === API Key Management ===
+  /**
+   * Update the Gemini API key at runtime (per-request BYOK).
+   */
+  setGeminiApiKey(key: string): void;
+
   // === Provider Management ===
   /**
    * Get available providers

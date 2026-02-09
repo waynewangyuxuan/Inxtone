@@ -14,6 +14,10 @@ export type { Migration, MigrationResult } from './MigrationRunner.js';
 
 export { migrations } from './migrations/index.js';
 
+// Seed utilities
+export { runSeed, clearAllData, isDatabaseEmpty } from './seeds/seedRunner.js';
+export type { SeedLang } from './seeds/seedRunner.js';
+
 // Repositories
 export {
   BaseRepository,

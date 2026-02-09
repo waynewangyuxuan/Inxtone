@@ -20,9 +20,12 @@ export async function* streamAI(
   body: Record<string, unknown>,
   signal?: AbortSignal
 ): AsyncGenerator<AIStreamChunk> {
+  const geminiKey = localStorage.getItem('gemini-api-key');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (geminiKey) headers['X-Gemini-Key'] = geminiKey;
   const init: RequestInit = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   };
   if (signal) init.signal = signal;

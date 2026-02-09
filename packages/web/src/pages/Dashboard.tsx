@@ -9,6 +9,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCharacters, useChapters, useArcs, useForeshadowing, useHooks } from '../hooks';
 import type { Arc, Chapter, Foreshadowing } from '@inxtone/core';
+import { WelcomeScreen } from '../components/WelcomeScreen';
 import styles from './Dashboard.module.css';
 
 /* ── helpers ──────────────────────────────────────────── */
@@ -249,6 +250,13 @@ export function Dashboard(): React.ReactElement {
 
   if (isLoading) {
     return <div className={styles.loading}>Loading dashboard...</div>;
+  }
+
+  // Show WelcomeScreen when database is empty (no characters and no chapters)
+  const isEmpty = characters.length === 0 && chapters.length === 0;
+  const skippedWelcome = sessionStorage.getItem('inxtone-skipped-welcome');
+  if (isEmpty && !skippedWelcome) {
+    return <WelcomeScreen />;
   }
 
   return (

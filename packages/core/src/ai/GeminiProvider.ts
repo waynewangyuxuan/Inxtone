@@ -36,11 +36,10 @@ const DEFAULT_OPTIONS: Required<GeminiProviderOptions> = {
 export class GeminiProvider {
   private client: GoogleGenAI | null = null;
   private readonly options: Required<GeminiProviderOptions>;
+  private currentApiKey: string | undefined;
 
-  constructor(
-    private readonly apiKey: string | undefined,
-    options?: GeminiProviderOptions
-  ) {
+  constructor(apiKey: string | undefined, options?: GeminiProviderOptions) {
+    this.currentApiKey = apiKey;
     this.options = { ...DEFAULT_OPTIONS, ...options };
   }
 
@@ -48,7 +47,18 @@ export class GeminiProvider {
    * Check if the provider is configured (API key is set).
    */
   isConfigured(): boolean {
-    return !!this.apiKey;
+    return !!this.currentApiKey;
+  }
+
+  /**
+   * Update the API key at runtime (e.g., from per-request header).
+   * Clears the cached client so a new one is created with the new key.
+   */
+  updateApiKey(key: string): void {
+    if (key !== this.currentApiKey) {
+      this.currentApiKey = key;
+      this.client = null;
+    }
   }
 
   /**
@@ -121,6 +131,25 @@ export class GeminiProvider {
     return countTokens(text);
   }
 
+  /**
+   * Verify an API key by making a lightweight Gemini call.
+   * Returns { valid: true } on success or { valid: false, error: string } on failure.
+   */
+  static async verifyApiKey(apiKey: string): Promise<{ valid: boolean; error?: string }> {
+    try {
+      const client = new GoogleGenAI({ apiKey });
+      await client.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: 'Hi',
+        config: { maxOutputTokens: 5 },
+      });
+      return { valid: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      return { valid: false, error: msg };
+    }
+  }
+
   // ===================================
   // Private Helpers
   // ===================================
@@ -129,7 +158,7 @@ export class GeminiProvider {
    * Lazily initialize the GoogleGenAI client.
    */
   private getClient(): GoogleGenAI {
-    this.client ??= new GoogleGenAI({ apiKey: this.apiKey! });
+    this.client ??= new GoogleGenAI({ apiKey: this.currentApiKey! });
     return this.client;
   }
 

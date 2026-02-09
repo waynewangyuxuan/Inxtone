@@ -124,7 +124,7 @@ describe('ChapterContextBuilder', () => {
         (i) => i.type === 'chapter_prev_tail' && i.id === `prev-${ch1.id}`
       );
       expect(prevItems.length).toBe(1);
-      expect(prevItems[0].content).toContain('[前一章末尾]');
+      expect(prevItems[0].content).toContain('[Previous chapter ending]');
       // Should be truncated to ~500 chars
       expect(prevItems[0].content.length).toBeLessThan(600);
     });
@@ -326,7 +326,7 @@ describe('ChapterContextBuilder', () => {
       const result = builder.build(ch2.id);
       const hookItems = result.items.filter((i) => i.type === 'hook' && i.content.includes('窥视'));
       expect(hookItems.length).toBe(1);
-      expect(hookItems[0].content).toContain('上章钩子');
+      expect(hookItems[0].content).toContain('Previous chapter hook');
     });
   });
 
@@ -487,10 +487,10 @@ describe('ChapterContextBuilder', () => {
       const result = builder.formatContext(items);
       expect(result).toContain('<context>');
       expect(result).toContain('</context>');
-      expect(result).toContain('## 角色档案');
-      expect(result).toContain('## 世界规则');
-      expect(result).toContain('## 前文');
-      expect(result).toContain('## 本章大纲');
+      expect(result).toContain('## Character Profiles');
+      expect(result).toContain('## World Rules');
+      expect(result).toContain('## Previous Content');
+      expect(result).toContain('## Chapter Outline');
     });
 
     it('omits empty sections', () => {
@@ -499,9 +499,9 @@ describe('ChapterContextBuilder', () => {
       ];
 
       const result = builder.formatContext(items);
-      expect(result).toContain('## 前文');
-      expect(result).not.toContain('## 角色档案');
-      expect(result).not.toContain('## 世界规则');
+      expect(result).toContain('## Previous Content');
+      expect(result).not.toContain('## Character Profiles');
+      expect(result).not.toContain('## World Rules');
     });
   });
 

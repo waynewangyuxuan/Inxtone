@@ -87,6 +87,14 @@ export class AIService implements IAIService {
     this.promptAssembler = new PromptAssembler();
   }
 
+  /**
+   * Update the Gemini API key at runtime.
+   * Used by routes to inject per-request API keys from client headers.
+   */
+  setGeminiApiKey(key: string): void {
+    this.provider.updateApiKey(key);
+  }
+
   // ===================================
   // Generation Methods
   // ===================================
@@ -153,9 +161,9 @@ export class AIService implements IAIService {
         const source = characters.find((c) => c.id === r.sourceId);
         const target = characters.find((c) => c.id === r.targetId);
         const parts = [`${source?.name ?? r.sourceId} → ${target?.name ?? r.targetId}: ${r.type}`];
-        if (r.joinReason) parts.push(`  结缘原因: ${r.joinReason}`);
-        if (r.independentGoal) parts.push(`  独立目标: ${r.independentGoal}`);
-        return `[关系] ${parts.join('\n')}`;
+        if (r.joinReason) parts.push(`  Bond reason: ${r.joinReason}`);
+        if (r.independentGoal) parts.push(`  Independent goal: ${r.independentGoal}`);
+        return `[Relationship] ${parts.join('\n')}`;
       })
       .join('\n');
 
@@ -225,11 +233,11 @@ export class AIService implements IAIService {
       const contextParts: string[] = [];
       const world = this.deps.worldRepo.get();
       if (world?.powerSystem?.name) {
-        contextParts.push(`力量体系: ${world.powerSystem.name}`);
+        contextParts.push(`Power System: ${world.powerSystem.name}`);
       }
       if (world?.socialRules && Object.keys(world.socialRules).length > 0) {
         contextParts.push(
-          '社会规则: ' +
+          'Social Rules: ' +
             Object.entries(world.socialRules)
               .map(([k, v]) => `${k}: ${v}`)
               .join(', ')

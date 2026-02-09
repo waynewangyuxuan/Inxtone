@@ -12,6 +12,7 @@
 
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 import type { AIStreamChunk, AIGenerationOptions, ContextItem } from '@inxtone/core';
+import { GeminiProvider } from '@inxtone/core/services';
 import type { RouteDeps } from './index.js';
 import { success } from '../utils/response.js';
 import { z } from 'zod';
@@ -141,6 +142,23 @@ async function streamSSE(reply: FastifyReply, chunks: AsyncIterable<AIStreamChun
   }
 }
 
+const verifyKeySchema = z.object({
+  apiKey: z.string().min(1),
+});
+
+/**
+ * Inject per-request API key from X-Gemini-Key header into the AIService.
+ */
+function injectApiKey(
+  request: { headers: Record<string, unknown> },
+  aiService: { setGeminiApiKey(key: string): void }
+): void {
+  const apiKey = request.headers['x-gemini-key'];
+  if (typeof apiKey === 'string' && apiKey.length > 0) {
+    aiService.setGeminiApiKey(apiKey);
+  }
+}
+
 /**
  * AI routes factory.
  *
@@ -151,6 +169,18 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
   // eslint-disable-next-line @typescript-eslint/require-await
   return async (fastify) => {
     const { aiService } = deps;
+
+    /**
+     * POST /verify-key - Validate a Gemini API key with a lightweight call
+     */
+    fastify.post('/verify-key', async (request, reply) => {
+      const body = validateBody(request.body, verifyKeySchema, reply);
+      if (!body) return reply;
+      const result = await GeminiProvider.verifyApiKey(body.apiKey);
+      return success(result);
+    });
+
+    // Guard: remaining routes require aiService
     if (!aiService) return;
 
     /**
@@ -159,6 +189,7 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
     fastify.post('/continue', async (request, reply) => {
       const body = validateBody(request.body, continueSchema, reply);
       if (!body) return reply;
+      injectApiKey(request, aiService);
       const stream = aiService.continueScene(
         body.chapterId,
         body.options as AIGenerationOptions | undefined,
@@ -174,6 +205,7 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
     fastify.post('/dialogue', async (request, reply) => {
       const body = validateBody(request.body, dialogueSchema, reply);
       if (!body) return reply;
+      injectApiKey(request, aiService);
       const stream = aiService.generateDialogue(
         body.characterIds,
         body.context,
@@ -191,6 +223,7 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
     fastify.post('/describe', async (request, reply) => {
       const body = validateBody(request.body, describeSchema, reply);
       if (!body) return reply;
+      injectApiKey(request, aiService);
       const stream = aiService.describeScene(
         body.locationId,
         body.mood,
@@ -208,6 +241,7 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
     fastify.post('/brainstorm', async (request, reply) => {
       const body = validateBody(request.body, brainstormSchema, reply);
       if (!body) return reply;
+      injectApiKey(request, aiService);
       const stream = aiService.brainstorm(
         body.topic,
         body.options as AIGenerationOptions | undefined,
@@ -224,6 +258,7 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
     fastify.post('/ask', async (request, reply) => {
       const body = validateBody(request.body, askSchema, reply);
       if (!body) return reply;
+      injectApiKey(request, aiService);
       const stream = aiService.askStoryBible(
         body.question,
         body.options as AIGenerationOptions | undefined
@@ -238,6 +273,7 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
     fastify.post('/complete', async (request, reply) => {
       const body = validateBody(request.body, completeSchema, reply);
       if (!body) return reply;
+      injectApiKey(request, aiService);
       const stream = aiService.complete(
         body.prompt,
         body.context as ContextItem[] | undefined,

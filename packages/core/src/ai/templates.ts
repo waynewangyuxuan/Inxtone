@@ -7,32 +7,32 @@
 
 export const CONTINUE_TEMPLATE = `---
 name: continue
-description: 续写当前章节内容
+description: Continue the current chapter content
 variables:
   - context
   - current_content
   - user_instruction
 ---
 
-你是一位网文写作助手。请基于以下设定和上下文续写故事内容。
+You are a fiction writing assistant. Based on the following story bible and context, continue the story.
 
 {{context}}
 
-## 当前内容
+## Current Content
 {{current_content}}
 
 {{user_instruction}}
 
-请续写接下来的内容。要求:
-- 保持角色性格一致
-- 自然衔接，不要重复已有内容
-- 保持文风统一
+Continue writing from where the text ends. Requirements:
+- Maintain consistent character personalities
+- Transition naturally, do not repeat existing content
+- Maintain consistent writing style
 
-直接输出续写内容，无需解释。`;
+Output the continuation directly, without explanation.`;
 
 export const DIALOGUE_TEMPLATE = `---
 name: dialogue
-description: 生成角色对话
+description: Generate character dialogue
 variables:
   - context
   - characters
@@ -40,28 +40,28 @@ variables:
   - user_instruction
 ---
 
-你是一位网文写作助手，擅长角色对话创作。
+You are a fiction writing assistant specializing in character dialogue.
 
 {{context}}
 
-## 参与对话的角色
+## Characters in the Dialogue
 {{characters}}
 
-## 场景
+## Scene
 {{scene_description}}
 
 {{user_instruction}}
 
-请生成一段自然的角色对话。要求:
-- 每个角色的语气和用词要符合其性格
-- 对话要推动情节发展
-- 包含适当的动作和表情描写
+Generate a natural dialogue between the characters. Requirements:
+- Each character's tone and word choice must match their personality
+- The dialogue should advance the plot
+- Include appropriate actions and expressions
 
-直接输出对话内容，无需解释。`;
+Output the dialogue directly, without explanation.`;
 
 export const DESCRIBE_TEMPLATE = `---
 name: describe
-description: 生成场景描写
+description: Generate scene description
 variables:
   - context
   - location
@@ -69,63 +69,63 @@ variables:
   - user_instruction
 ---
 
-你是一位网文写作助手，擅长场景氛围描写。
+You are a fiction writing assistant specializing in scene and atmosphere description.
 
 {{context}}
 
-## 场景地点
+## Location
 {{location}}
 
-## 氛围基调
+## Mood
 {{mood}}
 
 {{user_instruction}}
 
-请生成一段场景描写。要求:
-- 运用多种感官描写（视觉、听觉、触觉等）
-- 与角色情绪和剧情氛围契合
-- 文字优美但不过度堆砌
+Generate a scene description. Requirements:
+- Use multiple sensory details (visual, auditory, tactile, etc.)
+- Align with character emotions and narrative atmosphere
+- Write beautifully but without excessive embellishment
 
-直接输出描写内容，无需解释。`;
+Output the description directly, without explanation.`;
 
 export const BRAINSTORM_TEMPLATE = `---
 name: brainstorm
-description: 头脑风暴续写方向
+description: Brainstorm plot directions
 variables:
   - context
   - topic
   - user_instruction
 ---
 
-你是一位网文写作顾问，请基于当前故事状态进行头脑风暴。
+You are a fiction writing consultant. Brainstorm based on the current story state.
 
 {{context}}
 
-## 主题
+## Topic
 {{topic}}
 
 {{user_instruction}}
 
-请提供 3-5 个续写方向或创意点子。每个方向包含:
-1. 简短标题
-2. 核心概念（2-3句话）
-3. 与当前剧情的衔接点
+Provide 3-5 possible directions or creative ideas. Each direction should include:
+1. A short title
+2. Core concept (2-3 sentences)
+3. How it connects to the current plot
 
-以清晰的格式列出各个方向。`;
+List each direction in a clear format.`;
 
 export const ASK_BIBLE_TEMPLATE = `---
 name: ask_bible
-description: Story Bible 问答
+description: Story Bible Q&A
 variables:
   - context
   - question
 ---
 
-你是一位故事设定顾问。请基于以下故事设定资料回答问题。
+You are a story setting consultant. Answer questions based on the following story bible.
 
 {{context}}
 
-## 问题
+## Question
 {{question}}
 
-请基于提供的设定资料回答。如果资料中没有相关信息，请明确说明。`;
+Answer based on the provided story materials. If the information is not available, clearly state so.`;

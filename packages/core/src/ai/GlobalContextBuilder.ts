@@ -38,8 +38,8 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       const charContent = characters
         .map((c) => {
           const parts = [`- ${c.name} (${c.role})`];
-          if (c.motivation?.surface) parts.push(`  动机: ${c.motivation.surface}`);
-          if (c.facets?.public) parts.push(`  性格: ${c.facets.public}`);
+          if (c.motivation?.surface) parts.push(`  Motivation: ${c.motivation.surface}`);
+          if (c.facets?.public) parts.push(`  Personality: ${c.facets.public}`);
           return parts.join('\n');
         })
         .join('\n');
@@ -47,7 +47,7 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'character',
         id: 'global-characters',
-        content: '## 角色\n' + charContent,
+        content: '## Characters\n' + charContent,
         priority: L2_PRIORITY,
       });
     }
@@ -67,7 +67,7 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'relationship',
         id: 'global-relationships',
-        content: '## 关系\n' + relContent,
+        content: '## Relationships\n' + relContent,
         priority: L2_PRIORITY,
       });
     }
@@ -78,7 +78,8 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'arc',
         id: 'global-arcs',
-        content: '## 故事弧\n' + arcs.map((a) => `- ${a.name} (${a.type}, ${a.status})`).join('\n'),
+        content:
+          '## Story Arcs\n' + arcs.map((a) => `- ${a.name} (${a.type}, ${a.status})`).join('\n'),
         priority: L2_PRIORITY,
       });
     }
@@ -90,7 +91,7 @@ export class GlobalContextBuilder extends BaseContextBuilder {
         type: 'location',
         id: 'global-locations',
         content:
-          '## 地点\n' +
+          '## Locations\n' +
           locations.map((l) => `- ${l.name}${l.type ? ` (${l.type})` : ''}`).join('\n'),
         priority: L2_PRIORITY,
       });
@@ -102,7 +103,9 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'foreshadowing',
         id: 'global-foreshadowing',
-        content: '## 伏笔\n' + foreshadowing.map((f) => `- ${f.content} (${f.status})`).join('\n'),
+        content:
+          '## Foreshadowing\n' +
+          foreshadowing.map((f) => `- ${f.content} (${f.status})`).join('\n'),
         priority: L3_PRIORITY,
       });
     }
@@ -110,9 +113,9 @@ export class GlobalContextBuilder extends BaseContextBuilder {
     // World: power system + social rules
     const world = this.deps.worldRepo.get();
     if (world?.powerSystem) {
-      const rulesParts = [`## 力量体系: ${world.powerSystem.name}`];
+      const rulesParts = [`## Power System: ${world.powerSystem.name}`];
       if (world.powerSystem.coreRules?.length) {
-        rulesParts.push(`核心规则: ${world.powerSystem.coreRules.join(', ')}`);
+        rulesParts.push(`Core Rules: ${world.powerSystem.coreRules.join(', ')}`);
       }
       items.push({
         type: 'power_system',
@@ -126,7 +129,7 @@ export class GlobalContextBuilder extends BaseContextBuilder {
         type: 'social_rules',
         id: 'global-social-rules',
         content:
-          '## 社会规则\n' +
+          '## Social Rules\n' +
           Object.entries(world.socialRules)
             .map(([k, v]) => `- ${k}: ${v}`)
             .join('\n'),
@@ -151,7 +154,7 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'character',
         id: 'summary-characters',
-        content: '角色: ' + characters.map((c) => `${c.name}(${c.role})`).join(', '),
+        content: 'Characters: ' + characters.map((c) => `${c.name}(${c.role})`).join(', '),
         priority: L2_PRIORITY,
       });
     }
@@ -162,7 +165,7 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'arc',
         id: 'summary-arcs',
-        content: '故事弧: ' + arcs.map((a) => `${a.name}(${a.status})`).join(', '),
+        content: 'Story Arcs: ' + arcs.map((a) => `${a.name}(${a.status})`).join(', '),
         priority: L2_PRIORITY,
       });
     }
@@ -173,7 +176,7 @@ export class GlobalContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'foreshadowing',
         id: 'summary-foreshadowing',
-        content: '活跃伏笔: ' + activeForeshadowing.map((f) => f.content).join('; '),
+        content: 'Active Foreshadowing: ' + activeForeshadowing.map((f) => f.content).join('; '),
         priority: L3_PRIORITY,
       });
     }

@@ -7,6 +7,7 @@
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import type { IStoryBibleService, IAIService, IWritingService } from '@inxtone/core';
+import type { Database } from '@inxtone/core/db';
 
 import { characterRoutes } from './characters.js';
 import { relationshipRoutes } from './relationships.js';
@@ -19,6 +20,7 @@ import { foreshadowingRoutes } from './foreshadowing.js';
 import { hookRoutes } from './hooks.js';
 import { aiRoutes } from './ai.js';
 import { volumeRoutes, chapterRoutes, versionRoutes, statsRoutes } from './writing.js';
+import { seedRoutes } from './seed.js';
 
 /**
  * Dependencies required by route handlers.
@@ -27,6 +29,7 @@ export interface RouteDeps {
   storyBibleService: IStoryBibleService;
   aiService?: IAIService;
   writingService?: IWritingService;
+  db?: Database;
 }
 
 /**
@@ -58,6 +61,11 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
     await fastify.register(chapterRoutes(deps), { prefix: '/api/chapters' });
     await fastify.register(versionRoutes(deps), { prefix: '/api/versions' });
     await fastify.register(statsRoutes(deps), { prefix: '/api/stats' });
+  }
+
+  // Seed routes (optional - only registered if db is provided)
+  if (deps.db) {
+    await fastify.register(seedRoutes({ db: deps.db }), { prefix: '/api/seed' });
   }
 }
 

@@ -4,6 +4,58 @@
 
 ---
 
+## 2026-02-09 (M3.5: Hackathon Submission) ✅
+
+### Completed
+- **Phase 1: English AI Prompts** — Translated all 5 prompt templates and context builder labels (templates.ts, BaseContextBuilder, ChapterContextBuilder, GlobalContextBuilder, AIService relationship labels). Updated test assertions.
+- **Phase 2: Per-Request API Key (BYOK)** — Client sends `X-Gemini-Key` header from localStorage. GeminiProvider creates per-call GoogleGenAI instance. Added `POST /api/ai/verify-key` endpoint. AIService always registered (503 if no key).
+- **Phase 3: API Key Dialog** — Zustand store (`useApiKeyStore`), modal with masked key display, verify flow, skip option. Shows on first visit when no key in localStorage.
+- **Phase 4: Seed Loader** — Raw SQL execution approach (not service-based). SQL seed files exported as TS string constants (`sql-en.ts`, `sql-zh.ts`), bundled by tsup. Seeds include full Story Bible + 3 chapters with prose content per language. Endpoints: `GET /api/seed/status`, `POST /api/seed/load`, `POST /api/seed/clear`.
+- **Phase 5: Welcome Screen & Settings** — WelcomeScreen with 3 cards (English Demo / Chinese Demo / Start Empty) shown when DB is empty. Settings page with API key management and seed data controls.
+- **Phase 6: Deployment** — Multi-stage Dockerfile (node:20-slim + pnpm + better-sqlite3 native build). `.dockerignore` configured.
+- **Phase 7: Submission Materials** — Updated DEVPOST_WRITEUP.md and HACKATHON_VIDEO_SCRIPT.md.
+
+### Bug Fixes
+- Fixed `clearAllData()` referencing non-existent `chapter_versions` table → corrected to `versions`
+- Replaced service-based seeding (missing chapters/volumes) with raw SQL approach (complete data)
+
+### New Files (10)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/db/seeds/sql-en.ts` | English seed SQL as TS string export |
+| `packages/core/src/db/seeds/sql-zh.ts` | Chinese seed SQL as TS string export |
+| `packages/core/src/db/seeds/seedRunner.ts` | Seed runner: runSeed, clearAllData, isDatabaseEmpty |
+| `packages/server/src/routes/seed.ts` | Seed API routes (status/load/clear) |
+| `packages/web/src/stores/useApiKeyStore.ts` | Zustand store for API key state |
+| `packages/web/src/components/ApiKeyDialog.tsx` | API key entry/verification modal |
+| `packages/web/src/components/ApiKeyDialog.module.css` | Dialog styles |
+| `packages/web/src/components/WelcomeScreen.tsx` | First-run welcome with demo cards |
+| `packages/web/src/components/WelcomeScreen.module.css` | Welcome screen styles |
+| `Dockerfile` | Multi-stage Docker build |
+
+### Modified Files (12)
+| File | Change |
+|------|--------|
+| `packages/core/src/ai/templates.ts` | English prompt templates |
+| `packages/core/src/ai/BaseContextBuilder.ts` | English section headers |
+| `packages/core/src/ai/ChapterContextBuilder.ts` | English context labels |
+| `packages/core/src/ai/GlobalContextBuilder.ts` | English context labels |
+| `packages/core/src/ai/AIService.ts` | English labels + `setGeminiApiKey()` |
+| `packages/core/src/ai/GeminiProvider.ts` | Per-call `apiKey` support |
+| `packages/core/src/types/services.ts` | `setGeminiApiKey` on IAIService |
+| `packages/server/src/index.ts` | BYOK startup, db in deps |
+| `packages/server/src/routes/ai.ts` | `X-Gemini-Key` extraction, verify endpoint |
+| `packages/web/src/App.tsx` | ApiKeyDialog + key loading |
+| `packages/web/src/pages/Dashboard.tsx` | WelcomeScreen when empty |
+| `packages/web/src/pages/Settings.tsx` | Functional key + seed management |
+
+### Stats
+- Tests: **1001 passed** (42 files)
+- Build: clean (0 TS errors)
+- Seed data: EN (6 chars, 3 chapters, 1 volume) + ZH (6 chars, 3 chapters, 1 volume)
+
+---
+
 ## 2026-02-08 (M3 Phase 5: Plot UI) ✅
 
 ### Completed

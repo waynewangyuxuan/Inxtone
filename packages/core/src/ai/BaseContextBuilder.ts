@@ -71,27 +71,27 @@ export abstract class BaseContextBuilder {
     const customItems = items.filter((i) => i.type === 'custom');
 
     if (chapterItems.length > 0) {
-      sections.push('## 前文\n' + chapterItems.map((c) => c.content).join('\n\n'));
+      sections.push('## Previous Content\n' + chapterItems.map((c) => c.content).join('\n\n'));
     }
 
     if (outlineItems.length > 0) {
-      sections.push('## 本章大纲\n' + outlineItems.map((o) => o.content).join('\n\n'));
+      sections.push('## Chapter Outline\n' + outlineItems.map((o) => o.content).join('\n\n'));
     }
 
     if (charItems.length > 0) {
-      sections.push('## 角色档案\n' + charItems.map((c) => c.content).join('\n\n'));
+      sections.push('## Character Profiles\n' + charItems.map((c) => c.content).join('\n\n'));
     }
 
     if (worldItems.length > 0) {
-      sections.push('## 世界规则\n' + worldItems.map((w) => w.content).join('\n\n'));
+      sections.push('## World Rules\n' + worldItems.map((w) => w.content).join('\n\n'));
     }
 
     if (plotItems.length > 0) {
-      sections.push('## 剧情线索\n' + plotItems.map((p) => p.content).join('\n\n'));
+      sections.push('## Plot Threads\n' + plotItems.map((p) => p.content).join('\n\n'));
     }
 
     if (customItems.length > 0) {
-      sections.push('## 补充信息\n' + customItems.map((c) => c.content).join('\n\n'));
+      sections.push('## Additional Information\n' + customItems.map((c) => c.content).join('\n\n'));
     }
 
     return '<context>\n' + sections.join('\n\n') + '\n</context>';
@@ -103,28 +103,28 @@ export abstract class BaseContextBuilder {
   formatCharacter(character: Character): string {
     const parts = [`### ${character.name} (${character.role})`];
 
-    if (character.appearance) parts.push(`外貌: ${character.appearance}`);
+    if (character.appearance) parts.push(`Appearance: ${character.appearance}`);
 
     if (character.motivation) {
-      const motParts = [`动机:`];
-      motParts.push(`  表面: ${character.motivation.surface}`);
-      if (character.motivation.hidden) motParts.push(`  隐藏: ${character.motivation.hidden}`);
-      if (character.motivation.core) motParts.push(`  核心: ${character.motivation.core}`);
+      const motParts = [`Motivation:`];
+      motParts.push(`  Surface: ${character.motivation.surface}`);
+      if (character.motivation.hidden) motParts.push(`  Hidden: ${character.motivation.hidden}`);
+      if (character.motivation.core) motParts.push(`  Core: ${character.motivation.core}`);
       parts.push(motParts.join('\n'));
     }
 
     if (character.facets) {
-      const facetParts = [`性格面:`];
-      facetParts.push(`  公开: ${character.facets.public}`);
-      if (character.facets.private) facetParts.push(`  私下: ${character.facets.private}`);
-      if (character.facets.hidden) facetParts.push(`  隐藏: ${character.facets.hidden}`);
+      const facetParts = [`Personality:`];
+      facetParts.push(`  Public: ${character.facets.public}`);
+      if (character.facets.private) facetParts.push(`  Private: ${character.facets.private}`);
+      if (character.facets.hidden) facetParts.push(`  Hidden: ${character.facets.hidden}`);
       if (character.facets.underPressure)
-        facetParts.push(`  压力下: ${character.facets.underPressure}`);
+        facetParts.push(`  Under pressure: ${character.facets.underPressure}`);
       parts.push(facetParts.join('\n'));
     }
 
     if (character.voiceSamples?.length) {
-      parts.push(`语音样本:\n${character.voiceSamples.map((s) => `  "${s}"`).join('\n')}`);
+      parts.push(`Voice samples:\n${character.voiceSamples.map((s) => `  "${s}"`).join('\n')}`);
     }
 
     return parts.join('\n');

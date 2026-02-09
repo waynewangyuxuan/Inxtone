@@ -19,11 +19,11 @@ describe('PromptAssembler', () => {
       const assembler = new PromptAssembler();
       const template = assembler.getTemplate('continue');
       expect(template.name).toBe('continue');
-      expect(template.description).toBe('续写当前章节内容');
+      expect(template.description).toBe('Continue the current chapter content');
       expect(template.variables).toContain('context');
       expect(template.variables).toContain('current_content');
       expect(template.variables).toContain('user_instruction');
-      expect(template.body).toContain('续写');
+      expect(template.body).toContain('Continue');
     });
 
     it('throws for unknown template', () => {

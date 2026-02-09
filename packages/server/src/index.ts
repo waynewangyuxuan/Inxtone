@@ -42,6 +42,9 @@ export interface ServerOptions {
   aiService?: IAIService;
   writingService?: IWritingService;
 
+  // Database instance for seed routes
+  db?: InstanceType<typeof Database>;
+
   // Database path for production bootstrap
   dbPath?: string;
 }
@@ -115,6 +118,9 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
     if (options.writingService) {
       deps.writingService = options.writingService;
     }
+    if (options.db) {
+      deps.db = options.db;
+    }
     await registerRoutes(server, deps);
   }
 
@@ -176,6 +182,7 @@ function createServices(options: {
   storyBibleService: IStoryBibleService;
   aiService: IAIService;
   writingService: IWritingService;
+  db: InstanceType<typeof Database>;
 } {
   // Use provided path or default to ~/.inxtone/data.db
   const finalDbPath = options.dbPath ?? path.join(os.homedir(), '.inxtone', 'data.db');
@@ -250,7 +257,7 @@ function createServices(options: {
     eventBus,
   });
 
-  return { storyBibleService, aiService, writingService };
+  return { storyBibleService, aiService, writingService, db };
 }
 
 /**
@@ -278,17 +285,20 @@ if (isMainModule) {
   const geminiApiKey = process.env.GEMINI_API_KEY;
 
   // Create all services with shared infrastructure
-  const { storyBibleService, aiService, writingService } = createServices({ dbPath, geminiApiKey });
+  const { storyBibleService, aiService, writingService, db } = createServices({
+    dbPath,
+    geminiApiKey,
+  });
 
   console.log('Starting Inxtone server...');
   console.log(`Database: ${dbPath ?? path.join(os.homedir(), '.inxtone', 'data.db')}`);
   if (geminiApiKey) {
-    console.log('AI Service: Gemini API key configured');
+    console.log('AI Service: Gemini API key configured (server-side)');
   } else {
-    console.log('AI Service: No API key — AI endpoints will be disabled');
+    console.log('AI Service: No server key — clients provide key via BYOK');
   }
 
-  startServer({ port, storyBibleService, aiService, writingService })
+  startServer({ port, storyBibleService, aiService, writingService, db })
     .then(() => {
       console.log(`Server running at http://localhost:${port}`);
       console.log(`API available at http://localhost:${port}/api`);

@@ -91,13 +91,14 @@ export class ChapterContextBuilder extends BaseContextBuilder {
     // Current chapter outline
     if (chapter.outline) {
       const outlineParts: string[] = [];
-      if (chapter.outline.goal) outlineParts.push(`目标: ${chapter.outline.goal}`);
+      if (chapter.outline.goal) outlineParts.push(`Goal: ${chapter.outline.goal}`);
       if (chapter.outline.scenes?.length) {
         outlineParts.push(
-          `场景:\n${chapter.outline.scenes.map((s, i) => `  ${i + 1}. ${s}`).join('\n')}`
+          `Scenes:\n${chapter.outline.scenes.map((s, i) => `  ${i + 1}. ${s}`).join('\n')}`
         );
       }
-      if (chapter.outline.hookEnding) outlineParts.push(`钩子结尾: ${chapter.outline.hookEnding}`);
+      if (chapter.outline.hookEnding)
+        outlineParts.push(`Hook ending: ${chapter.outline.hookEnding}`);
 
       if (outlineParts.length > 0) {
         items.push({
@@ -115,7 +116,7 @@ export class ChapterContextBuilder extends BaseContextBuilder {
       items.push({
         type: 'chapter_prev_tail',
         id: `prev-${prevChapter.id}`,
-        content: `[前一章末尾]\n${tail}`,
+        content: `[Previous chapter ending]\n${tail}`,
         priority: L1_PRIORITY,
       });
     }
@@ -150,13 +151,13 @@ export class ChapterContextBuilder extends BaseContextBuilder {
         const target = charMap.get(rel.targetId);
         if (source && target) {
           const relParts = [`${source.name} → ${target.name}: ${rel.type}`];
-          if (rel.joinReason) relParts.push(`  结缘原因: ${rel.joinReason}`);
-          if (rel.independentGoal) relParts.push(`  独立目标: ${rel.independentGoal}`);
+          if (rel.joinReason) relParts.push(`  Bond reason: ${rel.joinReason}`);
+          if (rel.independentGoal) relParts.push(`  Independent goal: ${rel.independentGoal}`);
 
           items.push({
             type: 'relationship',
             id: `rel-${rel.id}`,
-            content: `[关系] ${relParts.join('\n')}`,
+            content: `[Relationship] ${relParts.join('\n')}`,
             priority: L2_PRIORITY,
           });
         }
@@ -168,9 +169,9 @@ export class ChapterContextBuilder extends BaseContextBuilder {
       const locations = this.deps.locationRepo.findByIds(chapter.locations);
       for (const location of locations) {
         const locParts = [`### ${location.name}`];
-        if (location.type) locParts.push(`类型: ${location.type}`);
-        if (location.atmosphere) locParts.push(`氛围: ${location.atmosphere}`);
-        if (location.significance) locParts.push(`意义: ${location.significance}`);
+        if (location.type) locParts.push(`Type: ${location.type}`);
+        if (location.atmosphere) locParts.push(`Atmosphere: ${location.atmosphere}`);
+        if (location.significance) locParts.push(`Significance: ${location.significance}`);
 
         items.push({
           type: 'location',
@@ -185,11 +186,11 @@ export class ChapterContextBuilder extends BaseContextBuilder {
     if (chapter.arcId) {
       const arc = this.deps.arcRepo.findById(chapter.arcId);
       if (arc) {
-        const arcParts = [`### 故事弧: ${arc.name}`];
-        arcParts.push(`类型: ${arc.type}`);
-        arcParts.push(`状态: ${arc.status}`);
+        const arcParts = [`### Story Arc: ${arc.name}`];
+        arcParts.push(`Type: ${arc.type}`);
+        arcParts.push(`Status: ${arc.status}`);
         if (arc.sections?.length) {
-          arcParts.push('节:');
+          arcParts.push('Sections:');
           for (const section of arc.sections) {
             arcParts.push(`  - ${section.name} (${section.status})`);
           }
@@ -220,7 +221,7 @@ export class ChapterContextBuilder extends BaseContextBuilder {
         items.push({
           type: 'foreshadowing',
           id: fs.id,
-          content: `[伏笔提示] ${fs.content} (状态: ${fs.status})`,
+          content: `[Foreshadowing hint] ${fs.content} (status: ${fs.status})`,
           priority: L3_PRIORITY,
         });
       }
@@ -236,7 +237,7 @@ export class ChapterContextBuilder extends BaseContextBuilder {
           items.push({
             type: 'foreshadowing',
             id: `active-${fs.id}`,
-            content: `[活跃伏笔] ${fs.content} (状态: ${fs.status})`,
+            content: `[Active foreshadowing] ${fs.content} (status: ${fs.status})`,
             priority: L3_PRIORITY,
           });
         }
@@ -250,7 +251,7 @@ export class ChapterContextBuilder extends BaseContextBuilder {
         items.push({
           type: 'hook',
           id: hook.id,
-          content: `[上章钩子] ${hook.content} (强度: ${hook.strength ?? '未设定'})`,
+          content: `[Previous chapter hook] ${hook.content} (strength: ${hook.strength ?? 'not set'})`,
           priority: L3_PRIORITY,
         });
       }
@@ -270,16 +271,16 @@ export class ChapterContextBuilder extends BaseContextBuilder {
 
     // Power system core rules (always include if present)
     if (world.powerSystem?.coreRules?.length) {
-      const rulesParts = [`### 力量体系: ${world.powerSystem.name}`];
+      const rulesParts = [`### Power System: ${world.powerSystem.name}`];
       if (world.powerSystem.levels?.length) {
-        rulesParts.push(`等级: ${world.powerSystem.levels.join(' → ')}`);
+        rulesParts.push(`Levels: ${world.powerSystem.levels.join(' → ')}`);
       }
       rulesParts.push(
-        `核心规则:\n${world.powerSystem.coreRules.map((r) => `  - ${r}`).join('\n')}`
+        `Core Rules:\n${world.powerSystem.coreRules.map((r) => `  - ${r}`).join('\n')}`
       );
       if (world.powerSystem.constraints?.length) {
         rulesParts.push(
-          `限制:\n${world.powerSystem.constraints.map((c) => `  - ${c}`).join('\n')}`
+          `Constraints:\n${world.powerSystem.constraints.map((c) => `  - ${c}`).join('\n')}`
         );
       }
 
@@ -293,7 +294,7 @@ export class ChapterContextBuilder extends BaseContextBuilder {
 
     // Social rules
     if (world.socialRules && Object.keys(world.socialRules).length > 0) {
-      const socialParts = ['### 社会规则'];
+      const socialParts = ['### Social Rules'];
       for (const [key, value] of Object.entries(world.socialRules)) {
         socialParts.push(`- ${key}: ${value}`);
       }
