@@ -20,5 +20,11 @@ export type { EmptyStateProps } from './EmptyState';
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
 
+export { EditableField } from './EditableField';
+export type { EditableFieldProps } from './EditableField';
+
+export { EditableList } from './EditableList';
+export type { EditableListProps } from './EditableList';
+
 export { CrudTable } from './CrudTable';
 export type { CrudTableProps, ColumnDef } from './CrudTable';

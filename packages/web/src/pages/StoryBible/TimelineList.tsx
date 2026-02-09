@@ -8,7 +8,6 @@ import React from 'react';
 import { Button, EmptyState } from '../../components/ui';
 import { useTimeline, useDeleteTimelineEvent } from '../../hooks';
 import { useStoryBibleActions } from '../../stores/useStoryBibleStore';
-import { TimelineForm } from './TimelineForm';
 import type { TimelineEvent } from '@inxtone/core';
 import styles from './shared.module.css';
 import tlStyles from './TimelineList.module.css';
@@ -48,7 +47,6 @@ export function TimelineList(): React.ReactElement {
           description="Add events to track your story's chronology."
           action={{ label: 'Add Event', onClick: handleCreate }}
         />
-        <TimelineForm />
       </>
     );
   }
@@ -85,8 +83,6 @@ export function TimelineList(): React.ReactElement {
           </div>
         ))}
       </div>
-
-      <TimelineForm />
     </>
   );
 }

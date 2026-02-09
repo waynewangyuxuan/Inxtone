@@ -1,17 +1,16 @@
 /**
  * ForeshadowingList Component
  *
- * Compact card grid for foreshadowing elements.
- * Rich tracker lives in the Plot page; this is the Bible tab view.
+ * Read-only card grid for foreshadowing elements.
+ * Foreshadowing is managed by AI during writing sessions.
+ * Rich tracker lives in the Plot page.
  */
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, EmptyState, Badge } from '../../components/ui';
-import { useForeshadowing, useDeleteForeshadowing } from '../../hooks';
-import { useStoryBibleActions } from '../../stores/useStoryBibleStore';
-import { ForeshadowingForm } from './ForeshadowingForm';
-import type { Foreshadowing, ForeshadowingStatus, ForeshadowingTerm } from '@inxtone/core';
+import { useForeshadowing } from '../../hooks';
+import type { ForeshadowingStatus, ForeshadowingTerm } from '@inxtone/core';
 import styles from './shared.module.css';
 
 const STATUS_VARIANTS: Record<ForeshadowingStatus, 'primary' | 'success' | 'muted'> = {
@@ -28,8 +27,6 @@ const TERM_VARIANTS: Record<ForeshadowingTerm, 'default' | 'warning' | 'danger'>
 
 export function ForeshadowingList(): React.ReactElement {
   const { data: items, isLoading } = useForeshadowing();
-  const deleteForeshadowing = useDeleteForeshadowing();
-  const { openForm } = useStoryBibleActions();
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -41,24 +38,12 @@ export function ForeshadowingList(): React.ReactElement {
     );
   }
 
-  const handleCreate = () => {
-    openForm('create');
-  };
-
-  const handleDelete = (item: Foreshadowing): void => {
-    deleteForeshadowing.mutate(item.id);
-  };
-
   if (!items || items.length === 0) {
     return (
-      <>
-        <EmptyState
-          title="No foreshadowing yet"
-          description="Add hints and setup to pay off later in your story."
-          action={{ label: 'Add Foreshadowing', onClick: handleCreate }}
-        />
-        <ForeshadowingForm />
-      </>
+      <EmptyState
+        title="No foreshadowing yet"
+        description="Foreshadowing is planted by AI during writing sessions. Start writing to build your story's hidden threads."
+      />
     );
   }
 
@@ -66,13 +51,21 @@ export function ForeshadowingList(): React.ReactElement {
     <>
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>Foreshadowing ({items.length})</h2>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/plot')}>
-            View Tracker &rarr;
-          </Button>
-          <Button onClick={handleCreate}>+ Add Foreshadowing</Button>
-        </div>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/plot')}>
+          View Tracker &rarr;
+        </Button>
       </div>
+
+      <p
+        style={{
+          fontSize: 'var(--font-xs)',
+          color: 'var(--color-text-tertiary)',
+          fontStyle: 'italic',
+          margin: '0 0 var(--space-4)',
+        }}
+      >
+        Managed by AI during writing sessions. View the full tracker in Plot.
+      </p>
 
       <div className={`${styles.grid} ${styles.grid2}`}>
         {items.map((item) => (
@@ -89,16 +82,9 @@ export function ForeshadowingList(): React.ReactElement {
             {item.plantedChapter && (
               <p className={styles.cardMeta}>Planted in Ch. {item.plantedChapter}</p>
             )}
-            <div className={styles.cardActions}>
-              <Button variant="ghost" size="sm" onClick={() => handleDelete(item)}>
-                Delete
-              </Button>
-            </div>
           </Card>
         ))}
       </div>
-
-      <ForeshadowingForm />
     </>
   );
 }

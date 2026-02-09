@@ -127,6 +127,7 @@ export interface CreateRelationshipInput {
   disagreeScenarios?: string[];
   leaveScenarios?: string[];
   mcNeeds?: string;
+  evolution?: string;
 }
 
 /** Options for creating a location */

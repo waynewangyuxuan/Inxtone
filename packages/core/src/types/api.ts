@@ -212,6 +212,7 @@ export interface CreateRelationshipRequest {
   disagreeScenarios?: string[];
   leaveScenarios?: string[];
   mcNeeds?: string;
+  evolution?: string;
 }
 export type CreateRelationshipResponse = ApiResponse<Relationship>;
 

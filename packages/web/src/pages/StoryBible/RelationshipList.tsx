@@ -9,7 +9,6 @@ import React, { useMemo, useCallback, useState } from 'react';
 import { Button, Card, EmptyState, Badge, ConfirmDialog } from '../../components/ui';
 import { useRelationships, useCharacters, useDeleteRelationship } from '../../hooks';
 import { useSelectedId, useStoryBibleActions } from '../../stores/useStoryBibleStore';
-import { RelationshipForm } from './RelationshipForm';
 import { RelationshipDetail } from './RelationshipDetail';
 import type { Relationship, CharacterId } from '@inxtone/core';
 import styles from './shared.module.css';
@@ -89,11 +88,6 @@ export function RelationshipList(): React.ReactElement {
     select(id);
   };
 
-  const handleEdit = (id: number) => {
-    select(id);
-    openForm('edit');
-  };
-
   if (!hasRelationships) {
     return (
       <>
@@ -102,7 +96,6 @@ export function RelationshipList(): React.ReactElement {
           description="Define relationships between your characters to build a rich social network."
           action={{ label: 'Add Relationship', onClick: handleCreate }}
         />
-        <RelationshipForm />
       </>
     );
   }
@@ -172,16 +165,6 @@ export function RelationshipList(): React.ReactElement {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleEdit(rel.id);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
                       handleDelete(rel.id);
                     }}
                   >
@@ -199,8 +182,6 @@ export function RelationshipList(): React.ReactElement {
           </div>
         )}
       </div>
-
-      <RelationshipForm />
 
       <ConfirmDialog
         isOpen={deleteTarget !== null}

@@ -45,11 +45,6 @@ export function CharacterList(): React.ReactElement {
     select(id);
   };
 
-  const handleEdit = (id: CharacterId) => {
-    select(id);
-    openForm('edit');
-  };
-
   const handleDelete = (id: CharacterId) => {
     if (window.confirm('Delete this character?')) {
       deleteCharacter.mutate(id);
@@ -128,16 +123,6 @@ export function CharacterList(): React.ReactElement {
                   </p>
                 )}
                 <div className={styles.cardActions}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(character.id);
-                    }}
-                  >
-                    Edit
-                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
