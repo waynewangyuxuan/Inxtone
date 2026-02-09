@@ -6,7 +6,7 @@
  */
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import type { IStoryBibleService } from '@inxtone/core';
+import type { IStoryBibleService, IAIService } from '@inxtone/core';
 
 import { characterRoutes } from './characters.js';
 import { relationshipRoutes } from './relationships.js';
@@ -17,12 +17,14 @@ import { timelineRoutes } from './timeline.js';
 import { arcRoutes } from './arcs.js';
 import { foreshadowingRoutes } from './foreshadowing.js';
 import { hookRoutes } from './hooks.js';
+import { aiRoutes } from './ai.js';
 
 /**
  * Dependencies required by route handlers.
  */
 export interface RouteDeps {
   storyBibleService: IStoryBibleService;
+  aiService?: IAIService;
 }
 
 /**
@@ -42,6 +44,11 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   await fastify.register(arcRoutes(deps), { prefix: '/api/arcs' });
   await fastify.register(foreshadowingRoutes(deps), { prefix: '/api/foreshadowing' });
   await fastify.register(hookRoutes(deps), { prefix: '/api/hooks' });
+
+  // AI routes (optional - only registered if aiService is provided)
+  if (deps.aiService) {
+    await fastify.register(aiRoutes(deps), { prefix: '/api/ai' });
+  }
 }
 
 /**

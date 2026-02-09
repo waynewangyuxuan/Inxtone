@@ -4,7 +4,98 @@
 
 ---
 
-## 2026-02-07 (M3 Phase 1: Writing Service) [WIP]
+## 2026-02-08 (M3 Phase 2: AI Service) ✅
+
+### Completed
+- **GeminiProvider** (`packages/core/src/ai/GeminiProvider.ts`, 198 lines)
+  - Wraps `@google/genai` SDK for Gemini 2.5 Pro streaming generation
+  - Retry with exponential backoff (3 attempts, 1s → 2s → 4s)
+  - Error mapping: auth (401/403), rate limit (429), content filter, context too large
+  - Extracts `usageMetadata` (promptTokenCount, candidatesTokenCount) from streaming response
+  - Lazy client initialization, `isConfigured()` guard
+- **ContextBuilder** (`packages/core/src/ai/ContextBuilder.ts`, 513 lines)
+  - 5-layer FK-based context assembly with priority-based token budget management
+  - L1 (1000): chapter content + outline + previous chapter tail (500 chars)
+  - L2 (800): characters, relationships (scoped), locations, arc — batch `findByIds()` queries
+  - L3 (600): foreshadowing (hinted + active, deduped), previous chapter hooks
+  - L4 (400): power system core rules, social rules
+  - L5 (200): user-selected additional items
+  - `formatContext()` outputs structured markdown grouped by semantic category (前文, 本章大纲, 角色档案, 世界规则, 剧情线索, 补充信息)
+  - Token budget: 1M total − 4K output reserve − 2K prompt reserve = 994K available
+- **PromptAssembler** (`packages/core/src/ai/PromptAssembler.ts`)
+  - YAML-like front-matter parsing + `{{variable}}` substitution
+  - 5 built-in templates: continue, dialogue, describe, brainstorm, ask_bible
+- **tokenCounter** (`packages/core/src/ai/tokenCounter.ts`)
+  - Heuristic estimation: CJK × 1.5, English words × 1.3, mixed = sum of both
+- **AIService** (`packages/core/src/ai/AIService.ts`, 456 lines)
+  - Implements `IAIService` with 6 generation methods + context building + provider management
+  - `generateWithContext()`: context-aware generation (continueScene, describeScene)
+  - `streamWithEvents()`: prompt-only generation (dialogue, brainstorm, ask, complete)
+  - EventBus integration: STARTED → CONTEXT_BUILT → PROGRESS → COMPLETED/ERROR
+  - Monitoring metrics: input tokens, output tokens, latency (ms) in COMPLETED events
+  - Prefers provider-reported token counts over heuristic estimates
+- **SSE API Routes** (`packages/server/src/routes/ai.ts`, 151 lines)
+  - 6 SSE streaming endpoints: POST /continue, /dialogue, /describe, /brainstorm, /ask, /complete
+  - 2 JSON endpoints: POST /context, GET /providers
+  - Zod schema validation on all request bodies (7 schemas + shared `aiGenerationOptionsSchema` and `contextItemSchema`)
+  - `validateBody()` returns 400 + `VALIDATION_ERROR` for invalid requests
+  - `streamSSE()` helper with proper headers and error handling
+- **Server Integration** (`packages/server/src/index.ts`)
+  - Refactored bootstrap: shared DB + repos + EventBus for both StoryBibleService and AIService
+  - Reads `GEMINI_API_KEY` from `process.env`, logs AI service availability
+  - AI routes registered at `/api/ai` prefix
+- **Error Classes** — `AIProviderError` with 4 error codes (AI_PROVIDER_ERROR, AI_RATE_LIMITED, AI_CONTEXT_TOO_LARGE, AI_CONTENT_FILTERED)
+- **Type System Updates**
+  - 12 granular `ContextItemType` values (chapter_content, chapter_outline, chapter_prev_tail, character, relationship, location, arc, foreshadowing, hook, power_system, social_rules, custom)
+  - `AIStreamChunk.usage` field for provider-reported token counts
+  - `AIGenerationCompletedEvent.latencyMs` for monitoring
+  - `AI_CONTEXT_BUILT` added to `BROADCAST_EVENTS`
+- **Batch Query Optimization**
+  - `findByIds()` added to CharacterRepository, LocationRepository, ForeshadowingRepository
+  - ContextBuilder L2/L3 use batch queries (eliminates N+1)
+- **Tests** (109 new tests across 7 test files)
+  - tokenCounter: 10 tests (CJK, English, mixed, empty, special chars)
+  - PromptAssembler: 12 tests (parsing, substitution, caching, edge cases)
+  - ContextBuilder: 16 tests (all 5 layers, budget truncation, formatContext, integration)
+  - GeminiProvider: 10 tests (streaming, retry, auth error, content filter, isConfigured)
+  - AIService: 22 tests (6 generation methods, events, errors, provider management)
+  - AI routes: 18 tests (SSE headers/format, JSON responses, error handling, Zod validation, no-service)
+  - WritingRepository: 50 tests, WritingService: 77 tests (from Phase 1, now also on ms3)
+  - **936 total tests passing** across 40 test files, build clean (0 errors)
+
+### Code Review Fixes Applied (P1/P2)
+- P1: Added monitoring metrics (inputTokens, latencyMs) to AI_GENERATION_COMPLETED event
+- P2: Added JSDoc to all public AIService provider management methods
+- P2: Eliminated N+1 queries with batch `findByIds()` in ContextBuilder
+- Fixed ~15 `exactOptionalPropertyTypes` TypeScript errors across GeminiProvider, ContextBuilder, PromptAssembler, server bootstrap
+- Fixed unused imports/fields causing DTS build failures
+
+### New Files (15)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/ai/tokenCounter.ts` | Token estimation |
+| `packages/core/src/ai/templates.ts` | 5 prompt template strings |
+| `packages/core/src/ai/PromptAssembler.ts` | Template variable substitution |
+| `packages/core/src/ai/ContextBuilder.ts` | 5-layer FK context assembly |
+| `packages/core/src/ai/GeminiProvider.ts` | @google/genai SDK wrapper |
+| `packages/core/src/ai/AIService.ts` | IAIService implementation |
+| `packages/core/src/ai/__tests__/tokenCounter.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/PromptAssembler.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/ContextBuilder.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/GeminiProvider.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/AIService.test.ts` | Tests |
+| `packages/server/src/routes/ai.ts` | SSE API routes |
+| `packages/server/src/routes/__tests__/ai.test.ts` | Route tests |
+| `.env.local.example` | API key template |
+| `CODE_REVIEW_M3_PHASE2.md` | Code review notes |
+
+### Next
+- M3 Phase 3: Plot System API + Writing API endpoints
+- M3 Phase 4: Writing UI
+
+---
+
+## 2026-02-07 (M3 Phase 1: Writing Service) ✅
 
 ### Completed
 - **WritingRepository** (`packages/core/src/db/repositories/WritingRepository.ts`, 738 lines)

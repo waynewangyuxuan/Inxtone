@@ -85,6 +85,20 @@ export class CharacterRepository extends BaseRepository<Character, CharacterId> 
   }
 
   /**
+   * Find multiple characters by IDs in a single query.
+   * Returns only found characters (missing IDs are silently skipped).
+   */
+  findByIds(ids: CharacterId[]): Character[] {
+    if (ids.length === 0) return [];
+    const placeholders = ids.map(() => '?').join(',');
+    const rows = this.db.query<CharacterRow>(
+      `SELECT * FROM characters WHERE id IN (${placeholders})`,
+      ids
+    );
+    return rows.map((row) => this.mapRow(row));
+  }
+
+  /**
    * Get all characters.
    */
   findAll(): Character[] {

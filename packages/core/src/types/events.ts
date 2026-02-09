@@ -304,6 +304,8 @@ export interface AIGenerationCompletedEvent extends EventMeta {
     input: number;
     output: number;
   };
+  /** Generation latency in milliseconds (from STARTED to COMPLETED) */
+  latencyMs: number;
 }
 
 export interface AIGenerationErrorEvent extends EventMeta {
@@ -664,6 +666,7 @@ export const BROADCAST_EVENTS: EventType[] = [
   'ISSUE_FOUND',
   'ISSUE_RESOLVED',
   'AI_GENERATION_STARTED',
+  'AI_CONTEXT_BUILT',
   'AI_GENERATION_PROGRESS',
   'AI_GENERATION_COMPLETED',
   'AI_GENERATION_ERROR',

@@ -26,4 +26,5 @@ export {
   ArcRepository,
   ForeshadowingRepository,
   HookRepository,
+  WritingRepository,
 } from './repositories/index.js';

@@ -411,9 +411,24 @@ export interface AIGenerationOptions {
   maxTokens?: number;
 }
 
+/** Context item type — fine-grained categories for AI context assembly */
+export type ContextItemType =
+  | 'chapter_content' // L1: current chapter text
+  | 'chapter_outline' // L1: chapter outline
+  | 'chapter_prev_tail' // L1: previous chapter tail
+  | 'character' // L2: character profile
+  | 'relationship' // L2: character relationship
+  | 'location' // L2: location description
+  | 'arc' // L2: story arc structure
+  | 'foreshadowing' // L3: foreshadowing hints
+  | 'hook' // L3: previous chapter hooks
+  | 'power_system' // L4: world power system rules
+  | 'social_rules' // L4: world social rules
+  | 'custom'; // L5: user-provided context
+
 /** Context item for AI generation */
 export interface ContextItem {
-  type: 'character' | 'world' | 'chapter' | 'outline' | 'custom';
+  type: ContextItemType;
   id?: string;
   content: string;
   priority: number;
@@ -442,6 +457,11 @@ export interface AIStreamChunk {
   type: 'content' | 'done' | 'error';
   content?: string;
   error?: string;
+  /** Token usage from the provider (present on 'done' chunks when available) */
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+  };
 }
 
 /**

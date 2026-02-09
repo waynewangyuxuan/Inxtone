@@ -65,6 +65,20 @@ export class LocationRepository extends BaseRepository<Location, LocationId> {
   }
 
   /**
+   * Find multiple locations by IDs in a single query.
+   * Returns only found locations (missing IDs are silently skipped).
+   */
+  findByIds(ids: LocationId[]): Location[] {
+    if (ids.length === 0) return [];
+    const placeholders = ids.map(() => '?').join(',');
+    const rows = this.db.query<LocationRow>(
+      `SELECT * FROM locations WHERE id IN (${placeholders})`,
+      ids
+    );
+    return rows.map((row) => this.mapRow(row));
+  }
+
+  /**
    * Get all locations.
    */
   findAll(): Location[] {
