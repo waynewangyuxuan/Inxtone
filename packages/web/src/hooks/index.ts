@@ -78,3 +78,20 @@ export {
   useUpdateHook,
   useDeleteHook,
 } from './useHooks';
+
+// Chapters & Volumes
+export {
+  chapterKeys,
+  volumeKeys,
+  versionKeys,
+  contextKeys,
+  useChapters,
+  useChapterWithContent,
+  useCreateChapter,
+  useUpdateChapter,
+  useSaveContent,
+  useDeleteChapter,
+  useVolumes,
+  useVersions,
+  useBuildContext,
+} from './useChapters';

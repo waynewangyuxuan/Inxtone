@@ -9,18 +9,19 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsup --watch --onSuccess \"node dist/index.js\"",
+    "dev": "tsup --watch --onSuccess 'ROOT_DIR=${PWD%/packages/server}; node --env-file=\"$ROOT_DIR/.env.local\" dist/index.js'",
     "build": "tsup",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "start": "node ./dist/index.js"
+    "start": "if [ -f ../../.env.local ]; then node --env-file=../../.env.local ./dist/index.js; elif [ -f .env.local ]; then node --env-file=.env.local ./dist/index.js; else node ./dist/index.js; fi"
   },
   "dependencies": {
     "@inxtone/core": "workspace:*",
     "fastify": "^4.28.0",
     "@fastify/cors": "^9.0.0",
     "@fastify/static": "^7.0.0",
-    "@fastify/websocket": "^10.0.0"
+    "@fastify/websocket": "^10.0.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "tsup": "^8.0.0",

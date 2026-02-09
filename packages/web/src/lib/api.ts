@@ -48,10 +48,19 @@ function unwrap<T>(response: ApiResponse<T>): T {
 }
 
 /**
+ * Get auth headers for API requests (Gemini API key from localStorage).
+ */
+function getAuthHeaders(): Record<string, string> {
+  const key = localStorage.getItem('gemini-api-key');
+  if (key) return { 'X-Gemini-Key': key };
+  return {};
+}
+
+/**
  * GET request
  */
 export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`/api${path}`);
+  const res = await fetch(`/api${path}`, { headers: getAuthHeaders() });
   if (!res.ok) {
     const text = await res.text();
     try {
@@ -74,7 +83,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiPost<T, B = unknown>(path: string, body: B): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -99,7 +108,7 @@ export async function apiPost<T, B = unknown>(path: string, body: B): Promise<T>
 export async function apiPatch<T, B = unknown>(path: string, body: B): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -124,7 +133,7 @@ export async function apiPatch<T, B = unknown>(path: string, body: B): Promise<T
 export async function apiPut<T, B = unknown>(path: string, body: B): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -149,6 +158,7 @@ export async function apiPut<T, B = unknown>(path: string, body: B): Promise<T> 
 export async function apiDelete<T = void>(path: string): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!res.ok) {
     const text = await res.text();

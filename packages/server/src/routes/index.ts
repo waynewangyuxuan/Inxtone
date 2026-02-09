@@ -6,7 +6,8 @@
  */
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import type { IStoryBibleService } from '@inxtone/core';
+import type { IStoryBibleService, IAIService, IWritingService } from '@inxtone/core';
+import type { Database } from '@inxtone/core/db';
 
 import { characterRoutes } from './characters.js';
 import { relationshipRoutes } from './relationships.js';
@@ -17,12 +18,18 @@ import { timelineRoutes } from './timeline.js';
 import { arcRoutes } from './arcs.js';
 import { foreshadowingRoutes } from './foreshadowing.js';
 import { hookRoutes } from './hooks.js';
+import { aiRoutes } from './ai.js';
+import { volumeRoutes, chapterRoutes, versionRoutes, statsRoutes } from './writing.js';
+import { seedRoutes } from './seed.js';
 
 /**
  * Dependencies required by route handlers.
  */
 export interface RouteDeps {
   storyBibleService: IStoryBibleService;
+  aiService?: IAIService;
+  writingService?: IWritingService;
+  db?: Database;
 }
 
 /**
@@ -42,6 +49,24 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   await fastify.register(arcRoutes(deps), { prefix: '/api/arcs' });
   await fastify.register(foreshadowingRoutes(deps), { prefix: '/api/foreshadowing' });
   await fastify.register(hookRoutes(deps), { prefix: '/api/hooks' });
+
+  // AI routes (optional - only registered if aiService is provided)
+  if (deps.aiService) {
+    await fastify.register(aiRoutes(deps), { prefix: '/api/ai' });
+  }
+
+  // Writing routes (optional - only registered if writingService is provided)
+  if (deps.writingService) {
+    await fastify.register(volumeRoutes(deps), { prefix: '/api/volumes' });
+    await fastify.register(chapterRoutes(deps), { prefix: '/api/chapters' });
+    await fastify.register(versionRoutes(deps), { prefix: '/api/versions' });
+    await fastify.register(statsRoutes(deps), { prefix: '/api/stats' });
+  }
+
+  // Seed routes (optional - only registered if db is provided)
+  if (deps.db) {
+    await fastify.register(seedRoutes({ db: deps.db }), { prefix: '/api/seed' });
+  }
 }
 
 /**

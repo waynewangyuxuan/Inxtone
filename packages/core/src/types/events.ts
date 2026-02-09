@@ -18,6 +18,10 @@ import type {
   Hook,
   Chapter,
   ChapterId,
+  Volume,
+  VolumeId,
+  ChapterStatus,
+  Version,
   WritingGoal,
   CheckResult,
 } from './entities.js';
@@ -39,7 +43,7 @@ export interface EventMeta {
 }
 
 // ===========================================
-// Content Events (Chapters)
+// Content Events (Chapters) (M3 Writing Service)
 // ===========================================
 
 export interface ChapterCreatedEvent extends EventMeta {
@@ -47,11 +51,16 @@ export interface ChapterCreatedEvent extends EventMeta {
   chapter: Chapter;
 }
 
+export interface ChapterUpdatedEvent extends EventMeta {
+  type: 'CHAPTER_UPDATED';
+  chapter: Chapter;
+  changes: Partial<Chapter>;
+}
+
 export interface ChapterSavedEvent extends EventMeta {
   type: 'CHAPTER_SAVED';
-  chapterId: ChapterId;
-  wordDelta: number;
-  newWordCount: number;
+  chapter: Chapter;
+  wordCountDelta: number;
 }
 
 export interface ChapterDeletedEvent extends EventMeta {
@@ -59,19 +68,22 @@ export interface ChapterDeletedEvent extends EventMeta {
   chapterId: ChapterId;
 }
 
-export interface ChapterRollbackEvent extends EventMeta {
-  type: 'CHAPTER_ROLLBACK';
-  chapterId: ChapterId;
+export interface ChapterRolledBackEvent extends EventMeta {
+  type: 'CHAPTER_ROLLED_BACK';
+  chapter: Chapter;
   versionId: number;
-  previousWordCount: number;
-  newWordCount: number;
 }
 
 export interface ChapterStatusChangedEvent extends EventMeta {
   type: 'CHAPTER_STATUS_CHANGED';
-  chapterId: ChapterId;
-  previousStatus: string;
-  newStatus: string;
+  chapter: Chapter;
+  oldStatus: ChapterStatus;
+  newStatus: ChapterStatus;
+}
+
+export interface ChaptersReorderedEvent extends EventMeta {
+  type: 'CHAPTERS_REORDERED';
+  chapterIds: ChapterId[];
 }
 
 // ===========================================
@@ -292,6 +304,8 @@ export interface AIGenerationCompletedEvent extends EventMeta {
     input: number;
     output: number;
   };
+  /** Generation latency in milliseconds (from STARTED to COMPLETED) */
+  latencyMs: number;
 }
 
 export interface AIGenerationErrorEvent extends EventMeta {
@@ -451,34 +465,39 @@ export interface ExportErrorEvent extends EventMeta {
 }
 
 // ===========================================
-// Volume Events
+// Volume Events (M3 Writing Service)
 // ===========================================
 
 export interface VolumeCreatedEvent extends EventMeta {
   type: 'VOLUME_CREATED';
-  volumeId: number;
-  name?: string;
+  volume: Volume;
 }
 
 export interface VolumeUpdatedEvent extends EventMeta {
   type: 'VOLUME_UPDATED';
-  volumeId: number;
+  volume: Volume;
+  changes: Partial<Volume>;
 }
 
 export interface VolumeDeletedEvent extends EventMeta {
   type: 'VOLUME_DELETED';
-  volumeId: number;
+  volumeId: VolumeId;
 }
 
 // ===========================================
-// Version Events
+// Version Events (M3 Writing Service)
 // ===========================================
 
 export interface VersionCreatedEvent extends EventMeta {
   type: 'VERSION_CREATED';
+  version: Version;
   chapterId: ChapterId;
-  versionId: number;
-  source: 'auto' | 'manual' | 'ai_backup' | 'rollback_backup';
+}
+
+export interface VersionsCleanedUpEvent extends EventMeta {
+  type: 'VERSIONS_CLEANED_UP';
+  count: number;
+  olderThanDays: number;
 }
 
 // ===========================================
@@ -503,12 +522,14 @@ export interface SessionEndedEvent extends EventMeta {
 // ===========================================
 
 export type AppEvent =
-  // Content
+  // Content (M3 Writing)
   | ChapterCreatedEvent
+  | ChapterUpdatedEvent
   | ChapterSavedEvent
   | ChapterDeletedEvent
-  | ChapterRollbackEvent
+  | ChapterRolledBackEvent
   | ChapterStatusChangedEvent
+  | ChaptersReorderedEvent
   // Character
   | CharacterCreatedEvent
   | CharacterUpdatedEvent
@@ -577,12 +598,13 @@ export type AppEvent =
   | ExportProgressEvent
   | ExportCompletedEvent
   | ExportErrorEvent
-  // Volume
+  // Volume (M3 Writing)
   | VolumeCreatedEvent
   | VolumeUpdatedEvent
   | VolumeDeletedEvent
-  // Version
+  // Version (M3 Writing)
   | VersionCreatedEvent
+  | VersionsCleanedUpEvent
   // Session
   | SessionStartedEvent
   | SessionEndedEvent;
@@ -606,11 +628,20 @@ export type EmitEvent<T extends AppEvent> = Omit<T, keyof EventMeta>;
 
 /** Events that should be broadcast via WebSocket */
 export const BROADCAST_EVENTS: EventType[] = [
+  // M3 Writing Events
   'CHAPTER_CREATED',
+  'CHAPTER_UPDATED',
   'CHAPTER_SAVED',
   'CHAPTER_DELETED',
-  'CHAPTER_ROLLBACK',
+  'CHAPTER_ROLLED_BACK',
   'CHAPTER_STATUS_CHANGED',
+  'CHAPTERS_REORDERED',
+  'VOLUME_CREATED',
+  'VOLUME_UPDATED',
+  'VOLUME_DELETED',
+  'VERSION_CREATED',
+  // Story Bible Events
+
   'CHARACTER_CREATED',
   'CHARACTER_UPDATED',
   'CHARACTER_DELETED',
@@ -635,6 +666,7 @@ export const BROADCAST_EVENTS: EventType[] = [
   'ISSUE_FOUND',
   'ISSUE_RESOLVED',
   'AI_GENERATION_STARTED',
+  'AI_CONTEXT_BUILT',
   'AI_GENERATION_PROGRESS',
   'AI_GENERATION_COMPLETED',
   'AI_GENERATION_ERROR',

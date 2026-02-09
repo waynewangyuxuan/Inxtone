@@ -17,14 +17,16 @@ import {
   ArcRepository,
   ForeshadowingRepository,
   HookRepository,
+  WritingRepository,
 } from '@inxtone/core/db';
-import { EventBus, StoryBibleService } from '@inxtone/core/services';
+import { EventBus, StoryBibleService, WritingService } from '@inxtone/core/services';
 import { errorHandler } from '../../middleware/errorHandler.js';
 import { registerRoutes } from '../index.js';
 
 export interface TestContext {
   server: FastifyInstance;
   service: StoryBibleService;
+  writingService: WritingService;
   db: Database;
 }
 
@@ -36,24 +38,40 @@ export async function createTestServer(): Promise<TestContext> {
   db.connect();
 
   const eventBus = new EventBus();
+  const characterRepo = new CharacterRepository(db);
+  const locationRepo = new LocationRepository(db);
+  const arcRepo = new ArcRepository(db);
+  const foreshadowingRepo = new ForeshadowingRepository(db);
+  const writingRepo = new WritingRepository(db);
+
   const service = new StoryBibleService({
     db,
-    characterRepo: new CharacterRepository(db),
+    characterRepo,
     relationshipRepo: new RelationshipRepository(db),
     worldRepo: new WorldRepository(db),
-    locationRepo: new LocationRepository(db),
+    locationRepo,
     factionRepo: new FactionRepository(db),
     timelineEventRepo: new TimelineEventRepository(db),
-    arcRepo: new ArcRepository(db),
-    foreshadowingRepo: new ForeshadowingRepository(db),
+    arcRepo,
+    foreshadowingRepo,
     hookRepo: new HookRepository(db),
+    eventBus,
+  });
+
+  const writingService = new WritingService({
+    db,
+    writingRepo,
+    characterRepo,
+    locationRepo,
+    arcRepo,
+    foreshadowingRepo,
     eventBus,
   });
 
   const server = Fastify({ logger: false });
   server.setErrorHandler(errorHandler);
-  await registerRoutes(server, { storyBibleService: service });
+  await registerRoutes(server, { storyBibleService: service, writingService });
   await server.ready();
 
-  return { server, service, db };
+  return { server, service, writingService, db };
 }

@@ -223,6 +223,31 @@ export class TransactionError extends InxtoneError {
   }
 }
 
+/**
+ * AI provider error (502).
+ * For errors from upstream AI providers (Gemini, etc.).
+ *
+ * @example
+ * throw new AIProviderError('AI_PROVIDER_ERROR', 'Invalid API key');
+ * throw new AIProviderError('AI_RATE_LIMITED', 'Rate limit exceeded', true);
+ */
+export class AIProviderError extends InxtoneError {
+  readonly statusCode = 502;
+
+  constructor(
+    readonly code:
+      | 'AI_PROVIDER_ERROR'
+      | 'AI_RATE_LIMITED'
+      | 'AI_CONTEXT_TOO_LARGE'
+      | 'AI_CONTENT_FILTERED',
+    message: string,
+    public readonly retriable = false,
+    context?: Record<string, unknown>
+  ) {
+    super(message, context);
+  }
+}
+
 // ============================================
 // Type Guards
 // ============================================

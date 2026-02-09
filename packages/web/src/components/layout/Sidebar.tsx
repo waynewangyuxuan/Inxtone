@@ -18,6 +18,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: 'dashboard' },
   { to: '/bible', label: 'Story Bible', icon: 'book' },
+  { to: '/plot', label: 'Plot', icon: 'plot' },
   { to: '/write', label: 'Write', icon: 'pen' },
   { to: '/settings', label: 'Settings', icon: 'settings' },
 ];

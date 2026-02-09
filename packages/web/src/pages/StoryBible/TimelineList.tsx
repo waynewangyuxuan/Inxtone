@@ -1,60 +1,88 @@
 /**
  * TimelineList Component
  *
- * Displays timeline events using CrudTable
+ * Vertical timeline visualization with date badges and connecting lines.
  */
 
 import React from 'react';
-import { CrudTable, type ColumnDef } from '../../components/ui';
+import { Button, EmptyState } from '../../components/ui';
 import { useTimeline, useDeleteTimelineEvent } from '../../hooks';
 import { useStoryBibleActions } from '../../stores/useStoryBibleStore';
-import { TimelineForm } from './TimelineForm';
 import type { TimelineEvent } from '@inxtone/core';
+import styles from './shared.module.css';
+import tlStyles from './TimelineList.module.css';
 
 export function TimelineList(): React.ReactElement {
   const { data: events, isLoading } = useTimeline();
   const deleteEvent = useDeleteTimelineEvent();
-  const { openForm } = useStoryBibleActions();
+  const { openForm, select } = useStoryBibleActions();
 
-  const columns: ColumnDef<TimelineEvent>[] = [
-    { key: 'eventDate', header: 'Date', render: (item) => item.eventDate ?? '—' },
-    {
-      key: 'description',
-      header: 'Description',
-      render: (item) => {
-        const text = item.description;
-        if (!text) return '—';
-        return text.length > 80 ? `${text.slice(0, 80)}...` : text;
-      },
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.spinner} />
+        <span>Loading timeline...</span>
+      </div>
+    );
+  }
 
   const handleCreate = () => {
     openForm('create');
   };
 
   const handleEdit = (item: TimelineEvent) => {
-    // Timeline events don't support editing yet
-    console.log('Edit timeline event:', item);
+    select(item.id);
+    openForm('edit');
   };
 
   const handleDelete = (item: TimelineEvent): void => {
     deleteEvent.mutate(item.id);
   };
 
+  if (!events || events.length === 0) {
+    return (
+      <>
+        <EmptyState
+          title="No timeline events yet"
+          description="Add events to track your story's chronology."
+          action={{ label: 'Add Event', onClick: handleCreate }}
+        />
+      </>
+    );
+  }
+
+  // Sort chronologically by eventDate, fall back to createdAt
+  const sorted = [...events].sort((a, b) => {
+    const dateA = a.eventDate ?? a.createdAt;
+    const dateB = b.eventDate ?? b.createdAt;
+    return dateA.localeCompare(dateB);
+  });
+
   return (
     <>
-      <CrudTable<TimelineEvent>
-        title="Timeline"
-        columns={columns}
-        items={events ?? []}
-        isLoading={isLoading}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        emptyMessage="No timeline events yet. Add events to track your story's chronology."
-      />
-      <TimelineForm />
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Timeline ({events.length})</h2>
+        <Button onClick={handleCreate}>+ Add Event</Button>
+      </div>
+
+      <div className={tlStyles.timeline}>
+        {sorted.map((event) => (
+          <div key={event.id} className={tlStyles.event}>
+            {event.eventDate && <span className={tlStyles.dateBadge}>{event.eventDate}</span>}
+            <div className={tlStyles.eventCard}>
+              <p className={tlStyles.description}>{event.description}</p>
+              <div className={tlStyles.actions}>
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(event)}>
+                  Edit
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(event)}>
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </>
   );
 }

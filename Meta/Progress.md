@@ -4,6 +4,375 @@
 
 ---
 
+## 2026-02-09 (M3.5: Hackathon Submission) ✅
+
+### Completed
+- **Phase 1: English AI Prompts** — Translated all 5 prompt templates and context builder labels (templates.ts, BaseContextBuilder, ChapterContextBuilder, GlobalContextBuilder, AIService relationship labels). Updated test assertions.
+- **Phase 2: Per-Request API Key (BYOK)** — Client sends `X-Gemini-Key` header from localStorage. GeminiProvider creates per-call GoogleGenAI instance. Added `POST /api/ai/verify-key` endpoint. AIService always registered (503 if no key).
+- **Phase 3: API Key Dialog** — Zustand store (`useApiKeyStore`), modal with masked key display, verify flow, skip option. Shows on first visit when no key in localStorage.
+- **Phase 4: Seed Loader** — Raw SQL execution approach (not service-based). SQL seed files exported as TS string constants (`sql-en.ts`, `sql-zh.ts`), bundled by tsup. Seeds include full Story Bible + 3 chapters with prose content per language. Endpoints: `GET /api/seed/status`, `POST /api/seed/load`, `POST /api/seed/clear`.
+- **Phase 5: Welcome Screen & Settings** — WelcomeScreen with 3 cards (English Demo / Chinese Demo / Start Empty) shown when DB is empty. Settings page with API key management and seed data controls.
+- **Phase 6: Deployment** — Multi-stage Dockerfile (node:20-slim + pnpm + better-sqlite3 native build). `.dockerignore` configured.
+- **Phase 7: Submission Materials** — Updated DEVPOST_WRITEUP.md and HACKATHON_VIDEO_SCRIPT.md.
+
+### Bug Fixes
+- Fixed `clearAllData()` referencing non-existent `chapter_versions` table → corrected to `versions`
+- Replaced service-based seeding (missing chapters/volumes) with raw SQL approach (complete data)
+
+### New Files (10)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/db/seeds/sql-en.ts` | English seed SQL as TS string export |
+| `packages/core/src/db/seeds/sql-zh.ts` | Chinese seed SQL as TS string export |
+| `packages/core/src/db/seeds/seedRunner.ts` | Seed runner: runSeed, clearAllData, isDatabaseEmpty |
+| `packages/server/src/routes/seed.ts` | Seed API routes (status/load/clear) |
+| `packages/web/src/stores/useApiKeyStore.ts` | Zustand store for API key state |
+| `packages/web/src/components/ApiKeyDialog.tsx` | API key entry/verification modal |
+| `packages/web/src/components/ApiKeyDialog.module.css` | Dialog styles |
+| `packages/web/src/components/WelcomeScreen.tsx` | First-run welcome with demo cards |
+| `packages/web/src/components/WelcomeScreen.module.css` | Welcome screen styles |
+| `Dockerfile` | Multi-stage Docker build |
+
+### Modified Files (12)
+| File | Change |
+|------|--------|
+| `packages/core/src/ai/templates.ts` | English prompt templates |
+| `packages/core/src/ai/BaseContextBuilder.ts` | English section headers |
+| `packages/core/src/ai/ChapterContextBuilder.ts` | English context labels |
+| `packages/core/src/ai/GlobalContextBuilder.ts` | English context labels |
+| `packages/core/src/ai/AIService.ts` | English labels + `setGeminiApiKey()` |
+| `packages/core/src/ai/GeminiProvider.ts` | Per-call `apiKey` support |
+| `packages/core/src/types/services.ts` | `setGeminiApiKey` on IAIService |
+| `packages/server/src/index.ts` | BYOK startup, db in deps |
+| `packages/server/src/routes/ai.ts` | `X-Gemini-Key` extraction, verify endpoint |
+| `packages/web/src/App.tsx` | ApiKeyDialog + key loading |
+| `packages/web/src/pages/Dashboard.tsx` | WelcomeScreen when empty |
+| `packages/web/src/pages/Settings.tsx` | Functional key + seed management |
+
+### Stats
+- Tests: **1001 passed** (42 files)
+- Build: clean (0 TS errors)
+- Seed data: EN (6 chars, 3 chapters, 1 volume) + ZH (6 chars, 3 chapters, 1 volume)
+
+---
+
+## 2026-02-08 (M3 Phase 5: Plot UI) ✅
+
+### Completed
+- **Standalone Plot page** at `/plot` with 3-tab layout (Arcs | Foreshadowing | Hooks)
+- **Sidebar navigation** with git-branch style plot icon
+- **Arc Outliner**: Collapsible tree (Arc → Sections → Chapters)
+  - Progress bars with gold fill, status badges (planned/in_progress/complete)
+  - Type badges (main/sub), chapter click → Write page via `useEditorStore.getState().selectChapter()`
+  - Empty state when no arcs defined
+- **Foreshadowing Tracker**: Enhanced lifecycle visualization
+  - Timeline component: planted → hints → resolved/pending (dot + line)
+  - Status/term badges, overdue detection (orange border + warning badge)
+  - Collapsible hints list
+  - Add Hint modal (chapter number + text, uses Modal built-in footer)
+  - Inline Resolve with chapter input, Abandon with ConfirmDialog
+  - Sorted: active first, then by planted chapter
+- **Hook Tracker**: Hooks grouped by chapter
+  - 3-tier strength bars: low (muted, 0-33), mid (warning, 34-66), high (gold, 67-100)
+  - Type badges (opening/arc/chapter) + style badges (suspense/anticipation/emotion/mystery)
+  - Unattached hooks group for hooks without chapterId
+- **Code review fixes**: Removed dead CSS class, fixed unconditional `...` truncation
+- Build: 0 TS errors, full build clean
+
+### New Files (10)
+| File | Purpose |
+|------|---------|
+| `packages/web/src/pages/Plot.tsx` | Page orchestrator with 3 tabs |
+| `packages/web/src/pages/Plot.module.css` | Page styles |
+| `packages/web/src/pages/Plot/ArcOutliner.tsx` | Arc tree view with progress |
+| `packages/web/src/pages/Plot/ArcOutliner.module.css` | Arc outliner styles |
+| `packages/web/src/pages/Plot/ForeshadowingTracker.tsx` | Lifecycle tracker with timeline |
+| `packages/web/src/pages/Plot/ForeshadowingTracker.module.css` | Tracker styles |
+| `packages/web/src/pages/Plot/HookTracker.tsx` | Hooks by chapter with strength bars |
+| `packages/web/src/pages/Plot/HookTracker.module.css` | Hook tracker styles |
+| `packages/web/src/pages/Plot/AddHintModal.tsx` | Add hint to foreshadowing modal |
+| `packages/web/src/pages/Plot/AddHintModal.module.css` | Modal styles |
+
+### Modified Files (4)
+| File | Change |
+|------|--------|
+| `packages/web/src/App.tsx` | Added `/plot` route |
+| `packages/web/src/components/Icon.tsx` | Added `plot` icon (git-branch SVG) |
+| `packages/web/src/components/layout/Sidebar.tsx` | Added Plot nav item |
+| `packages/web/src/pages/index.ts` | Added Plot export |
+
+### Next
+- M3 Phase 6: Testing & Polish
+
+---
+
+## 2026-02-08 (M3 Phase 4: Chapter Editor UI) ✅
+
+### Completed
+- **Three-panel layout** replacing Write page stub
+  - Left panel (280px): Chapters tab + Story Bible tab with arc filter
+  - Center panel (flex): MDEditor with toolbar
+  - Right panel (360px, collapsible): AI sidebar with SSE streaming
+- **Foundation layer** (4 files)
+  - `useChapters.ts`: React Query hooks — chapters (CRUD + filters), volumes, versions, context
+  - `useEditorStore.ts`: Zustand store — selection, dirty tracking, AI state, UI preferences
+  - `aiStream.ts`: SSE streaming utility via `fetch()` + `ReadableStream` (POST endpoints)
+  - Updated `hooks/index.ts` barrel exports
+- **ChapterListPanel**: Arc-filtered chapter list with status badges, word count, delete with confirm
+- **StoryBiblePanel**: Collapsible sections showing chapter FK refs (characters, locations, foreshadowing)
+- **ChapterForm**: Create/edit modal following CharacterForm pattern
+- **EditorPanel**: `@uiw/react-md-editor` with dark gold theme overrides
+  - Ctrl+S / Cmd+S save with version creation
+  - Dirty tracking + `beforeunload` guard
+  - Save indicator with time-ago display
+- **EditorToolbar**: Chapter title (clickable to edit), status badge, word count, save button, AI toggle
+- **AISidebar**: Continue + Brainstorm quick actions, prompt input, streaming response, accept/reject/regenerate
+- **ContextPreview**: Built context items grouped by layer (L1-L5) with token count
+- **StreamingResponse**: Auto-scrolling response area with pulsing loading indicator
+- **RejectReasonModal**: Required reason input on reject, feeds into regenerate
+- **Word count**: CJK chars counted individually, English by whitespace split
+- Build: 0 TS errors, 984 tests pass, full build clean
+
+### New Files (19)
+| File | Purpose |
+|------|---------|
+| `packages/web/src/hooks/useChapters.ts` | React Query hooks for chapters, volumes, versions, context |
+| `packages/web/src/stores/useEditorStore.ts` | Zustand store for editor UI state |
+| `packages/web/src/lib/aiStream.ts` | SSE streaming fetch utility |
+| `packages/web/src/pages/Write.module.css` | Three-panel layout styles |
+| `packages/web/src/pages/Write/ChapterListPanel.tsx` | Chapter list with arc filter |
+| `packages/web/src/pages/Write/ChapterListPanel.module.css` | |
+| `packages/web/src/pages/Write/StoryBiblePanel.tsx` | Chapter FK quick-ref |
+| `packages/web/src/pages/Write/StoryBiblePanel.module.css` | |
+| `packages/web/src/pages/Write/ChapterForm.tsx` | Create/edit chapter modal |
+| `packages/web/src/pages/Write/EditorPanel.tsx` | MDEditor wrapper |
+| `packages/web/src/pages/Write/EditorPanel.module.css` | Dark gold theme overrides |
+| `packages/web/src/pages/Write/EditorToolbar.tsx` | Toolbar with save, word count, AI toggle |
+| `packages/web/src/pages/Write/EditorToolbar.module.css` | |
+| `packages/web/src/pages/Write/AISidebar.tsx` | AI panel orchestrator |
+| `packages/web/src/pages/Write/AISidebar.module.css` | |
+| `packages/web/src/pages/Write/ContextPreview.tsx` | Context items display |
+| `packages/web/src/pages/Write/ContextPreview.module.css` | |
+| `packages/web/src/pages/Write/StreamingResponse.tsx` | Streaming response area |
+| `packages/web/src/pages/Write/StreamingResponse.module.css` | |
+| `packages/web/src/pages/Write/RejectReasonModal.tsx` | Reject reason modal |
+| `packages/web/src/pages/Write/RejectReasonModal.module.css` | |
+
+### Modified Files (3)
+| File | Change |
+|------|--------|
+| `packages/web/package.json` | Added `@uiw/react-md-editor` dependency |
+| `packages/web/src/pages/Write.tsx` | Replaced stub with three-panel orchestrator |
+| `packages/web/src/hooks/index.ts` | Added chapter/volume/version/context hook exports |
+
+### Deferred to Post-Phase 4
+- Dialogue/Describe AI modes (need character selector, location+mood picker UI)
+- Context item toggle on/off (L2-L5 controllable)
+- "Add to AI context" from Story Bible panel
+- Brainstorm → Accept → auto-Continue flow
+- Accept at cursor position (currently appends at end)
+- Chapter drag-and-drop reordering
+- Volume management UI
+
+### Next
+- M3 Phase 5: Plot UI (Arc Outliner, Foreshadowing Tracker)
+
+---
+
+## 2026-02-08 (M3 Phase 3: Writing API Routes) ✅
+
+### Completed
+- **Writing API Routes** (`packages/server/src/routes/writing.ts`, 377 lines)
+  - 4 route factories: `volumeRoutes`, `chapterRoutes`, `versionRoutes`, `statsRoutes`
+  - 18 endpoints total across 4 URL prefixes:
+    - `/api/volumes` (5): GET list, GET by id, POST create, PATCH update, DELETE cascade
+    - `/api/chapters` (10): GET list (filter by volumeId/arcId/status), GET by id (?includeContent), POST create, PATCH update, PUT content, POST reorder, DELETE, GET versions, POST version, POST rollback
+    - `/api/versions` (2): GET by id, GET compare (?versionId1&versionId2)
+    - `/api/stats` (1): GET word-count
+  - 9 Zod schemas for request validation (consistent with Phase 2 AI routes)
+  - `validateBody<T>()` and `validateQuery<T>()` helper functions
+- **Server Bootstrap** (`packages/server/src/index.ts`)
+  - `createServices()` now creates WritingService with shared repos + EventBus
+  - `ServerOptions.writingService?: IWritingService` for DI
+  - Route deps wiring: conditional registration when writingService provided
+  - `/api` info endpoint updated with volumes, chapters, versions, stats entries
+  - CLI entry point updated to pass writingService to startServer
+- **Route Registration** (`packages/server/src/routes/index.ts`)
+  - `RouteDeps.writingService?: IWritingService` added
+  - 4 writing route groups conditionally registered
+- **Test Infrastructure** (`packages/server/src/routes/__tests__/testHelper.ts`)
+  - `TestContext` extended with `writingService: WritingService`
+  - `createTestServer()` creates WritingRepository + WritingService with shared repos
+- **Integration Tests** (`packages/server/src/routes/__tests__/writing.test.ts`, 39 tests)
+  - Volume API: 7 tests (CRUD + cascade delete + validation)
+  - Chapter API: 16 tests (CRUD + filtering + content + reorder + status transitions)
+  - Version API: 8 tests (create + list + get + compare + rollback + cross-chapter rejection)
+  - Stats API: 2 tests (initial zero + total word count)
+  - **976 total tests passing** across 41 test files, build clean (0 errors)
+
+### New Files (2)
+| File | Purpose |
+|------|---------|
+| `packages/server/src/routes/writing.ts` | 4 route factories, 18 endpoints, Zod schemas |
+| `packages/server/src/routes/__tests__/writing.test.ts` | 39 integration tests |
+
+### Modified Files (4)
+| File | Change |
+|------|--------|
+| `packages/server/src/routes/index.ts` | RouteDeps + writing route registration |
+| `packages/server/src/index.ts` | WritingService creation + ServerOptions + /api info |
+| `packages/server/src/routes/__tests__/testHelper.ts` | WritingService in TestContext |
+| `Meta/Milestone/M3.md` | Phase 3 checkboxes marked complete |
+
+### Next
+- M3 Phase 4: Chapter Editor UI
+- M3 Phase 5: Plot UI
+
+---
+
+## 2026-02-08 (M3 Phase 2: AI Service) ✅
+
+### Completed
+- **GeminiProvider** (`packages/core/src/ai/GeminiProvider.ts`, 198 lines)
+  - Wraps `@google/genai` SDK for Gemini 2.5 Pro streaming generation
+  - Retry with exponential backoff (3 attempts, 1s → 2s → 4s)
+  - Error mapping: auth (401/403), rate limit (429), content filter, context too large
+  - Extracts `usageMetadata` (promptTokenCount, candidatesTokenCount) from streaming response
+  - Lazy client initialization, `isConfigured()` guard
+- **ContextBuilder** (`packages/core/src/ai/ContextBuilder.ts`, 513 lines)
+  - 5-layer FK-based context assembly with priority-based token budget management
+  - L1 (1000): chapter content + outline + previous chapter tail (500 chars)
+  - L2 (800): characters, relationships (scoped), locations, arc — batch `findByIds()` queries
+  - L3 (600): foreshadowing (hinted + active, deduped), previous chapter hooks
+  - L4 (400): power system core rules, social rules
+  - L5 (200): user-selected additional items
+  - `formatContext()` outputs structured markdown grouped by semantic category (前文, 本章大纲, 角色档案, 世界规则, 剧情线索, 补充信息)
+  - Token budget: 1M total − 4K output reserve − 2K prompt reserve = 994K available
+- **PromptAssembler** (`packages/core/src/ai/PromptAssembler.ts`)
+  - YAML-like front-matter parsing + `{{variable}}` substitution
+  - 5 built-in templates: continue, dialogue, describe, brainstorm, ask_bible
+- **tokenCounter** (`packages/core/src/ai/tokenCounter.ts`)
+  - Heuristic estimation: CJK × 1.5, English words × 1.3, mixed = sum of both
+- **AIService** (`packages/core/src/ai/AIService.ts`, 456 lines)
+  - Implements `IAIService` with 6 generation methods + context building + provider management
+  - `generateWithContext()`: context-aware generation (continueScene, describeScene)
+  - `streamWithEvents()`: prompt-only generation (dialogue, brainstorm, ask, complete)
+  - EventBus integration: STARTED → CONTEXT_BUILT → PROGRESS → COMPLETED/ERROR
+  - Monitoring metrics: input tokens, output tokens, latency (ms) in COMPLETED events
+  - Prefers provider-reported token counts over heuristic estimates
+- **SSE API Routes** (`packages/server/src/routes/ai.ts`, 151 lines)
+  - 6 SSE streaming endpoints: POST /continue, /dialogue, /describe, /brainstorm, /ask, /complete
+  - 2 JSON endpoints: POST /context, GET /providers
+  - Zod schema validation on all request bodies (7 schemas + shared `aiGenerationOptionsSchema` and `contextItemSchema`)
+  - `validateBody()` returns 400 + `VALIDATION_ERROR` for invalid requests
+  - `streamSSE()` helper with proper headers and error handling
+- **Server Integration** (`packages/server/src/index.ts`)
+  - Refactored bootstrap: shared DB + repos + EventBus for both StoryBibleService and AIService
+  - Reads `GEMINI_API_KEY` from `process.env`, logs AI service availability
+  - AI routes registered at `/api/ai` prefix
+- **Error Classes** — `AIProviderError` with 4 error codes (AI_PROVIDER_ERROR, AI_RATE_LIMITED, AI_CONTEXT_TOO_LARGE, AI_CONTENT_FILTERED)
+- **Type System Updates**
+  - 12 granular `ContextItemType` values (chapter_content, chapter_outline, chapter_prev_tail, character, relationship, location, arc, foreshadowing, hook, power_system, social_rules, custom)
+  - `AIStreamChunk.usage` field for provider-reported token counts
+  - `AIGenerationCompletedEvent.latencyMs` for monitoring
+  - `AI_CONTEXT_BUILT` added to `BROADCAST_EVENTS`
+- **Batch Query Optimization**
+  - `findByIds()` added to CharacterRepository, LocationRepository, ForeshadowingRepository
+  - ContextBuilder L2/L3 use batch queries (eliminates N+1)
+- **Tests** (109 new tests across 7 test files)
+  - tokenCounter: 10 tests (CJK, English, mixed, empty, special chars)
+  - PromptAssembler: 12 tests (parsing, substitution, caching, edge cases)
+  - ContextBuilder: 16 tests (all 5 layers, budget truncation, formatContext, integration)
+  - GeminiProvider: 10 tests (streaming, retry, auth error, content filter, isConfigured)
+  - AIService: 22 tests (6 generation methods, events, errors, provider management)
+  - AI routes: 18 tests (SSE headers/format, JSON responses, error handling, Zod validation, no-service)
+  - WritingRepository: 50 tests, WritingService: 77 tests (from Phase 1, now also on ms3)
+  - **936 total tests passing** across 40 test files, build clean (0 errors)
+
+### Code Review Fixes Applied (P1/P2)
+- P1: Added monitoring metrics (inputTokens, latencyMs) to AI_GENERATION_COMPLETED event
+- P2: Added JSDoc to all public AIService provider management methods
+- P2: Eliminated N+1 queries with batch `findByIds()` in ContextBuilder
+- Fixed ~15 `exactOptionalPropertyTypes` TypeScript errors across GeminiProvider, ContextBuilder, PromptAssembler, server bootstrap
+- Fixed unused imports/fields causing DTS build failures
+
+### New Files (15)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/ai/tokenCounter.ts` | Token estimation |
+| `packages/core/src/ai/templates.ts` | 5 prompt template strings |
+| `packages/core/src/ai/PromptAssembler.ts` | Template variable substitution |
+| `packages/core/src/ai/ContextBuilder.ts` | 5-layer FK context assembly |
+| `packages/core/src/ai/GeminiProvider.ts` | @google/genai SDK wrapper |
+| `packages/core/src/ai/AIService.ts` | IAIService implementation |
+| `packages/core/src/ai/__tests__/tokenCounter.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/PromptAssembler.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/ContextBuilder.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/GeminiProvider.test.ts` | Tests |
+| `packages/core/src/ai/__tests__/AIService.test.ts` | Tests |
+| `packages/server/src/routes/ai.ts` | SSE API routes |
+| `packages/server/src/routes/__tests__/ai.test.ts` | Route tests |
+| `.env.local.example` | API key template |
+| `CODE_REVIEW_M3_PHASE2.md` | Code review notes |
+
+### Next
+- M3 Phase 3: Plot System API + Writing API endpoints
+- M3 Phase 4: Writing UI
+
+---
+
+## 2026-02-07 (M3 Phase 1: Writing Service) ✅
+
+### Completed
+- **WritingRepository** (`packages/core/src/db/repositories/WritingRepository.ts`, 738 lines)
+  - Volume CRUD (5 methods): create, findById, findAll, update, delete
+  - Chapter CRUD (9 methods): create, findById, findWithContent, findAll, findByVolume, findByArc, findByStatus, update, delete, reorder (stub)
+  - Content operations (3 methods): saveContent (with word count), getWordCount, getTotalWordCount
+  - Version management (5 methods): createVersion, findVersionsByChapter, findVersionById, deleteVersion, cleanupOldVersions (stratified retention)
+  - FK cleanup (3 methods): cleanupCharacterReferences, cleanupLocationReferences, cleanupForeshadowingReferences
+  - Word count supports CJK + English mixed content
+  - Performance: content field excluded from list queries (findChapterById vs findChapterWithContent)
+- **WritingService** (`packages/core/src/services/WritingService.ts`, 650 lines)
+  - 25 active methods implementing IWritingService interface
+  - FK validation: volumeId, arcId, characters[], locations[], foreshadowingHinted[]
+  - Chapter status state machine: outline → draft → revision → done (sequential enforcement)
+  - Version control: manual version, rollback with backup (source: 'rollback_backup')
+  - EventBus integration: 10 event types (CHAPTER_CREATED/UPDATED/SAVED/DELETED/ROLLED_BACK/STATUS_CHANGED, CHAPTERS_REORDERED, VOLUME_CREATED/UPDATED/DELETED, VERSION_CREATED, VERSIONS_CLEANED_UP)
+  - Cascade delete: deleteVolume removes all chapters in volume
+  - Deferred stubs: Goals, Sessions, Stats (11 methods throw with clear message)
+- **Event types updated** (`packages/core/src/types/events.ts`)
+  - Added 9 new event interfaces for Writing module
+  - Updated AppEvent union type and BROADCAST_EVENTS list
+- **Type system updated** (`packages/core/src/types/services.ts`)
+  - Added CreateVolumeInput, UpdateVolumeInput, UpdateChapterInput types
+  - Extended CreateChapterInput with status, characters, locations, foreshadowingHinted
+  - Aligned IWritingService interface: createVersion uses object param, return types match implementation
+- **Tests** (50 repo tests + 77 service tests = 127 new tests)
+  - WritingRepository: 50 tests (Volume CRUD 8, Chapter CRUD 12, Content 8, Versions 12, FK Cleanup 10)
+  - WritingService: 77 tests (Volumes 15, Chapters 25, Content 12, Versions 25)
+  - All 818 tests passing, typecheck clean (0 errors)
+
+### Decisions Made
+- Chapter status transitions are sequential forward only (outline→draft→revision→done), backward transitions always allowed
+- saveContent returns chapter without content field (performance optimization, use getChapterWithContent for full data)
+- Version cleanup only targets 'auto' source by default, preserves manual/ai_backup/rollback_backup
+- Deferred methods (Goals, Sessions, Stats) throw clear errors rather than returning empty data
+- Reorder chapters is a validation-only stub (no position column in DB yet)
+
+### Code Review Fixes Applied
+- Fixed 30 TypeScript errors (missing types, interface mismatches, exactOptionalPropertyTypes)
+- Fixed 3 test failures (saveContent return expectations, cleanup sourceFilter)
+- Fixed rollback backup source ('ai_backup' → 'rollback_backup' per doc spec)
+- Fixed VolumeStatus enum value ('completed' → 'complete')
+- Added state machine transition enforcement
+- Aligned deferred stubs with IWritingService signatures
+
+### Next
+- M3 Phase 2: AI Service (GeminiProvider, ContextBuilder, PromptAssembler)
+- M3 Phase 3: Plot System API + Writing API endpoints
+
+---
+
 ## 2026-02-07 (M2 Phase 6: Testing & Polish) ✅
 
 ### Completed

@@ -33,6 +33,8 @@ import type {
   Chapter,
   ChapterId,
   ChapterStatus,
+  ChapterOutline,
+  VolumeStatus,
   WritingGoal,
   WritingSession,
   Version,
@@ -125,6 +127,7 @@ export interface CreateRelationshipInput {
   disagreeScenarios?: string[];
   leaveScenarios?: string[];
   mcNeeds?: string;
+  evolution?: string;
 }
 
 /** Options for creating a location */
@@ -271,16 +274,50 @@ export interface IStoryBibleService {
 // WritingService
 // ===========================================
 
+/** Options for creating a volume */
+export interface CreateVolumeInput {
+  name?: string;
+  theme?: string;
+  coreConflict?: string;
+  mcGrowth?: string;
+  chapterStart?: ChapterId;
+  chapterEnd?: ChapterId;
+  status?: VolumeStatus;
+}
+
+/** Options for updating a volume */
+export type UpdateVolumeInput = Partial<CreateVolumeInput>;
+
 /** Options for creating a chapter */
 export interface CreateChapterInput {
   volumeId?: VolumeId;
   arcId?: ArcId;
   title?: string;
+  status?: ChapterStatus;
   outline?: {
     goal?: string;
     scenes?: string[];
     hookEnding?: string;
   };
+  characters?: CharacterId[];
+  locations?: LocationId[];
+  foreshadowingHinted?: ForeshadowingId[];
+}
+
+/** Options for updating a chapter */
+export interface UpdateChapterInput {
+  volumeId?: VolumeId | null;
+  arcId?: ArcId | null;
+  title?: string;
+  status?: ChapterStatus;
+  outline?: ChapterOutline;
+  characters?: CharacterId[];
+  locations?: LocationId[];
+  foreshadowingPlanted?: ForeshadowingId[];
+  foreshadowingHinted?: ForeshadowingId[];
+  foreshadowingResolved?: ForeshadowingId[];
+  emotionCurve?: string;
+  tension?: string;
 }
 
 /** Options for saving chapter content */
@@ -311,21 +348,21 @@ export interface WritingStats {
  */
 export interface IWritingService {
   // === Volumes ===
-  createVolume(input: Omit<Volume, 'id' | 'createdAt' | 'updatedAt'>): Promise<Volume>;
-  getVolume(id: VolumeId): Promise<Volume | null>;
+  createVolume(input: CreateVolumeInput): Promise<Volume>;
+  getVolume(id: VolumeId): Promise<Volume>;
   getAllVolumes(): Promise<Volume[]>;
-  updateVolume(id: VolumeId, input: Partial<Volume>): Promise<Volume>;
+  updateVolume(id: VolumeId, input: UpdateVolumeInput): Promise<Volume>;
   deleteVolume(id: VolumeId): Promise<void>;
 
   // === Chapters ===
   createChapter(input: CreateChapterInput): Promise<Chapter>;
-  getChapter(id: ChapterId): Promise<Chapter | null>;
-  getChapterWithContent(id: ChapterId): Promise<Chapter | null>;
+  getChapter(id: ChapterId): Promise<Chapter>;
+  getChapterWithContent(id: ChapterId): Promise<Chapter>;
   getAllChapters(): Promise<Chapter[]>;
   getChaptersByVolume(volumeId: VolumeId): Promise<Chapter[]>;
   getChaptersByArc(arcId: ArcId): Promise<Chapter[]>;
   getChaptersByStatus(status: ChapterStatus): Promise<Chapter[]>;
-  updateChapter(id: ChapterId, input: Partial<Chapter>): Promise<Chapter>;
+  updateChapter(id: ChapterId, input: UpdateChapterInput): Promise<Chapter>;
   deleteChapter(id: ChapterId): Promise<void>;
   reorderChapters(chapterIds: ChapterId[]): Promise<void>;
 
@@ -335,27 +372,27 @@ export interface IWritingService {
   getTotalWordCount(): Promise<number>;
 
   // === Version Control ===
-  createVersion(chapterId: ChapterId, summary?: string): Promise<Version>;
+  createVersion(input: { chapterId: ChapterId; changeSummary?: string }): Promise<Version>;
   getVersions(chapterId: ChapterId): Promise<Version[]>;
-  getVersion(versionId: number): Promise<Version | null>;
+  getVersion(versionId: number): Promise<Version>;
   compareVersions(versionId1: number, versionId2: number): Promise<VersionDiff>;
   rollbackToVersion(chapterId: ChapterId, versionId: number): Promise<Chapter>;
   cleanupOldVersions(olderThanDays: number): Promise<number>;
 
-  // === Writing Goals ===
+  // === Writing Goals (deferred to post-M3) ===
   setDailyGoal(targetWords: number): Promise<WritingGoal>;
   setChapterGoal(chapterId: ChapterId, targetWords: number): Promise<WritingGoal>;
   getActiveGoals(): Promise<WritingGoal[]>;
   updateGoalProgress(goalId: number, wordsWritten: number): Promise<WritingGoal>;
   completeGoal(goalId: number): Promise<WritingGoal>;
 
-  // === Writing Sessions ===
+  // === Writing Sessions (deferred to post-M3) ===
   startSession(chapterId?: ChapterId): Promise<WritingSession>;
   endSession(sessionId: number): Promise<WritingSession>;
   getSession(sessionId: number): Promise<WritingSession | null>;
   getTodaySessions(): Promise<WritingSession[]>;
 
-  // === Statistics ===
+  // === Statistics (deferred to post-M3) ===
   getWritingStats(startDate: string, endDate: string): Promise<WritingStats>;
   getCurrentStreak(): Promise<number>;
 }
@@ -375,9 +412,24 @@ export interface AIGenerationOptions {
   maxTokens?: number;
 }
 
+/** Context item type — fine-grained categories for AI context assembly */
+export type ContextItemType =
+  | 'chapter_content' // L1: current chapter text
+  | 'chapter_outline' // L1: chapter outline
+  | 'chapter_prev_tail' // L1: previous chapter tail
+  | 'character' // L2: character profile
+  | 'relationship' // L2: character relationship
+  | 'location' // L2: location description
+  | 'arc' // L2: story arc structure
+  | 'foreshadowing' // L3: foreshadowing hints
+  | 'hook' // L3: previous chapter hooks
+  | 'power_system' // L4: world power system rules
+  | 'social_rules' // L4: world social rules
+  | 'custom'; // L5: user-provided context
+
 /** Context item for AI generation */
 export interface ContextItem {
-  type: 'character' | 'world' | 'chapter' | 'outline' | 'custom';
+  type: ContextItemType;
   id?: string;
   content: string;
   priority: number;
@@ -406,6 +458,11 @@ export interface AIStreamChunk {
   type: 'content' | 'done' | 'error';
   content?: string;
   error?: string;
+  /** Token usage from the provider (present on 'done' chunks when available) */
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+  };
 }
 
 /**
@@ -416,30 +473,46 @@ export interface IAIService {
   /**
    * Continue writing from the current point
    */
-  continueScene(chapterId: ChapterId, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk>;
+  continueScene(
+    chapterId: ChapterId,
+    options?: AIGenerationOptions,
+    userInstruction?: string
+  ): AsyncIterable<AIStreamChunk>;
 
   /**
-   * Generate dialogue for characters
+   * Generate dialogue for characters.
+   * When chapterId is provided, augments with chapter-scoped context.
    */
   generateDialogue(
     characterIds: CharacterId[],
     context: string,
-    options?: AIGenerationOptions
+    options?: AIGenerationOptions,
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk>;
 
   /**
-   * Generate scene description
+   * Generate scene description.
+   * When chapterId is provided, augments with chapter-scoped context.
    */
   describeScene(
     locationId: LocationId,
     mood: string,
-    options?: AIGenerationOptions
+    options?: AIGenerationOptions,
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk>;
 
   /**
-   * Brainstorm ideas
+   * Brainstorm ideas.
+   * When chapterId is provided, augments with chapter-scoped context.
    */
-  brainstorm(topic: string, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk>;
+  brainstorm(
+    topic: string,
+    options?: AIGenerationOptions,
+    userInstruction?: string,
+    chapterId?: ChapterId
+  ): AsyncIterable<AIStreamChunk>;
 
   /**
    * Ask a question about the story bible
@@ -465,6 +538,12 @@ export interface IAIService {
    * Search for relevant context items
    */
   searchRelevantContext(query: string, maxItems?: number): Promise<ContextItem[]>;
+
+  // === API Key Management ===
+  /**
+   * Update the Gemini API key at runtime (per-request BYOK).
+   */
+  setGeminiApiKey(key: string): void;
 
   // === Provider Management ===
   /**

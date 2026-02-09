@@ -8,7 +8,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import { VERSION } from '@inxtone/core';
-import type { IStoryBibleService } from '@inxtone/core';
+import type { IStoryBibleService, IAIService, IWritingService } from '@inxtone/core';
 import {
   Database,
   CharacterRepository,
@@ -20,8 +20,9 @@ import {
   ArcRepository,
   ForeshadowingRepository,
   HookRepository,
+  WritingRepository,
 } from '@inxtone/core/db';
-import { EventBus, StoryBibleService } from '@inxtone/core/services';
+import { EventBus, StoryBibleService, AIService, WritingService } from '@inxtone/core/services';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -38,6 +39,11 @@ export interface ServerOptions {
 
   // Dependency injection for testing/customization
   storyBibleService?: IStoryBibleService;
+  aiService?: IAIService;
+  writingService?: IWritingService;
+
+  // Database instance for seed routes
+  db?: InstanceType<typeof Database>;
 
   // Database path for production bootstrap
   dbPath?: string;
@@ -88,20 +94,34 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
         arcs: '/api/arcs',
         foreshadowing: '/api/foreshadowing',
         hooks: '/api/hooks',
+        ai: '/api/ai',
+        // Writing API
+        volumes: '/api/volumes',
+        chapters: '/api/chapters',
+        versions: '/api/versions',
+        stats: '/api/stats',
         // Future endpoints
-        // writing: '/api/writing',
-        // ai: '/api/ai',
         // quality: '/api/quality',
         // export: '/api/export',
       },
     };
   });
 
-  // Register Story Bible API routes if service is provided
+  // Register API routes if service is provided
   if (options.storyBibleService) {
-    await registerRoutes(server, {
+    const deps: Parameters<typeof registerRoutes>[1] = {
       storyBibleService: options.storyBibleService,
-    });
+    };
+    if (options.aiService) {
+      deps.aiService = options.aiService;
+    }
+    if (options.writingService) {
+      deps.writingService = options.writingService;
+    }
+    if (options.db) {
+      deps.db = options.db;
+    }
+    await registerRoutes(server, deps);
   }
 
   // Serve static files from web build (if available)
@@ -150,11 +170,22 @@ function findWebBuildDir(): string | undefined {
 }
 
 /**
- * Create and initialize StoryBibleService with all dependencies
+ * Create and initialize all services with shared infrastructure.
+ *
+ * Creates a single Database, EventBus, and repository set shared by
+ * StoryBibleService and AIService.
  */
-function createStoryBibleService(dbPath?: string): IStoryBibleService {
+function createServices(options: {
+  dbPath?: string | undefined;
+  geminiApiKey?: string | undefined;
+}): {
+  storyBibleService: IStoryBibleService;
+  aiService: IAIService;
+  writingService: IWritingService;
+  db: InstanceType<typeof Database>;
+} {
   // Use provided path or default to ~/.inxtone/data.db
-  const finalDbPath = dbPath ?? path.join(os.homedir(), '.inxtone', 'data.db');
+  const finalDbPath = options.dbPath ?? path.join(os.homedir(), '.inxtone', 'data.db');
 
   // Ensure directory exists
   const dbDir = path.dirname(finalDbPath);
@@ -169,10 +200,10 @@ function createStoryBibleService(dbPath?: string): IStoryBibleService {
   });
   db.connect();
 
-  // Create event bus
+  // Shared infrastructure
   const eventBus = new EventBus();
 
-  // Create all repositories
+  // Shared repositories
   const characterRepo = new CharacterRepository(db);
   const relationshipRepo = new RelationshipRepository(db);
   const worldRepo = new WorldRepository(db);
@@ -182,9 +213,10 @@ function createStoryBibleService(dbPath?: string): IStoryBibleService {
   const arcRepo = new ArcRepository(db);
   const foreshadowingRepo = new ForeshadowingRepository(db);
   const hookRepo = new HookRepository(db);
+  const writingRepo = new WritingRepository(db);
 
-  // Create and return service
-  return new StoryBibleService({
+  // Create StoryBibleService
+  const storyBibleService = new StoryBibleService({
     db,
     characterRepo,
     relationshipRepo,
@@ -197,6 +229,35 @@ function createStoryBibleService(dbPath?: string): IStoryBibleService {
     hookRepo,
     eventBus,
   });
+
+  // Create AIService
+  const aiService = new AIService(
+    {
+      writingRepo,
+      characterRepo,
+      locationRepo,
+      arcRepo,
+      relationshipRepo,
+      foreshadowingRepo,
+      hookRepo,
+      worldRepo,
+      eventBus,
+    },
+    { geminiApiKey: options.geminiApiKey }
+  );
+
+  // Create WritingService
+  const writingService = new WritingService({
+    db,
+    writingRepo,
+    characterRepo,
+    locationRepo,
+    arcRepo,
+    foreshadowingRepo,
+    eventBus,
+  });
+
+  return { storyBibleService, aiService, writingService, db };
 }
 
 /**
@@ -221,14 +282,23 @@ const isMainModule = import.meta.url === `file://${process.argv[1]}`;
 if (isMainModule) {
   const port = parseInt(process.env.PORT ?? String(DEFAULT_PORT), 10);
   const dbPath = process.env.DB_PATH;
+  const geminiApiKey = process.env.GEMINI_API_KEY;
 
-  // Create StoryBibleService with dependencies
-  const storyBibleService = createStoryBibleService(dbPath);
+  // Create all services with shared infrastructure
+  const { storyBibleService, aiService, writingService, db } = createServices({
+    dbPath,
+    geminiApiKey,
+  });
 
   console.log('Starting Inxtone server...');
   console.log(`Database: ${dbPath ?? path.join(os.homedir(), '.inxtone', 'data.db')}`);
+  if (geminiApiKey) {
+    console.log('AI Service: Gemini API key configured (server-side)');
+  } else {
+    console.log('AI Service: No server key — clients provide key via BYOK');
+  }
 
-  startServer({ port, storyBibleService })
+  startServer({ port, storyBibleService, aiService, writingService, db })
     .then(() => {
       console.log(`Server running at http://localhost:${port}`);
       console.log(`API available at http://localhost:${port}/api`);

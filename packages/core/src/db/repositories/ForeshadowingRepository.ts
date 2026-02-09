@@ -81,6 +81,20 @@ export class ForeshadowingRepository extends BaseRepository<Foreshadowing, Fores
   }
 
   /**
+   * Find multiple foreshadowing items by IDs in a single query.
+   * Returns only found items (missing IDs are silently skipped).
+   */
+  findByIds(ids: ForeshadowingId[]): Foreshadowing[] {
+    if (ids.length === 0) return [];
+    const placeholders = ids.map(() => '?').join(',');
+    const rows = this.db.query<ForeshadowingRow>(
+      `SELECT * FROM foreshadowing WHERE id IN (${placeholders})`,
+      ids
+    );
+    return rows.map((row) => this.mapRow(row));
+  }
+
+  /**
    * Get all foreshadowing.
    */
   findAll(): Foreshadowing[] {

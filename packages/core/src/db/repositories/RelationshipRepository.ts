@@ -187,6 +187,10 @@ export class RelationshipRepository extends BaseRepository<Relationship, number>
       updates.push('mc_needs = ?');
       params.push(input.mcNeeds);
     }
+    if (input.evolution !== undefined) {
+      updates.push('evolution = ?');
+      params.push(input.evolution);
+    }
 
     params.push(id);
 
