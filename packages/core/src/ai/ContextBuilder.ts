@@ -81,11 +81,14 @@ export class ContextBuilder {
       throw new EntityNotFoundError('Chapter', String(chapterId));
     }
 
+    // Cache previous chapter to avoid duplicate DB queries (#26)
+    const prevChapter = this.getPreviousChapter(chapter);
+
     // Collect items from all layers
     const items: ContextItem[] = [
-      ...this.buildL1Required(chapter),
+      ...this.buildL1Required(chapter, prevChapter),
       ...this.buildL2FKExpansion(chapter),
-      ...this.buildL3PlotAwareness(chapter),
+      ...this.buildL3PlotAwareness(chapter, prevChapter),
       ...this.buildL4WorldRules(),
       ...this.buildL5UserSelected(additionalItems),
     ];
@@ -147,7 +150,7 @@ export class ContextBuilder {
   /**
    * L1 - Required: chapter content + outline + previous chapter tail
    */
-  private buildL1Required(chapter: Chapter): ContextItem[] {
+  private buildL1Required(chapter: Chapter, prevChapter: Chapter | null): ContextItem[] {
     const items: ContextItem[] = [];
 
     // Current chapter content
@@ -182,7 +185,6 @@ export class ContextBuilder {
     }
 
     // Previous chapter tail (last 500 chars)
-    const prevChapter = this.getPreviousChapter(chapter);
     if (prevChapter?.content) {
       const tail = prevChapter.content.slice(-PREV_CHAPTER_TAIL_LENGTH);
       items.push({
@@ -283,7 +285,7 @@ export class ContextBuilder {
   /**
    * L3 - Plot Awareness: foreshadowing, active foreshadowing in arc, prev hook
    */
-  private buildL3PlotAwareness(chapter: Chapter): ContextItem[] {
+  private buildL3PlotAwareness(chapter: Chapter, prevChapter: Chapter | null): ContextItem[] {
     const items: ContextItem[] = [];
 
     // Foreshadowing hinted in this chapter — batch query
@@ -317,7 +319,6 @@ export class ContextBuilder {
     }
 
     // Previous chapter hook
-    const prevChapter = this.getPreviousChapter(chapter);
     if (prevChapter) {
       const hooks = this.deps.hookRepo.findByChapter(prevChapter.id);
       for (const hook of hooks) {

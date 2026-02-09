@@ -125,19 +125,36 @@ export class AIService implements IAIService {
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
 
-    // Fetch character names for prompt
+    // Fetch full character profiles (#21)
     const characters = characterIds
       .map((id) => this.deps.characterRepo.findById(id))
-      .filter((c) => c !== null)
-      .map((c) => `${c.name} (${c.role})`);
+      .filter((c) => c !== null);
 
     if (characters.length === 0) {
       return this.yieldError('No valid characters found for dialogue generation.');
     }
 
+    // Build rich context: full profiles + scoped relationships
+    const charContext = characters.map((c) => this.contextBuilder.formatCharacter(c)).join('\n\n');
+
+    const relationships = this.contextBuilder.getScopedRelationships(characterIds);
+    const relContext = relationships
+      .map((r) => {
+        const source = characters.find((c) => c.id === r.sourceId);
+        const target = characters.find((c) => c.id === r.targetId);
+        const parts = [`${source?.name ?? r.sourceId} → ${target?.name ?? r.targetId}: ${r.type}`];
+        if (r.joinReason) parts.push(`  结缘原因: ${r.joinReason}`);
+        if (r.independentGoal) parts.push(`  独立目标: ${r.independentGoal}`);
+        return `[关系] ${parts.join('\n')}`;
+      })
+      .join('\n');
+
+    const fullContext = relContext ? `${charContext}\n\n${relContext}` : charContext;
+    const characterNames = characters.map((c) => `${c.name} (${c.role})`).join('\n');
+
     const prompt = this.promptAssembler.assemble('dialogue', {
-      context: '',
-      characters: characters.join('\n'),
+      context: fullContext,
+      characters: characterNames,
       scene_description: context,
       user_instruction: userInstruction ?? '',
     });
@@ -170,8 +187,23 @@ export class AIService implements IAIService {
       .filter(Boolean)
       .join('\n');
 
+    // Build world context for scene description (#23)
+    const contextParts: string[] = [];
+    const world = this.deps.worldRepo.get();
+    if (world?.powerSystem?.name) {
+      contextParts.push(`力量体系: ${world.powerSystem.name}`);
+    }
+    if (world?.socialRules && Object.keys(world.socialRules).length > 0) {
+      contextParts.push(
+        '社会规则: ' +
+          Object.entries(world.socialRules)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(', ')
+      );
+    }
+
     const prompt = this.promptAssembler.assemble('describe', {
-      context: '',
+      context: contextParts.join('\n'),
       location: locDescription,
       mood,
       user_instruction: userInstruction ?? '',
@@ -189,8 +221,27 @@ export class AIService implements IAIService {
     userInstruction?: string
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
+
+    // Build lightweight story context (#23)
+    const contextParts: string[] = [];
+
+    const characters = this.deps.characterRepo.findAll();
+    if (characters.length > 0) {
+      contextParts.push('角色: ' + characters.map((c) => `${c.name}(${c.role})`).join(', '));
+    }
+
+    const arcs = this.deps.arcRepo.findAll();
+    if (arcs.length > 0) {
+      contextParts.push('故事弧: ' + arcs.map((a) => `${a.name}(${a.status})`).join(', '));
+    }
+
+    const activeForeshadowing = this.deps.foreshadowingRepo.findActive();
+    if (activeForeshadowing.length > 0) {
+      contextParts.push('活跃伏笔: ' + activeForeshadowing.map((f) => f.content).join('; '));
+    }
+
     const prompt = this.promptAssembler.assemble('brainstorm', {
-      context: '',
+      context: contextParts.join('\n'),
       topic,
       user_instruction: userInstruction ?? '',
     });
@@ -204,26 +255,85 @@ export class AIService implements IAIService {
   askStoryBible(question: string, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
 
-    // Build a lightweight context from world + characters
-    const world = this.deps.worldRepo.get();
+    // Build comprehensive Story Bible context (#23)
     const contextParts: string[] = [];
 
-    if (world?.powerSystem) {
-      contextParts.push(`力量体系: ${world.powerSystem.name}`);
-      if (world.powerSystem.coreRules?.length) {
-        contextParts.push(`核心规则: ${world.powerSystem.coreRules.join(', ')}`);
-      }
-    }
-    if (world?.socialRules) {
+    // Characters summary
+    const characters = this.deps.characterRepo.findAll();
+    if (characters.length > 0) {
       contextParts.push(
-        `社会规则: ${Object.entries(world.socialRules)
-          .map(([k, v]) => `${k}: ${v}`)
-          .join(', ')}`
+        '## 角色\n' +
+          characters
+            .map((c) => {
+              const parts = [`- ${c.name} (${c.role})`];
+              if (c.motivation?.surface) parts.push(`  动机: ${c.motivation.surface}`);
+              if (c.facets?.public) parts.push(`  性格: ${c.facets.public}`);
+              return parts.join('\n');
+            })
+            .join('\n')
+      );
+    }
+
+    // Relationships
+    const relationships = this.deps.relationshipRepo.findAll();
+    if (relationships.length > 0) {
+      const charMap = new Map(characters.map((c) => [c.id, c.name]));
+      contextParts.push(
+        '## 关系\n' +
+          relationships
+            .map((r) => {
+              const src = charMap.get(r.sourceId) ?? r.sourceId;
+              const tgt = charMap.get(r.targetId) ?? r.targetId;
+              return `- ${src} → ${tgt}: ${r.type}`;
+            })
+            .join('\n')
+      );
+    }
+
+    // Arcs
+    const arcs = this.deps.arcRepo.findAll();
+    if (arcs.length > 0) {
+      contextParts.push(
+        '## 故事弧\n' + arcs.map((a) => `- ${a.name} (${a.type}, ${a.status})`).join('\n')
+      );
+    }
+
+    // Locations
+    const locations = this.deps.locationRepo.findAll();
+    if (locations.length > 0) {
+      contextParts.push(
+        '## 地点\n' + locations.map((l) => `- ${l.name}${l.type ? ` (${l.type})` : ''}`).join('\n')
+      );
+    }
+
+    // Foreshadowing
+    const foreshadowing = this.deps.foreshadowingRepo.findAll();
+    if (foreshadowing.length > 0) {
+      contextParts.push(
+        '## 伏笔\n' + foreshadowing.map((f) => `- ${f.content} (${f.status})`).join('\n')
+      );
+    }
+
+    // World rules (existing logic)
+    const world = this.deps.worldRepo.get();
+    if (world?.powerSystem) {
+      const rulesParts = [`## 力量体系: ${world.powerSystem.name}`];
+      if (world.powerSystem.coreRules?.length) {
+        rulesParts.push(`核心规则: ${world.powerSystem.coreRules.join(', ')}`);
+      }
+      contextParts.push(rulesParts.join('\n'));
+    }
+    if (world?.socialRules && Object.keys(world.socialRules).length > 0) {
+      contextParts.push(
+        '## 社会规则\n' +
+          Object.entries(world.socialRules)
+            .map(([k, v]) => `- ${k}: ${v}`)
+            .join('\n')
       );
     }
 
     const prompt = this.promptAssembler.assemble('ask_bible', {
-      context: contextParts.join('\n'),
+      context: contextParts.join('\n\n'),
       question,
     });
 
