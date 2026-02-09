@@ -162,19 +162,19 @@ INSERT OR REPLACE INTO locations (id, name, type, significance, atmosphere, deta
 -- FACTIONS
 -- ============================================================================
 INSERT OR REPLACE INTO factions (id, name, type, status, leader_id, stance_to_mc, goals, resources, internal_conflict, created_at, updated_at) VALUES
-('F-001', 'The Loom Council', 'institution', 'active', 'C-005', 'Protective but controlling; will enforce law against her if she threatens order',
+('F-001', 'The Loom Council', 'institution', 'active', 'C-005', 'neutral',
   json('["Maintain authority over all Speakers", "Preserve the Archive''s secrets", "Prevent the Unraveling", "Train the next generation safely (as they define it)"]'),
   json('["Centuries of accumulated knowledge", "Legal authority across settled lands", "The Resonance Chambers - instruments of power", "The Deep Archive - forbidden knowledge", "A standing force of Senior Speakers"]'),
   'Divide between those who believe the Archive should remain sealed forever vs. those who think some knowledge should be studied',
   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
-('F-002', 'The Unbound', 'revolutionary', 'hostile', 'C-003', 'Views her as potential recruit or obstacle to be neutralized',
+('F-002', 'The Unbound', 'revolutionary', 'hostile', 'C-003', 'hostile',
   json('["Overthrow Loom authority", "Liberate forbidden knowledge from the Archive", "Restore oral tradition as equal to written language", "Reshape language itself into a tool of liberation"]'),
   json('["Cell-based network across the country", "Access to nomadic supply lines", "Vesper''s charisma and strategic mind", "Some Speakers discontented with Loom restrictions"]'),
   'Disagreement over methods: some favor infiltration vs. Vesper''s desire for direct assault; uncertainty about Vesper''s true endgame',
   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
-('F-003', 'Keepers of the Oral Way', 'nomadic_alliance', 'neutral', 'C-004', 'Sees her as evidence that written and spoken language might coexist',
+('F-003', 'Keepers of the Oral Way', 'nomadic_alliance', 'neutral', 'C-004', 'friendly',
   json('["Preserve nomadic language traditions", "Maintain independence from Loom governance", "Bridge gaps between clans", "Prove oral tradition''s validity to the settled world"]'),
   json('["Oral memory and transmission", "Forty allied clans", "Detailed knowledge of the Unwritten Lands", "Ancient pacts with non-human entities (rumored)", "Freedom of movement outside Loom borders"]'),
   'Tension between young Unbound (like Maren) who want integration with the Loom and elders who see it as contamination',

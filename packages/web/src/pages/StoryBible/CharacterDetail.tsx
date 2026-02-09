@@ -112,7 +112,11 @@ export function CharacterDetail({
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Voice Samples</h3>
           <EditableList
-            items={character.voiceSamples ?? []}
+            items={(character.voiceSamples ?? []).map((s) =>
+              typeof s === 'string'
+                ? s
+                : `${(s as { character: string; text: string }).character}: ${(s as { character: string; text: string }).text}`
+            )}
             onSave={(voiceSamples) => save({ voiceSamples })}
             addLabel="Add sample"
           />
