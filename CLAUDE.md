@@ -16,7 +16,7 @@ Inxtone is an **open-source, local-first CLI tool** with a web-based UI that hel
 
 ```bash
 # Clone the repository
-git clone https://github.com/waynewang/inxtone.git
+git clone https://github.com/VW-ai/Inxtone.git
 cd inxtone
 
 # Install dependencies

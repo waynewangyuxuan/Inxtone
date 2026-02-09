@@ -21,7 +21,7 @@ export function Header(): React.ReactElement {
 
       <nav className={styles.nav}>
         <a
-          href="https://github.com/waynewang/inxtone"
+          href="https://github.com/VW-ai/Inxtone"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.navLink}

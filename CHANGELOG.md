@@ -77,5 +77,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/waynewang/inxtone/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/waynewang/inxtone/releases/tag/v0.1.0
+[Unreleased]: https://github.com/VW-ai/Inxtone/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/VW-ai/Inxtone/releases/tag/v0.1.0

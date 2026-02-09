@@ -16,7 +16,7 @@ export interface InitOptions {
  * Default project configuration
  */
 const DEFAULT_CONFIG = `# Inxtone Project Configuration
-# See https://github.com/waynewang/inxtone for documentation
+# See https://github.com/VW-ai/Inxtone for documentation
 
 project:
   name: "{PROJECT_NAME}"
