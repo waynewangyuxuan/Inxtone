@@ -4,6 +4,57 @@
 
 ---
 
+## 2026-02-08 (M3 Phase 3: Writing API Routes) ✅
+
+### Completed
+- **Writing API Routes** (`packages/server/src/routes/writing.ts`, 377 lines)
+  - 4 route factories: `volumeRoutes`, `chapterRoutes`, `versionRoutes`, `statsRoutes`
+  - 18 endpoints total across 4 URL prefixes:
+    - `/api/volumes` (5): GET list, GET by id, POST create, PATCH update, DELETE cascade
+    - `/api/chapters` (10): GET list (filter by volumeId/arcId/status), GET by id (?includeContent), POST create, PATCH update, PUT content, POST reorder, DELETE, GET versions, POST version, POST rollback
+    - `/api/versions` (2): GET by id, GET compare (?versionId1&versionId2)
+    - `/api/stats` (1): GET word-count
+  - 9 Zod schemas for request validation (consistent with Phase 2 AI routes)
+  - `validateBody<T>()` and `validateQuery<T>()` helper functions
+- **Server Bootstrap** (`packages/server/src/index.ts`)
+  - `createServices()` now creates WritingService with shared repos + EventBus
+  - `ServerOptions.writingService?: IWritingService` for DI
+  - Route deps wiring: conditional registration when writingService provided
+  - `/api` info endpoint updated with volumes, chapters, versions, stats entries
+  - CLI entry point updated to pass writingService to startServer
+- **Route Registration** (`packages/server/src/routes/index.ts`)
+  - `RouteDeps.writingService?: IWritingService` added
+  - 4 writing route groups conditionally registered
+- **Test Infrastructure** (`packages/server/src/routes/__tests__/testHelper.ts`)
+  - `TestContext` extended with `writingService: WritingService`
+  - `createTestServer()` creates WritingRepository + WritingService with shared repos
+- **Integration Tests** (`packages/server/src/routes/__tests__/writing.test.ts`, 39 tests)
+  - Volume API: 7 tests (CRUD + cascade delete + validation)
+  - Chapter API: 16 tests (CRUD + filtering + content + reorder + status transitions)
+  - Version API: 8 tests (create + list + get + compare + rollback + cross-chapter rejection)
+  - Stats API: 2 tests (initial zero + total word count)
+  - **976 total tests passing** across 41 test files, build clean (0 errors)
+
+### New Files (2)
+| File | Purpose |
+|------|---------|
+| `packages/server/src/routes/writing.ts` | 4 route factories, 18 endpoints, Zod schemas |
+| `packages/server/src/routes/__tests__/writing.test.ts` | 39 integration tests |
+
+### Modified Files (4)
+| File | Change |
+|------|--------|
+| `packages/server/src/routes/index.ts` | RouteDeps + writing route registration |
+| `packages/server/src/index.ts` | WritingService creation + ServerOptions + /api info |
+| `packages/server/src/routes/__tests__/testHelper.ts` | WritingService in TestContext |
+| `Meta/Milestone/M3.md` | Phase 3 checkboxes marked complete |
+
+### Next
+- M3 Phase 4: Chapter Editor UI
+- M3 Phase 5: Plot UI
+
+---
+
 ## 2026-02-08 (M3 Phase 2: AI Service) ✅
 
 ### Completed

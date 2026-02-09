@@ -19,6 +19,7 @@ import type {
   Arc,
   ArcId,
   Foreshadowing,
+  ForeshadowingId,
   Hook,
   Volume,
   VolumeId,
@@ -442,23 +443,30 @@ export interface CreateChapterRequest {
   volumeId?: VolumeId;
   arcId?: ArcId;
   title?: string;
+  status?: ChapterStatus;
   outline?: {
     goal?: string;
     scenes?: string[];
     hookEnding?: string;
   };
+  characters?: CharacterId[];
+  locations?: LocationId[];
+  foreshadowingHinted?: ForeshadowingId[];
 }
 export type CreateChapterResponse = ApiResponse<Chapter>;
 
 /** PATCH /api/chapters/:id */
 export interface UpdateChapterRequest {
-  volumeId?: VolumeId;
-  arcId?: ArcId;
+  volumeId?: VolumeId | null;
+  arcId?: ArcId | null;
   title?: string;
   status?: ChapterStatus;
   outline?: Chapter['outline'];
   characters?: CharacterId[];
   locations?: LocationId[];
+  foreshadowingPlanted?: ForeshadowingId[];
+  foreshadowingHinted?: ForeshadowingId[];
+  foreshadowingResolved?: ForeshadowingId[];
   emotionCurve?: Chapter['emotionCurve'];
   tension?: Chapter['tension'];
 }

@@ -6,7 +6,7 @@
  */
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import type { IStoryBibleService, IAIService } from '@inxtone/core';
+import type { IStoryBibleService, IAIService, IWritingService } from '@inxtone/core';
 
 import { characterRoutes } from './characters.js';
 import { relationshipRoutes } from './relationships.js';
@@ -18,6 +18,7 @@ import { arcRoutes } from './arcs.js';
 import { foreshadowingRoutes } from './foreshadowing.js';
 import { hookRoutes } from './hooks.js';
 import { aiRoutes } from './ai.js';
+import { volumeRoutes, chapterRoutes, versionRoutes, statsRoutes } from './writing.js';
 
 /**
  * Dependencies required by route handlers.
@@ -25,6 +26,7 @@ import { aiRoutes } from './ai.js';
 export interface RouteDeps {
   storyBibleService: IStoryBibleService;
   aiService?: IAIService;
+  writingService?: IWritingService;
 }
 
 /**
@@ -48,6 +50,14 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   // AI routes (optional - only registered if aiService is provided)
   if (deps.aiService) {
     await fastify.register(aiRoutes(deps), { prefix: '/api/ai' });
+  }
+
+  // Writing routes (optional - only registered if writingService is provided)
+  if (deps.writingService) {
+    await fastify.register(volumeRoutes(deps), { prefix: '/api/volumes' });
+    await fastify.register(chapterRoutes(deps), { prefix: '/api/chapters' });
+    await fastify.register(versionRoutes(deps), { prefix: '/api/versions' });
+    await fastify.register(statsRoutes(deps), { prefix: '/api/stats' });
   }
 }
 

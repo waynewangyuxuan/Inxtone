@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Token counter: heuristic estimation (CJK x1.5, English x1.3)
   - AIProviderError class with 4 error codes
   - 109 new tests, 936 total tests across 40 test files
+- **M3 Phase 3: Writing API Routes** — RESTful endpoints for writing workspace
+  - 18 endpoints: volumes (5), chapters (10), versions (2), stats (1)
+  - Zod schema validation on all request bodies
+  - Server bootstrap: WritingService creation with shared repos + EventBus
+  - 39 integration tests, 976 total tests across 41 test files
 
 ## [0.1.0] - 2026-02-05
 
