@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import MDEditor from '@uiw/react-md-editor';
 import { useAILoading, useAIResponse } from '../../stores/useEditorStore';
 import styles from './StreamingResponse.module.css';
 
@@ -26,9 +27,9 @@ export function StreamingResponse(): React.ReactElement | null {
         <span className={styles.label}>AI Response</span>
         {isLoading && <span className={styles.pulse} />}
       </div>
-      <div ref={containerRef} className={styles.content}>
+      <div ref={containerRef} className={styles.content} data-color-mode="dark">
         {response ? (
-          <pre className={styles.text}>{response}</pre>
+          <MDEditor.Markdown source={response} className={styles.text ?? ''} />
         ) : isLoading ? (
           <p className={styles.generating}>Generating...</p>
         ) : null}

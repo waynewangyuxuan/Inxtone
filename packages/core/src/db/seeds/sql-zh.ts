@@ -422,15 +422,12 @@ INSERT OR REPLACE INTO arcs (id, name, type, chapter_start, chapter_end, status,
 ('ARC-001', '断墨残章',
   'main', 1, 30, 'in_progress', 15,
   json_array(
-    json_object('name', '青鉴遗训', 'chapters', json_array(1,2,3,4,5), 'status', 'complete'),
-    json_object('name', '词锋风波', 'chapters', json_array(6,7,8,9,10,11), 'status', 'in_progress'),
-    json_object('name', '墨渊之行', 'chapters', json_array(12,13,14,15,16,17,18), 'status', 'planned'),
-    json_object('name', '万象归墨', 'chapters', json_array(19,20,21,22,23,24,25,26,27,28,29,30), 'status', 'planned')
+    json_object('name', '青鉴遗训', 'chapters', json_array(1,2,3,4,5), 'type', 'main', 'status', 'complete'),
+    json_object('name', '词锋风波', 'chapters', json_array(6,7,8,9,10,11), 'type', 'main', 'status', 'in_progress'),
+    json_object('name', '墨渊之行', 'chapters', json_array(12,13,14,15,16,17,18), 'type', 'main', 'status', 'planned'),
+    json_object('name', '万象归墨', 'chapters', json_array(19,20,21,22,23,24,25,26,27,28,29,30), 'type', 'main', 'status', 'planned')
   ),
-  json_array(
-    json_object('character_id', 'C-001', 'arc_name', '从平凡到觉悟'),
-    json_object('character_id', 'C-003', 'arc_name', '疯狂之前的最后清醒')
-  ),
+  json('{"C-001": "从平凡到觉悟", "C-003": "疯狂之前的最后清醒"}'),
   'primary',
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
@@ -439,12 +436,10 @@ INSERT OR REPLACE INTO arcs (id, name, type, chapter_start, chapter_end, status,
 ('ARC-002', '无名者的记忆',
   'sub', 6, 14, 'in_progress', 20,
   json_array(
-    json_object('name', '遗忘的开始', 'chapters', json_array(6,7,8), 'status', 'in_progress'),
-    json_object('name', '真相的碎片', 'chapters', json_array(9,10,11,12,13,14), 'status', 'planned')
+    json_object('name', '遗忘的开始', 'chapters', json_array(6,7,8), 'type', 'sub', 'status', 'in_progress'),
+    json_object('name', '真相的碎片', 'chapters', json_array(9,10,11,12,13,14), 'type', 'sub', 'status', 'planned')
   ),
-  json_array(
-    json_object('character_id', 'C-003', 'arc_name', '记忆与身份的悖论')
-  ),
+  json('{"C-003": "记忆与身份的悖论"}'),
   '墨痴的悲剧是沈书的一面镜子——两人都在读残章，但走上了截然不同的路',
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
@@ -460,9 +455,9 @@ INSERT OR REPLACE INTO foreshadowing (id, content, planted_chapter, planted_text
   1,
   '师父的书案上有两副笔架，一副落满灰尘，像是很久没有人用过第二副了。',
   json_array(
-    json_object('chapter', 3, 'hint', '沈书无意发现师父的日记中提到"另一个人"'),
-    json_object('chapter', 8, 'hint', '句读先生谈到两个读残章的人走向不同的路'),
-    json_object('chapter', 15, 'hint', '墨痴说出了与师父的名字——两人都是同一本残章的读者')
+    json_object('chapter', 3, 'text', '沈书无意发现师父的日记中提到"另一个人"'),
+    json_object('chapter', 8, 'text', '句读先生谈到两个读残章的人走向不同的路'),
+    json_object('chapter', 15, 'text', '墨痴说出了与师父的名字——两人都是同一本残章的读者')
   ),
   28,
   'active',
@@ -476,9 +471,9 @@ INSERT OR REPLACE INTO foreshadowing (id, content, planted_chapter, planted_text
   3,
   '阿鹿的眼睛在暗处会泛出极淡的墨色，像是瞳孔深处有什么东西在流动。',
   json_array(
-    json_object('chapter', 5, 'hint', '沈书第一次看到阿鹿眼睛的异光'),
-    json_object('chapter', 9, 'hint', '阿鹿提到自己曾经看不见'),
-    json_object('chapter', 11, 'hint', '一位老医者提到过有人的眼睛在失明后恢复时产生了变异')
+    json_object('chapter', 5, 'text', '沈书第一次看到阿鹿眼睛的异光'),
+    json_object('chapter', 9, 'text', '阿鹿提到自己曾经看不见'),
+    json_object('chapter', 11, 'text', '一位老医者提到过有人的眼睛在失明后恢复时产生了变异')
   ),
   14,
   'active',
@@ -492,8 +487,8 @@ INSERT OR REPLACE INTO foreshadowing (id, content, planted_chapter, planted_text
   2,
   '句读先生说：这故事我讲了一千遍了。沈书以为是夸张。',
   json_array(
-    json_object('chapter', 4, 'hint', '句读先生的故事细节过于精确，包括只有亲历者才知道的细节'),
-    json_object('chapter', 6, 'hint', '在不同的地方，句读先生讲了几乎相同的故事，但每次都是"我刚编的"')
+    json_object('chapter', 4, 'text', '句读先生的故事细节过于精确，包括只有亲历者才知道的细节'),
+    json_object('chapter', 6, 'text', '在不同的地方，句读先生讲了几乎相同的故事，但每次都是"我刚编的"')
   ),
   6,
   'active',
