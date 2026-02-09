@@ -130,7 +130,7 @@ describe('AI API Routes - /api/ai', () => {
       expect(events[1]).toEqual({ type: 'content', content: '在庭院中' });
       expect(events[2]).toEqual({ type: 'done', content: '' });
 
-      expect(aiService.continueScene).toHaveBeenCalledWith(1, undefined);
+      expect(aiService.continueScene).toHaveBeenCalledWith(1, undefined, undefined);
     });
 
     it('should pass options to the service', async () => {
@@ -141,7 +141,7 @@ describe('AI API Routes - /api/ai', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(aiService.continueScene).toHaveBeenCalledWith(1, { temperature: 0.5 });
+      expect(aiService.continueScene).toHaveBeenCalledWith(1, { temperature: 0.5 }, undefined);
     });
   });
 
@@ -166,6 +166,7 @@ describe('AI API Routes - /api/ai', () => {
       expect(aiService.generateDialogue).toHaveBeenCalledWith(
         ['C001', 'C002'],
         '两人在山顶相遇',
+        undefined,
         undefined
       );
     });
@@ -185,7 +186,7 @@ describe('AI API Routes - /api/ai', () => {
       const events = parseSSE(response.body);
       expect(events[0]).toEqual({ type: 'content', content: '远处山峦叠嶂' });
 
-      expect(aiService.describeScene).toHaveBeenCalledWith('L001', '悲壮', undefined);
+      expect(aiService.describeScene).toHaveBeenCalledWith('L001', '悲壮', undefined, undefined);
     });
   });
 
@@ -203,7 +204,7 @@ describe('AI API Routes - /api/ai', () => {
       const events = parseSSE(response.body);
       expect(events[0]).toEqual({ type: 'content', content: '1. 师徒矛盾' });
 
-      expect(aiService.brainstorm).toHaveBeenCalledWith('如何展开师徒冲突', undefined);
+      expect(aiService.brainstorm).toHaveBeenCalledWith('如何展开师徒冲突', undefined, undefined);
     });
   });
 

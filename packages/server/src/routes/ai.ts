@@ -52,23 +52,27 @@ const contextItemSchema = z.object({
 const continueSchema = z.object({
   chapterId: z.coerce.number().int().positive(),
   options: aiGenerationOptionsSchema,
+  userInstruction: z.string().optional(),
 });
 
 const dialogueSchema = z.object({
   characterIds: z.array(z.string().min(1)).min(1),
   context: z.string().min(1),
   options: aiGenerationOptionsSchema,
+  userInstruction: z.string().optional(),
 });
 
 const describeSchema = z.object({
   locationId: z.string().min(1),
   mood: z.string().min(1),
   options: aiGenerationOptionsSchema,
+  userInstruction: z.string().optional(),
 });
 
 const brainstormSchema = z.object({
   topic: z.string().min(1),
   options: aiGenerationOptionsSchema,
+  userInstruction: z.string().optional(),
 });
 
 const askSchema = z.object({
@@ -154,7 +158,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       if (!body) return reply;
       const stream = aiService.continueScene(
         body.chapterId,
-        body.options as AIGenerationOptions | undefined
+        body.options as AIGenerationOptions | undefined,
+        body.userInstruction
       );
       await streamSSE(reply, stream);
       return reply;
@@ -169,7 +174,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       const stream = aiService.generateDialogue(
         body.characterIds,
         body.context,
-        body.options as AIGenerationOptions | undefined
+        body.options as AIGenerationOptions | undefined,
+        body.userInstruction
       );
       await streamSSE(reply, stream);
       return reply;
@@ -184,7 +190,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       const stream = aiService.describeScene(
         body.locationId,
         body.mood,
-        body.options as AIGenerationOptions | undefined
+        body.options as AIGenerationOptions | undefined,
+        body.userInstruction
       );
       await streamSSE(reply, stream);
       return reply;
@@ -198,7 +205,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       if (!body) return reply;
       const stream = aiService.brainstorm(
         body.topic,
-        body.options as AIGenerationOptions | undefined
+        body.options as AIGenerationOptions | undefined,
+        body.userInstruction
       );
       await streamSSE(reply, stream);
       return reply;

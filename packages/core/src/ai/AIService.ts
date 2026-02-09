@@ -88,7 +88,11 @@ export class AIService implements IAIService {
   /**
    * Continue writing from the current point in a chapter.
    */
-  continueScene(chapterId: ChapterId, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk> {
+  continueScene(
+    chapterId: ChapterId,
+    options?: AIGenerationOptions,
+    userInstruction?: string
+  ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
     const generationType = 'continue' as const;
 
@@ -102,7 +106,7 @@ export class AIService implements IAIService {
         return this.promptAssembler.assemble('continue', {
           context: formattedContext,
           current_content: chapter.content ?? '',
-          user_instruction: '',
+          user_instruction: userInstruction ?? '',
         });
       }
     );
@@ -114,7 +118,8 @@ export class AIService implements IAIService {
   generateDialogue(
     characterIds: CharacterId[],
     context: string,
-    options?: AIGenerationOptions
+    options?: AIGenerationOptions,
+    userInstruction?: string
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
 
@@ -132,7 +137,7 @@ export class AIService implements IAIService {
       context: '',
       characters: characters.join('\n'),
       scene_description: context,
-      user_instruction: '',
+      user_instruction: userInstruction ?? '',
     });
 
     return this.streamWithEvents(taskId, 'dialogue', prompt, options);
@@ -144,7 +149,8 @@ export class AIService implements IAIService {
   describeScene(
     locationId: LocationId,
     mood: string,
-    options?: AIGenerationOptions
+    options?: AIGenerationOptions,
+    userInstruction?: string
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
     const location = this.deps.locationRepo.findById(locationId);
@@ -166,7 +172,7 @@ export class AIService implements IAIService {
       context: '',
       location: locDescription,
       mood,
-      user_instruction: '',
+      user_instruction: userInstruction ?? '',
     });
 
     return this.streamWithEvents(taskId, 'describe', prompt, options);
@@ -175,12 +181,16 @@ export class AIService implements IAIService {
   /**
    * Brainstorm ideas for a given topic.
    */
-  brainstorm(topic: string, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk> {
+  brainstorm(
+    topic: string,
+    options?: AIGenerationOptions,
+    userInstruction?: string
+  ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
     const prompt = this.promptAssembler.assemble('brainstorm', {
       context: '',
       topic,
-      user_instruction: '',
+      user_instruction: userInstruction ?? '',
     });
 
     return this.streamWithEvents(taskId, 'brainstorm', prompt, options);

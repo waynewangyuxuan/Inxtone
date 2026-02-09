@@ -472,7 +472,11 @@ export interface IAIService {
   /**
    * Continue writing from the current point
    */
-  continueScene(chapterId: ChapterId, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk>;
+  continueScene(
+    chapterId: ChapterId,
+    options?: AIGenerationOptions,
+    userInstruction?: string
+  ): AsyncIterable<AIStreamChunk>;
 
   /**
    * Generate dialogue for characters
@@ -480,7 +484,8 @@ export interface IAIService {
   generateDialogue(
     characterIds: CharacterId[],
     context: string,
-    options?: AIGenerationOptions
+    options?: AIGenerationOptions,
+    userInstruction?: string
   ): AsyncIterable<AIStreamChunk>;
 
   /**
@@ -489,13 +494,18 @@ export interface IAIService {
   describeScene(
     locationId: LocationId,
     mood: string,
-    options?: AIGenerationOptions
+    options?: AIGenerationOptions,
+    userInstruction?: string
   ): AsyncIterable<AIStreamChunk>;
 
   /**
    * Brainstorm ideas
    */
-  brainstorm(topic: string, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk>;
+  brainstorm(
+    topic: string,
+    options?: AIGenerationOptions,
+    userInstruction?: string
+  ): AsyncIterable<AIStreamChunk>;
 
   /**
    * Ask a question about the story bible
