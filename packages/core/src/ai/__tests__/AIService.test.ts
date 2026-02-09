@@ -192,6 +192,31 @@ describe('AIService', () => {
       expect(chunks[0].type).toBe('error');
       expect(chunks[0].error).toContain('No valid characters');
     });
+
+    it('augments with chapter context when chapterId is provided', async () => {
+      mockGenerateContentStream.mockResolvedValue(mockAsyncGen(['"对话内容"']));
+
+      const volume = writingRepo.createVolume({ name: 'V1', status: 'in_progress' });
+      const chapter = writingRepo.createChapter({
+        volumeId: volume.id,
+        title: 'Ch1',
+        outline: { goal: '师徒对话' },
+      });
+      writingRepo.saveContent(chapter.id, '场景正文');
+      const char1 = characterRepo.create({ name: '林逸', role: 'main' });
+      writingRepo.updateChapter(chapter.id, { characters: [char1.id] });
+
+      const chunks = await collectChunks(
+        service.generateDialogue([char1.id], '擂台对话', undefined, undefined, chapter.id)
+      );
+
+      expect(chunks.some((c) => c.type === 'content')).toBe(true);
+      const callArgs = mockGenerateContentStream.mock.calls[0][0];
+      // Should contain character profile
+      expect(callArgs.contents).toContain('林逸');
+      // Should contain chapter outline from ContextBuilder
+      expect(callArgs.contents).toContain('师徒对话');
+    });
   });
 
   // ============================================
@@ -218,6 +243,30 @@ describe('AIService', () => {
       expect(chunks[0].type).toBe('error');
       expect(chunks[0].error).toContain('not found');
     });
+
+    it('uses chapter context when chapterId is provided', async () => {
+      mockGenerateContentStream.mockResolvedValue(mockAsyncGen(['描述内容']));
+
+      const volume = writingRepo.createVolume({ name: 'V1', status: 'in_progress' });
+      const chapter = writingRepo.createChapter({
+        volumeId: volume.id,
+        title: 'Ch1',
+        outline: { goal: '场景描写' },
+      });
+      writingRepo.saveContent(chapter.id, '正文内容');
+      const loc = locationRepo.create({ name: '宗门擂台', type: '建筑' });
+      writingRepo.updateChapter(chapter.id, { locations: [loc.id] });
+
+      const chunks = await collectChunks(
+        service.describeScene(loc.id, '紧张', undefined, undefined, chapter.id)
+      );
+
+      expect(chunks.some((c) => c.type === 'content')).toBe(true);
+      const callArgs = mockGenerateContentStream.mock.calls[0][0];
+      expect(callArgs.contents).toContain('宗门擂台');
+      // Should contain chapter outline from ContextBuilder
+      expect(callArgs.contents).toContain('场景描写');
+    });
   });
 
   // ============================================
@@ -236,6 +285,40 @@ describe('AIService', () => {
       const callArgs = mockGenerateContentStream.mock.calls[0][0];
       expect(callArgs.contents).toContain('如何让主角成长');
     });
+
+    it('includes global context from GlobalContextBuilder', async () => {
+      mockGenerateContentStream.mockResolvedValue(mockAsyncGen(['建议']));
+
+      characterRepo.create({ name: '林墨渊', role: 'main' });
+
+      const chunks = await collectChunks(service.brainstorm('角色发展'));
+
+      expect(chunks.some((c) => c.type === 'content')).toBe(true);
+      const callArgs = mockGenerateContentStream.mock.calls[0][0];
+      // Should contain character name from GlobalContextBuilder.buildSummary()
+      expect(callArgs.contents).toContain('林墨渊');
+    });
+
+    it('augments with chapter context when chapterId is provided', async () => {
+      mockGenerateContentStream.mockResolvedValue(mockAsyncGen(['想法']));
+
+      const volume = writingRepo.createVolume({ name: 'V1', status: 'in_progress' });
+      const chapter = writingRepo.createChapter({
+        volumeId: volume.id,
+        title: 'Ch1',
+        outline: { goal: '主角觉醒' },
+      });
+      writingRepo.saveContent(chapter.id, '正文');
+
+      const chunks = await collectChunks(
+        service.brainstorm('接下来怎么写', undefined, undefined, chapter.id)
+      );
+
+      expect(chunks.some((c) => c.type === 'content')).toBe(true);
+      const callArgs = mockGenerateContentStream.mock.calls[0][0];
+      // Should contain chapter outline from ChapterContextBuilder
+      expect(callArgs.contents).toContain('主角觉醒');
+    });
   });
 
   // ============================================
@@ -243,7 +326,7 @@ describe('AIService', () => {
   // ============================================
 
   describe('askStoryBible', () => {
-    it('answers questions with world context', async () => {
+    it('answers questions with world context via GlobalContextBuilder', async () => {
       mockGenerateContentStream.mockResolvedValue(mockAsyncGen(['灵气修炼的核心...']));
 
       worldRepo.upsert({
@@ -256,6 +339,19 @@ describe('AIService', () => {
       const callArgs = mockGenerateContentStream.mock.calls[0][0];
       expect(callArgs.contents).toContain('灵气');
       expect(callArgs.contents).toContain('力量体系是什么');
+    });
+
+    it('includes characters and arcs in global context', async () => {
+      mockGenerateContentStream.mockResolvedValue(mockAsyncGen(['回答']));
+
+      characterRepo.create({ name: '林墨渊', role: 'main', motivation: { surface: '寻找真相' } });
+
+      const chunks = await collectChunks(service.askStoryBible('主角动机是什么？'));
+
+      expect(chunks.some((c) => c.type === 'content')).toBe(true);
+      const callArgs = mockGenerateContentStream.mock.calls[0][0];
+      expect(callArgs.contents).toContain('林墨渊');
+      expect(callArgs.contents).toContain('寻找真相');
     });
   });
 

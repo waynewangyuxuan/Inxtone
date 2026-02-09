@@ -479,32 +479,38 @@ export interface IAIService {
   ): AsyncIterable<AIStreamChunk>;
 
   /**
-   * Generate dialogue for characters
+   * Generate dialogue for characters.
+   * When chapterId is provided, augments with chapter-scoped context.
    */
   generateDialogue(
     characterIds: CharacterId[],
     context: string,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk>;
 
   /**
-   * Generate scene description
+   * Generate scene description.
+   * When chapterId is provided, augments with chapter-scoped context.
    */
   describeScene(
     locationId: LocationId,
     mood: string,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk>;
 
   /**
-   * Brainstorm ideas
+   * Brainstorm ideas.
+   * When chapterId is provided, augments with chapter-scoped context.
    */
   brainstorm(
     topic: string,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk>;
 
   /**

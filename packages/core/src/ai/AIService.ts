@@ -1,16 +1,18 @@
 /**
  * AIService - AI generation with provider abstraction
  *
- * Orchestrates GeminiProvider, ContextBuilder, and PromptAssembler
- * to implement the IAIService interface.
+ * Orchestrates GeminiProvider, ChapterContextBuilder, GlobalContextBuilder,
+ * and PromptAssembler to implement the IAIService interface.
  *
  * Responsible for:
  * - Building context for chapters (FK-based 5-layer assembly)
+ * - Building global context for story-wide queries
  * - Assembling prompts from templates
  * - Streaming AI generation responses
  * - Emitting events for generation lifecycle
  *
  * @see Meta/Modules/03_ai_service.md
+ * @see Meta/Decisions/ADR-0002-ai-context-injection-strategy.md
  */
 
 import { randomUUID } from 'node:crypto';
@@ -33,7 +35,8 @@ import type { ForeshadowingRepository } from '../db/repositories/ForeshadowingRe
 import type { HookRepository } from '../db/repositories/HookRepository.js';
 import type { WorldRepository } from '../db/repositories/WorldRepository.js';
 import { GeminiProvider, type GeminiProviderOptions } from './GeminiProvider.js';
-import { ContextBuilder } from './ContextBuilder.js';
+import { ChapterContextBuilder } from './ChapterContextBuilder.js';
+import { GlobalContextBuilder } from './GlobalContextBuilder.js';
 import { PromptAssembler } from './PromptAssembler.js';
 import { countTokens } from './tokenCounter.js';
 
@@ -60,7 +63,8 @@ export interface AIServiceOptions {
 
 export class AIService implements IAIService {
   private provider: GeminiProvider;
-  private contextBuilder: ContextBuilder;
+  private chapterContextBuilder: ChapterContextBuilder;
+  private globalContextBuilder: GlobalContextBuilder;
   private promptAssembler: PromptAssembler;
 
   constructor(
@@ -68,7 +72,7 @@ export class AIService implements IAIService {
     options?: AIServiceOptions
   ) {
     this.provider = new GeminiProvider(options?.geminiApiKey, options?.geminiOptions);
-    this.contextBuilder = new ContextBuilder({
+    const builderDeps = {
       writingRepo: deps.writingRepo,
       characterRepo: deps.characterRepo,
       locationRepo: deps.locationRepo,
@@ -77,7 +81,9 @@ export class AIService implements IAIService {
       foreshadowingRepo: deps.foreshadowingRepo,
       hookRepo: deps.hookRepo,
       worldRepo: deps.worldRepo,
-    });
+    };
+    this.chapterContextBuilder = new ChapterContextBuilder(builderDeps);
+    this.globalContextBuilder = new GlobalContextBuilder(builderDeps);
     this.promptAssembler = new PromptAssembler();
   }
 
@@ -104,7 +110,7 @@ export class AIService implements IAIService {
       (context, chapter) => {
         // Filter out chapter_content — it's passed separately as current_content (#20)
         const contextWithoutCurrent = context.items.filter((i) => i.type !== 'chapter_content');
-        const formattedContext = this.contextBuilder.formatContext(contextWithoutCurrent);
+        const formattedContext = this.chapterContextBuilder.formatContext(contextWithoutCurrent);
         return this.promptAssembler.assemble('continue', {
           context: formattedContext,
           current_content: chapter.content ?? '',
@@ -116,12 +122,14 @@ export class AIService implements IAIService {
 
   /**
    * Generate dialogue for specific characters.
+   * When chapterId is provided, augments character context with chapter-scoped awareness.
    */
   generateDialogue(
     characterIds: CharacterId[],
     context: string,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
 
@@ -135,9 +143,11 @@ export class AIService implements IAIService {
     }
 
     // Build rich context: full profiles + scoped relationships
-    const charContext = characters.map((c) => this.contextBuilder.formatCharacter(c)).join('\n\n');
+    const charContext = characters
+      .map((c) => this.chapterContextBuilder.formatCharacter(c))
+      .join('\n\n');
 
-    const relationships = this.contextBuilder.getScopedRelationships(characterIds);
+    const relationships = this.chapterContextBuilder.getScopedRelationships(characterIds);
     const relContext = relationships
       .map((r) => {
         const source = characters.find((c) => c.id === r.sourceId);
@@ -149,7 +159,20 @@ export class AIService implements IAIService {
       })
       .join('\n');
 
-    const fullContext = relContext ? `${charContext}\n\n${relContext}` : charContext;
+    let fullContext = relContext ? `${charContext}\n\n${relContext}` : charContext;
+
+    // When chapterId is provided, augment with chapter-scoped context (#27)
+    if (chapterId) {
+      const chapterCtx = this.chapterContextBuilder.build(chapterId);
+      // Filter out character/relationship items (already included above via method params)
+      const extraItems = chapterCtx.items.filter(
+        (i) => i.type !== 'character' && i.type !== 'relationship'
+      );
+      if (extraItems.length > 0) {
+        fullContext += '\n\n' + this.chapterContextBuilder.formatContext(extraItems);
+      }
+    }
+
     const characterNames = characters.map((c) => `${c.name} (${c.role})`).join('\n');
 
     const prompt = this.promptAssembler.assemble('dialogue', {
@@ -164,12 +187,14 @@ export class AIService implements IAIService {
 
   /**
    * Generate a scene description.
+   * When chapterId is provided, augments location context with chapter-scoped awareness.
    */
   describeScene(
     locationId: LocationId,
     mood: string,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
     const location = this.deps.locationRepo.findById(locationId);
@@ -187,23 +212,34 @@ export class AIService implements IAIService {
       .filter(Boolean)
       .join('\n');
 
-    // Build world context for scene description (#23)
-    const contextParts: string[] = [];
-    const world = this.deps.worldRepo.get();
-    if (world?.powerSystem?.name) {
-      contextParts.push(`力量体系: ${world.powerSystem.name}`);
-    }
-    if (world?.socialRules && Object.keys(world.socialRules).length > 0) {
-      contextParts.push(
-        '社会规则: ' +
-          Object.entries(world.socialRules)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join(', ')
-      );
+    let contextStr: string;
+
+    if (chapterId) {
+      // When chapterId is provided, use chapter-scoped context (#27)
+      const chapterCtx = this.chapterContextBuilder.build(chapterId);
+      // Filter out location items (already included via method params)
+      const extraItems = chapterCtx.items.filter((i) => i.type !== 'location');
+      contextStr = this.chapterContextBuilder.formatContext(extraItems);
+    } else {
+      // Fallback: build world context manually (#23)
+      const contextParts: string[] = [];
+      const world = this.deps.worldRepo.get();
+      if (world?.powerSystem?.name) {
+        contextParts.push(`力量体系: ${world.powerSystem.name}`);
+      }
+      if (world?.socialRules && Object.keys(world.socialRules).length > 0) {
+        contextParts.push(
+          '社会规则: ' +
+            Object.entries(world.socialRules)
+              .map(([k, v]) => `${k}: ${v}`)
+              .join(', ')
+        );
+      }
+      contextStr = contextParts.join('\n');
     }
 
     const prompt = this.promptAssembler.assemble('describe', {
-      context: contextParts.join('\n'),
+      context: contextStr,
       location: locDescription,
       mood,
       user_instruction: userInstruction ?? '',
@@ -214,34 +250,29 @@ export class AIService implements IAIService {
 
   /**
    * Brainstorm ideas for a given topic.
+   * Always uses GlobalContextBuilder for story-wide awareness.
+   * When chapterId is provided, augments with chapter-scoped context.
    */
   brainstorm(
     topic: string,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    chapterId?: ChapterId
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
 
-    // Build lightweight story context (#23)
-    const contextParts: string[] = [];
+    // Always build global summary for story awareness (#27)
+    const globalCtx = this.globalContextBuilder.buildSummary();
+    let contextStr = this.globalContextBuilder.formatContext(globalCtx.items);
 
-    const characters = this.deps.characterRepo.findAll();
-    if (characters.length > 0) {
-      contextParts.push('角色: ' + characters.map((c) => `${c.name}(${c.role})`).join(', '));
-    }
-
-    const arcs = this.deps.arcRepo.findAll();
-    if (arcs.length > 0) {
-      contextParts.push('故事弧: ' + arcs.map((a) => `${a.name}(${a.status})`).join(', '));
-    }
-
-    const activeForeshadowing = this.deps.foreshadowingRepo.findActive();
-    if (activeForeshadowing.length > 0) {
-      contextParts.push('活跃伏笔: ' + activeForeshadowing.map((f) => f.content).join('; '));
+    // When chapterId is provided, augment with chapter-scoped context
+    if (chapterId) {
+      const chapterCtx = this.chapterContextBuilder.build(chapterId);
+      contextStr += '\n\n' + this.chapterContextBuilder.formatContext(chapterCtx.items);
     }
 
     const prompt = this.promptAssembler.assemble('brainstorm', {
-      context: contextParts.join('\n'),
+      context: contextStr,
       topic,
       user_instruction: userInstruction ?? '',
     });
@@ -251,89 +282,17 @@ export class AIService implements IAIService {
 
   /**
    * Ask a question about the story bible.
+   * Uses GlobalContextBuilder for comprehensive story-wide context.
    */
   askStoryBible(question: string, options?: AIGenerationOptions): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
 
-    // Build comprehensive Story Bible context (#23)
-    const contextParts: string[] = [];
-
-    // Characters summary
-    const characters = this.deps.characterRepo.findAll();
-    if (characters.length > 0) {
-      contextParts.push(
-        '## 角色\n' +
-          characters
-            .map((c) => {
-              const parts = [`- ${c.name} (${c.role})`];
-              if (c.motivation?.surface) parts.push(`  动机: ${c.motivation.surface}`);
-              if (c.facets?.public) parts.push(`  性格: ${c.facets.public}`);
-              return parts.join('\n');
-            })
-            .join('\n')
-      );
-    }
-
-    // Relationships
-    const relationships = this.deps.relationshipRepo.findAll();
-    if (relationships.length > 0) {
-      const charMap = new Map(characters.map((c) => [c.id, c.name]));
-      contextParts.push(
-        '## 关系\n' +
-          relationships
-            .map((r) => {
-              const src = charMap.get(r.sourceId) ?? r.sourceId;
-              const tgt = charMap.get(r.targetId) ?? r.targetId;
-              return `- ${src} → ${tgt}: ${r.type}`;
-            })
-            .join('\n')
-      );
-    }
-
-    // Arcs
-    const arcs = this.deps.arcRepo.findAll();
-    if (arcs.length > 0) {
-      contextParts.push(
-        '## 故事弧\n' + arcs.map((a) => `- ${a.name} (${a.type}, ${a.status})`).join('\n')
-      );
-    }
-
-    // Locations
-    const locations = this.deps.locationRepo.findAll();
-    if (locations.length > 0) {
-      contextParts.push(
-        '## 地点\n' + locations.map((l) => `- ${l.name}${l.type ? ` (${l.type})` : ''}`).join('\n')
-      );
-    }
-
-    // Foreshadowing
-    const foreshadowing = this.deps.foreshadowingRepo.findAll();
-    if (foreshadowing.length > 0) {
-      contextParts.push(
-        '## 伏笔\n' + foreshadowing.map((f) => `- ${f.content} (${f.status})`).join('\n')
-      );
-    }
-
-    // World rules (existing logic)
-    const world = this.deps.worldRepo.get();
-    if (world?.powerSystem) {
-      const rulesParts = [`## 力量体系: ${world.powerSystem.name}`];
-      if (world.powerSystem.coreRules?.length) {
-        rulesParts.push(`核心规则: ${world.powerSystem.coreRules.join(', ')}`);
-      }
-      contextParts.push(rulesParts.join('\n'));
-    }
-    if (world?.socialRules && Object.keys(world.socialRules).length > 0) {
-      contextParts.push(
-        '## 社会规则\n' +
-          Object.entries(world.socialRules)
-            .map(([k, v]) => `- ${k}: ${v}`)
-            .join('\n')
-      );
-    }
+    // Build comprehensive Story Bible context via GlobalContextBuilder (#27)
+    const globalCtx = this.globalContextBuilder.buildFull();
+    const contextStr = this.globalContextBuilder.formatContext(globalCtx.items);
 
     const prompt = this.promptAssembler.assemble('ask_bible', {
-      context: contextParts.join('\n\n'),
+      context: contextStr,
       question,
     });
 
@@ -352,7 +311,7 @@ export class AIService implements IAIService {
     let finalPrompt = prompt;
 
     if (context?.length) {
-      const formatted = this.contextBuilder.formatContext(context);
+      const formatted = this.chapterContextBuilder.formatContext(context);
       finalPrompt = `${formatted}\n\n${prompt}`;
     }
 
@@ -368,7 +327,7 @@ export class AIService implements IAIService {
    */
   // eslint-disable-next-line @typescript-eslint/require-await
   async buildContext(chapterId: ChapterId, additionalItems?: ContextItem[]): Promise<BuiltContext> {
-    return this.contextBuilder.build(chapterId, additionalItems);
+    return this.chapterContextBuilder.build(chapterId, additionalItems);
   }
 
   /**
@@ -476,7 +435,7 @@ export class AIService implements IAIService {
                   });
                 }
 
-                const context = self.contextBuilder.build(chapterId);
+                const context = self.chapterContextBuilder.build(chapterId);
 
                 const startTime = Date.now();
 

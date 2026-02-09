@@ -167,6 +167,7 @@ describe('AI API Routes - /api/ai', () => {
         ['C001', 'C002'],
         '两人在山顶相遇',
         undefined,
+        undefined,
         undefined
       );
     });
@@ -186,7 +187,13 @@ describe('AI API Routes - /api/ai', () => {
       const events = parseSSE(response.body);
       expect(events[0]).toEqual({ type: 'content', content: '远处山峦叠嶂' });
 
-      expect(aiService.describeScene).toHaveBeenCalledWith('L001', '悲壮', undefined, undefined);
+      expect(aiService.describeScene).toHaveBeenCalledWith(
+        'L001',
+        '悲壮',
+        undefined,
+        undefined,
+        undefined
+      );
     });
   });
 
@@ -204,7 +211,12 @@ describe('AI API Routes - /api/ai', () => {
       const events = parseSSE(response.body);
       expect(events[0]).toEqual({ type: 'content', content: '1. 师徒矛盾' });
 
-      expect(aiService.brainstorm).toHaveBeenCalledWith('如何展开师徒冲突', undefined, undefined);
+      expect(aiService.brainstorm).toHaveBeenCalledWith(
+        '如何展开师徒冲突',
+        undefined,
+        undefined,
+        undefined
+      );
     });
   });
 

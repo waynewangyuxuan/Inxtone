@@ -60,6 +60,7 @@ const dialogueSchema = z.object({
   context: z.string().min(1),
   options: aiGenerationOptionsSchema,
   userInstruction: z.string().optional(),
+  chapterId: z.coerce.number().int().positive().optional(),
 });
 
 const describeSchema = z.object({
@@ -67,12 +68,14 @@ const describeSchema = z.object({
   mood: z.string().min(1),
   options: aiGenerationOptionsSchema,
   userInstruction: z.string().optional(),
+  chapterId: z.coerce.number().int().positive().optional(),
 });
 
 const brainstormSchema = z.object({
   topic: z.string().min(1),
   options: aiGenerationOptionsSchema,
   userInstruction: z.string().optional(),
+  chapterId: z.coerce.number().int().positive().optional(),
 });
 
 const askSchema = z.object({
@@ -175,7 +178,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
         body.characterIds,
         body.context,
         body.options as AIGenerationOptions | undefined,
-        body.userInstruction
+        body.userInstruction,
+        body.chapterId
       );
       await streamSSE(reply, stream);
       return reply;
@@ -191,7 +195,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
         body.locationId,
         body.mood,
         body.options as AIGenerationOptions | undefined,
-        body.userInstruction
+        body.userInstruction,
+        body.chapterId
       );
       await streamSSE(reply, stream);
       return reply;
@@ -206,7 +211,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       const stream = aiService.brainstorm(
         body.topic,
         body.options as AIGenerationOptions | undefined,
-        body.userInstruction
+        body.userInstruction,
+        body.chapterId
       );
       await streamSSE(reply, stream);
       return reply;

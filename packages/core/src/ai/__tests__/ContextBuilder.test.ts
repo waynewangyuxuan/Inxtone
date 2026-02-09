@@ -15,13 +15,13 @@ import { RelationshipRepository } from '../../db/repositories/RelationshipReposi
 import { ForeshadowingRepository } from '../../db/repositories/ForeshadowingRepository.js';
 import { HookRepository } from '../../db/repositories/HookRepository.js';
 import { WorldRepository } from '../../db/repositories/WorldRepository.js';
-import { ContextBuilder } from '../ContextBuilder.js';
+import { ChapterContextBuilder } from '../ChapterContextBuilder.js';
 import { EntityNotFoundError } from '../../errors/index.js';
 import type { ContextItem } from '../../types/services.js';
 
-describe('ContextBuilder', () => {
+describe('ChapterContextBuilder', () => {
   let db: Database;
-  let builder: ContextBuilder;
+  let builder: ChapterContextBuilder;
   let writingRepo: WritingRepository;
   let characterRepo: CharacterRepository;
   let locationRepo: LocationRepository;
@@ -44,7 +44,7 @@ describe('ContextBuilder', () => {
     hookRepo = new HookRepository(db);
     worldRepo = new WorldRepository(db);
 
-    builder = new ContextBuilder({
+    builder = new ChapterContextBuilder({
       writingRepo,
       characterRepo,
       locationRepo,
