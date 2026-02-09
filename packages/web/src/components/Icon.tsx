@@ -30,6 +30,14 @@ const iconPaths = {
       <circle cx="11" cy="11" r="2" />
     </>
   ),
+  plot: (
+    <>
+      <line x1="6" y1="3" x2="6" y2="15" />
+      <circle cx="18" cy="6" r="3" />
+      <circle cx="6" cy="15" r="3" />
+      <path d="M18 9a9 9 0 0 1-9 9" />
+    </>
+  ),
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />

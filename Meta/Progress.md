@@ -4,6 +4,56 @@
 
 ---
 
+## 2026-02-08 (M3 Phase 5: Plot UI) ✅
+
+### Completed
+- **Standalone Plot page** at `/plot` with 3-tab layout (Arcs | Foreshadowing | Hooks)
+- **Sidebar navigation** with git-branch style plot icon
+- **Arc Outliner**: Collapsible tree (Arc → Sections → Chapters)
+  - Progress bars with gold fill, status badges (planned/in_progress/complete)
+  - Type badges (main/sub), chapter click → Write page via `useEditorStore.getState().selectChapter()`
+  - Empty state when no arcs defined
+- **Foreshadowing Tracker**: Enhanced lifecycle visualization
+  - Timeline component: planted → hints → resolved/pending (dot + line)
+  - Status/term badges, overdue detection (orange border + warning badge)
+  - Collapsible hints list
+  - Add Hint modal (chapter number + text, uses Modal built-in footer)
+  - Inline Resolve with chapter input, Abandon with ConfirmDialog
+  - Sorted: active first, then by planted chapter
+- **Hook Tracker**: Hooks grouped by chapter
+  - 3-tier strength bars: low (muted, 0-33), mid (warning, 34-66), high (gold, 67-100)
+  - Type badges (opening/arc/chapter) + style badges (suspense/anticipation/emotion/mystery)
+  - Unattached hooks group for hooks without chapterId
+- **Code review fixes**: Removed dead CSS class, fixed unconditional `...` truncation
+- Build: 0 TS errors, full build clean
+
+### New Files (10)
+| File | Purpose |
+|------|---------|
+| `packages/web/src/pages/Plot.tsx` | Page orchestrator with 3 tabs |
+| `packages/web/src/pages/Plot.module.css` | Page styles |
+| `packages/web/src/pages/Plot/ArcOutliner.tsx` | Arc tree view with progress |
+| `packages/web/src/pages/Plot/ArcOutliner.module.css` | Arc outliner styles |
+| `packages/web/src/pages/Plot/ForeshadowingTracker.tsx` | Lifecycle tracker with timeline |
+| `packages/web/src/pages/Plot/ForeshadowingTracker.module.css` | Tracker styles |
+| `packages/web/src/pages/Plot/HookTracker.tsx` | Hooks by chapter with strength bars |
+| `packages/web/src/pages/Plot/HookTracker.module.css` | Hook tracker styles |
+| `packages/web/src/pages/Plot/AddHintModal.tsx` | Add hint to foreshadowing modal |
+| `packages/web/src/pages/Plot/AddHintModal.module.css` | Modal styles |
+
+### Modified Files (4)
+| File | Change |
+|------|--------|
+| `packages/web/src/App.tsx` | Added `/plot` route |
+| `packages/web/src/components/Icon.tsx` | Added `plot` icon (git-branch SVG) |
+| `packages/web/src/components/layout/Sidebar.tsx` | Added Plot nav item |
+| `packages/web/src/pages/index.ts` | Added Plot export |
+
+### Next
+- M3 Phase 6: Testing & Polish
+
+---
+
 ## 2026-02-08 (M3 Phase 4: Chapter Editor UI) ✅
 
 ### Completed

@@ -44,6 +44,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Context preview with layer grouping (L1-L5), streaming response with auto-scroll
   - Zustand store + React Query hooks for state management
   - 19 new files, 984 tests passing, build clean
+- **M3 Phase 5: Plot UI** — Standalone Plot page with arc outliner, foreshadowing tracker, hook tracker
+  - Arc Outliner: collapsible tree (Arc → Sections → Chapters), progress bars, status badges, chapter click → Write page
+  - Foreshadowing Tracker: lifecycle timeline (planted → hints → resolved/pending), overdue warnings, Add Hint modal, inline Resolve, Abandon with confirm
+  - Hook Tracker: hooks grouped by chapter with color-coded strength bars (low/mid/high)
+  - Sidebar navigation with plot icon, 3-tab layout (Arcs | Foreshadowing | Hooks)
+  - 10 new files, build clean
 
 ## [0.1.0] - 2026-02-05
 
