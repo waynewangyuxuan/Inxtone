@@ -47,13 +47,11 @@
 }
 
 .text {
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  color: var(--color-text);
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin: 0;
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-sm) !important;
+  line-height: var(--leading-normal) !important;
+  color: var(--color-text) !important;
+  background: transparent !important;
 }
 
 .generating {

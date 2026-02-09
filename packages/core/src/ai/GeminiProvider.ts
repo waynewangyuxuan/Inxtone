@@ -26,7 +26,7 @@ export interface GeminiProviderOptions {
 }
 
 const DEFAULT_OPTIONS: Required<GeminiProviderOptions> = {
-  model: 'gemini-2.5-pro',
+  model: 'gemini-3-flash-preview',
   temperature: 0.7,
   maxOutputTokens: 4000,
   retryCount: 3,

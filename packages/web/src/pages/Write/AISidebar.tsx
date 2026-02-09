@@ -93,11 +93,6 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
     void runStream('/ai/continue', body);
   };
 
-  const handleBrainstorm = () => {
-    const topic = promptText.trim() || 'story development ideas';
-    void runStream('/ai/brainstorm', { topic });
-  };
-
   const handleStop = () => {
     abortRef.current?.abort();
     setAILoading(false);
@@ -153,9 +148,6 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
             disabled={isLoading || !selectedId}
           >
             Continue
-          </Button>
-          <Button size="sm" variant="secondary" onClick={handleBrainstorm} disabled={isLoading}>
-            Brainstorm
           </Button>
           {isLoading && (
             <Button size="sm" variant="ghost" onClick={handleStop}>

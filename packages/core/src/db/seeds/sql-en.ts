@@ -200,12 +200,12 @@ INSERT OR REPLACE INTO timeline_events (event_date, description, related_charact
 -- ============================================================================
 INSERT OR REPLACE INTO arcs (id, name, type, chapter_start, chapter_end, status, progress, sections, character_arcs, main_arc_relation, created_at, updated_at) VALUES
 ('ARC-001', 'The Voice in the Silence', 'main', 1, 30, 'in_progress', 10,
-  json('{"Arrival": {"chapters": [1, 2, 3, 4, 5], "status": "in_progress", "theme": "Elara learns the grammar of the Loom"}, "The Archive": {"chapters": [6, 7, 8, 9, 10, 11, 12], "status": "planned", "theme": "Secrets beneath the tower begin to whisper"}, "The Unwritten": {"chapters": [13, 14, 15, 16, 17, 18, 19, 20], "status": "planned", "theme": "Elara discovers what lies beyond written law"}, "The Final Word": {"chapters": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30], "status": "planned", "theme": "Everything converges; nothing will be unwritten"}}'),
+  json('[{"name": "Arrival", "chapters": [1, 2, 3, 4, 5], "type": "main", "status": "in_progress"}, {"name": "The Archive", "chapters": [6, 7, 8, 9, 10, 11, 12], "type": "main", "status": "planned"}, {"name": "The Unwritten", "chapters": [13, 14, 15, 16, 17, 18, 19, 20], "type": "main", "status": "planned"}, {"name": "The Final Word", "chapters": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30], "type": "main", "status": "planned"}]'),
   json('{"C-001": "From voiceless to finding power in silence itself", "C-002": "From guilt to redemption or damnation", "C-003": "From exile to confrontation with his replacers", "C-005": "From hidden truth to reckoning"}'),
   'Central', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('ARC-002', 'The Cost of Naming', 'sub', 5, 12, 'in_progress', 25,
-  json('{"Initiation": {"chapters": [5, 6], "status": "planned", "theme": "Cael teaches Elara that every word has a price"}, "Testing": {"chapters": [7, 8, 9], "status": "planned", "theme": "Elara discovers her affinity is beyond safe limits"}, "Consequence": {"chapters": [10, 11, 12], "status": "planned", "theme": "The Loom''s protection becomes a cage"}}'),
+  json('[{"name": "Initiation", "chapters": [5, 6], "type": "sub", "status": "planned"}, {"name": "Testing", "chapters": [7, 8, 9], "type": "sub", "status": "planned"}, {"name": "Consequence", "chapters": [10, 11, 12], "type": "sub", "status": "planned"}]'),
   json('{"C-001": "Learns she cannot use her power without paying, and the cost compounds", "C-002": "Must choose between duty and protection"}'),
   'Supports and deepens ARC-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
@@ -215,17 +215,17 @@ INSERT OR REPLACE INTO arcs (id, name, type, chapter_start, chapter_end, status,
 INSERT OR REPLACE INTO foreshadowing (id, content, planted_chapter, planted_text, hints, planned_payoff, status, term, created_at, updated_at) VALUES
 ('FS-001', 'Elara''s voice was sealed intentionally by her mother—a desperate act to save her from something worse. The scar on her throat is not a wound but a signature; the word that binds her silence is her own True Name.',
   1, 'Elara touches the scar on her throat, feeling its shape like a glyph her fingers know but her mind can''t read.',
-  json('["Her scar is too perfect, too precise to be accidental (Ch 1)", "Maren mentions that nomadic tradition includes sealed voices as protection (Ch 2)", "A tutor notices her scar glows faintly under starlight (Ch 4)", "Cael has a nightmare about Lira''s throat (Ch 5)"]'),
+  json('[{"chapter": 1, "text": "Her scar is too perfect, too precise to be accidental"}, {"chapter": 2, "text": "Maren mentions that nomadic tradition includes sealed voices as protection"}, {"chapter": 4, "text": "A tutor notices her scar glows faintly under starlight"}, {"chapter": 5, "text": "Cael has a nightmare about Lira''s throat"}]'),
   28, 'active', 'long', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('FS-002', 'Pip is not a constructed golem but the binding of something sentient into the form of a book—specifically, it contains the consciousness of a failed Archive Keeper who tried to catalog the Blank Page.',
   2, 'Pages in the moonlight showed text that shouldn''t exist: coordinates, dates, names struck through in desperate ink.',
-  json('["Pip sometimes speaks in languages no one has taught it (Ch 3)", "The Rector''s face goes pale when he sees Pip (Ch 5)", "Pip writes fragments of Archive notation in its sleep (Ch 8)"]'),
+  json('[{"chapter": 3, "text": "Pip sometimes speaks in languages no one has taught it"}, {"chapter": 5, "text": "The Rector''s face goes pale when he sees Pip"}, {"chapter": 8, "text": "Pip writes fragments of Archive notation in its sleep"}]'),
   15, 'active', 'mid', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('FS-003', 'Vesper was Cael''s most promising student years ago, before his expulsion—and something happened between them that neither will speak about, something that haunts them both differently.',
   3, 'Cael finds a note in Vesper''s old handwriting, dated to when they both lived in the Tower. It reads: "I''m sorry. I didn''t understand what you were trying to protect."',
-  json('["Cael''s hand shakes when he sees Vesper''s signature (Ch 3)", "Vesper refers to something from Cael''s past only he could know (Ch 5)", "A Senior Speaker asks Cael about ''that terrible semester'' (Ch 6)"]'),
+  json('[{"chapter": 3, "text": "Cael''s hand shakes when he sees Vesper''s signature"}, {"chapter": 5, "text": "Vesper refers to something from Cael''s past only he could know"}, {"chapter": 6, "text": "A Senior Speaker asks Cael about that terrible semester"}]'),
   10, 'active', 'short', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- ============================================================================

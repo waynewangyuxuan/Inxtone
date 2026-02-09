@@ -53,9 +53,8 @@
 .editorWrapper :global(.w-md-editor-text-pre > code),
 .editorWrapper :global(.w-md-editor-text-input),
 .editorWrapper :global(.w-md-editor-text) {
-  font-family: var(--font-mono) !important;
   font-size: var(--text-base) !important;
-  line-height: var(--leading-loose) !important;
+  line-height: var(--leading-relaxed) !important;
   color: var(--white) !important;
 }
 
