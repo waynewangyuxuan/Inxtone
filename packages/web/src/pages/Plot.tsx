@@ -11,6 +11,7 @@ import type { Tab } from '../components/ui';
 import { ArcOutliner } from './Plot/ArcOutliner';
 import { ForeshadowingTracker } from './Plot/ForeshadowingTracker';
 import { HookTracker } from './Plot/HookTracker';
+import { PlotSummary } from './Plot/PlotSummary';
 import styles from './Plot.module.css';
 
 type PlotTab = 'arcs' | 'foreshadowing' | 'hooks';
@@ -40,6 +41,8 @@ export function Plot(): React.ReactElement {
           Visualize story arcs, track foreshadowing, and manage narrative hooks
         </p>
       </header>
+
+      <PlotSummary />
 
       <nav className={styles.tabBar}>
         <Tabs tabs={TABS} activeTab={activeTab} onChange={(id) => setActiveTab(id as PlotTab)} />
