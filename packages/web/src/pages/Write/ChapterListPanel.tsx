@@ -51,7 +51,7 @@ export function ChapterListPanel(): React.ReactElement {
 
   const sorted = React.useMemo(() => {
     if (!chapters) return [];
-    return [...chapters].sort((a, b) => a.id - b.id);
+    return [...chapters].sort((a, b) => a.sortOrder - b.sortOrder);
   }, [chapters]);
 
   return (
@@ -122,8 +122,12 @@ export function ChapterListPanel(): React.ReactElement {
         message="This will permanently delete this chapter and all its versions."
         onConfirm={() => {
           if (deleteId != null) {
-            deleteMutation.mutate(deleteId);
-            if (deleteId === selectedId) selectChapter(null);
+            const wasSelected = deleteId === selectedId;
+            deleteMutation.mutate(deleteId, {
+              onSuccess: () => {
+                if (wasSelected) selectChapter(null);
+              },
+            });
           }
           setDeleteId(null);
         }}

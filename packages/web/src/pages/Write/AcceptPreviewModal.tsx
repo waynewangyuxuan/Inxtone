@@ -49,8 +49,20 @@ export function AcceptPreviewModal({
     if (isInsertMode) {
       const before = beforeCursor;
       const after = afterCursor;
-      const sep1 = before && !before.endsWith('\n') ? '\n\n' : '';
-      const sep2 = after && !after.startsWith('\n') ? '\n\n' : '';
+      const sep1 = before
+        ? before.endsWith('\n\n')
+          ? ''
+          : before.endsWith('\n')
+            ? '\n'
+            : '\n\n'
+        : '';
+      const sep2 = after
+        ? after.startsWith('\n\n')
+          ? ''
+          : after.startsWith('\n')
+            ? '\n'
+            : '\n\n'
+        : '';
       merged = before + sep1 + newText + sep2 + after;
     } else {
       merged = currentContent + (currentContent ? '\n\n' : '') + newText;

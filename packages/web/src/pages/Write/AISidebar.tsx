@@ -120,12 +120,12 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
     void runStream(endpoint, body);
   };
 
-  // Cleanup abort controller on unmount
+  // Abort stream on chapter switch or unmount
   React.useEffect(() => {
     return () => {
       abortRef.current?.abort();
     };
-  }, []);
+  }, [selectedId]);
 
   const hasResponse = !!aiResponse && !isLoading;
 
