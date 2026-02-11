@@ -12,6 +12,7 @@ import type { BuiltContext } from '@inxtone/core';
 
 export type LeftPanelTab = 'chapters' | 'bible';
 export type ChapterFormMode = 'create' | 'edit' | null;
+export type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface AIHistoryEntry {
   action: string;
@@ -42,6 +43,9 @@ interface EditorState {
   builtContext: BuiltContext | null;
   excludedContextIds: Set<string>;
 
+  // Auto-save
+  autoSaveStatus: AutoSaveStatus;
+
   // UI state
   arcFilter: string | null;
   leftPanelTab: LeftPanelTab;
@@ -62,6 +66,7 @@ interface EditorState {
   setBuiltContext: (context: BuiltContext | null) => void;
   toggleContextItem: (id: string) => void;
   clearExcludedContext: () => void;
+  setAutoSaveStatus: (status: AutoSaveStatus) => void;
   setArcFilter: (arcId: string | null) => void;
   setLeftPanelTab: (tab: LeftPanelTab) => void;
   openChapterForm: (mode: 'create' | 'edit', chapterId?: number) => void;
@@ -81,6 +86,7 @@ const initialState = {
   cursorPosition: null as number | null,
   builtContext: null as BuiltContext | null,
   excludedContextIds: new Set<string>(),
+  autoSaveStatus: 'idle' as AutoSaveStatus,
   arcFilter: null as string | null,
   leftPanelTab: 'chapters' as LeftPanelTab,
   chapterFormMode: null as ChapterFormMode,
@@ -165,6 +171,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   clearExcludedContext: () => set({ excludedContextIds: new Set<string>() }),
 
+  setAutoSaveStatus: (status) => set({ autoSaveStatus: status }),
+
   setArcFilter: (arcId) => set({ arcFilter: arcId }),
 
   setLeftPanelTab: (tab) => set({ leftPanelTab: tab }),
@@ -197,6 +205,7 @@ export const useAIResponse = () => useEditorStore((s) => s.aiResponse);
 export const useCursorPosition = () => useEditorStore((s) => s.cursorPosition);
 export const useBuiltContextState = () => useEditorStore((s) => s.builtContext);
 export const useExcludedContextIds = () => useEditorStore((s) => s.excludedContextIds);
+export const useAutoSaveStatus = () => useEditorStore((s) => s.autoSaveStatus);
 export const useArcFilter = () => useEditorStore((s) => s.arcFilter);
 export const useLeftPanelTab = () => useEditorStore((s) => s.leftPanelTab);
 export const useChapterFormMode = () => useEditorStore((s) => s.chapterFormMode);

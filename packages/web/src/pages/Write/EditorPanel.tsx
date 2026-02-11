@@ -5,6 +5,7 @@
 import React from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import { useChapterWithContent, useSaveContent } from '../../hooks';
+import { useAutoSave } from '../../hooks/useAutoSave';
 import {
   useEditorStore,
   useSelectedChapterId,
@@ -35,6 +36,7 @@ export function EditorPanel({
 
   const editorWrapperRef = React.useRef<HTMLDivElement>(null);
   const setCursorPosition = useEditorStore((s) => s.setCursorPosition);
+  const { scheduleAutoSave, notifyManualSave } = useAutoSave(selectedId, contentRef);
 
   // Sync content from server when chapter changes
   React.useEffect(() => {
@@ -50,6 +52,7 @@ export function EditorPanel({
     const newVal = val ?? '';
     setContent(newVal);
     markDirty();
+    scheduleAutoSave();
     // Read cursor position after React re-renders the textarea
     requestAnimationFrame(() => {
       const textarea = editorWrapperRef.current?.querySelector('textarea');
@@ -76,12 +79,18 @@ export function EditorPanel({
   const handleSave = React.useCallback(
     (createVersion: boolean) => {
       if (selectedId == null) return;
+      const savedContent = contentRef.current;
       saveMutation.mutate(
-        { chapterId: selectedId, content: contentRef.current, createVersion },
-        { onSuccess: () => markSaved() }
+        { chapterId: selectedId, content: savedContent, createVersion },
+        {
+          onSuccess: () => {
+            markSaved();
+            notifyManualSave(savedContent);
+          },
+        }
       );
     },
-    [selectedId, saveMutation, markSaved]
+    [selectedId, saveMutation, markSaved, notifyManualSave]
   );
 
   // Ctrl+S / Cmd+S handler
