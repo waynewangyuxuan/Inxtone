@@ -35,8 +35,12 @@ interface EditorState {
   aiAction: string | null;
   aiHistory: AIHistoryEntry[];
 
+  // Cursor
+  cursorPosition: number | null;
+
   // Context
   builtContext: BuiltContext | null;
+  excludedContextIds: Set<string>;
 
   // UI state
   arcFilter: string | null;
@@ -53,8 +57,11 @@ interface EditorState {
   setAIResponse: (response: string | null, action?: string | null) => void;
   appendAIContent: (content: string) => void;
   addRejectHistory: (reason: string) => void;
+  setCursorPosition: (pos: number | null) => void;
   clearAIState: () => void;
   setBuiltContext: (context: BuiltContext | null) => void;
+  toggleContextItem: (id: string) => void;
+  clearExcludedContext: () => void;
   setArcFilter: (arcId: string | null) => void;
   setLeftPanelTab: (tab: LeftPanelTab) => void;
   openChapterForm: (mode: 'create' | 'edit', chapterId?: number) => void;
@@ -71,7 +78,9 @@ const initialState = {
   aiResponse: null as string | null,
   aiAction: null as string | null,
   aiHistory: [] as AIHistoryEntry[],
+  cursorPosition: null as number | null,
   builtContext: null as BuiltContext | null,
+  excludedContextIds: new Set<string>(),
   arcFilter: null as string | null,
   leftPanelTab: 'chapters' as LeftPanelTab,
   chapterFormMode: null as ChapterFormMode,
@@ -86,9 +95,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       selectedChapterId: id,
       isDirty: false,
       lastSavedAt: null,
+      cursorPosition: null,
       aiResponse: null,
       aiAction: null,
       builtContext: null,
+      excludedContextIds: new Set<string>(),
     }),
 
   markDirty: () => set({ isDirty: true }),
@@ -131,6 +142,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
   },
 
+  setCursorPosition: (pos) => set({ cursorPosition: pos }),
+
   clearAIState: () =>
     set({
       aiLoading: false,
@@ -139,6 +152,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }),
 
   setBuiltContext: (context) => set({ builtContext: context }),
+
+  toggleContextItem: (id) => {
+    const current = new Set(get().excludedContextIds);
+    if (current.has(id)) {
+      current.delete(id);
+    } else {
+      current.add(id);
+    }
+    set({ excludedContextIds: current });
+  },
+
+  clearExcludedContext: () => set({ excludedContextIds: new Set<string>() }),
 
   setArcFilter: (arcId) => set({ arcFilter: arcId }),
 
@@ -169,7 +194,9 @@ export const useLastSavedAt = () => useEditorStore((s) => s.lastSavedAt);
 export const useAIPanelOpen = () => useEditorStore((s) => s.aiPanelOpen);
 export const useAILoading = () => useEditorStore((s) => s.aiLoading);
 export const useAIResponse = () => useEditorStore((s) => s.aiResponse);
+export const useCursorPosition = () => useEditorStore((s) => s.cursorPosition);
 export const useBuiltContextState = () => useEditorStore((s) => s.builtContext);
+export const useExcludedContextIds = () => useEditorStore((s) => s.excludedContextIds);
 export const useArcFilter = () => useEditorStore((s) => s.arcFilter);
 export const useLeftPanelTab = () => useEditorStore((s) => s.leftPanelTab);
 export const useChapterFormMode = () => useEditorStore((s) => s.chapterFormMode);
@@ -185,8 +212,11 @@ export const useEditorActions = () =>
     setAIResponse: s.setAIResponse,
     appendAIContent: s.appendAIContent,
     addRejectHistory: s.addRejectHistory,
+    setCursorPosition: s.setCursorPosition,
     clearAIState: s.clearAIState,
     setBuiltContext: s.setBuiltContext,
+    toggleContextItem: s.toggleContextItem,
+    clearExcludedContext: s.clearExcludedContext,
     setArcFilter: s.setArcFilter,
     setLeftPanelTab: s.setLeftPanelTab,
     openChapterForm: s.openChapterForm,

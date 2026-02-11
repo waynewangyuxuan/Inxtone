@@ -105,10 +105,12 @@ export class AIService implements IAIService {
   continueScene(
     chapterId: ChapterId,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    excludedContextIds?: string[]
   ): AsyncIterable<AIStreamChunk> {
     const taskId = randomUUID();
     const generationType = 'continue' as const;
+    const excludeSet = excludedContextIds?.length ? new Set(excludedContextIds) : null;
 
     return this.generateWithContext(
       taskId,
@@ -117,8 +119,12 @@ export class AIService implements IAIService {
       options,
       (context, chapter) => {
         // Filter out chapter_content — it's passed separately as current_content (#20)
-        const contextWithoutCurrent = context.items.filter((i) => i.type !== 'chapter_content');
-        const formattedContext = this.chapterContextBuilder.formatContext(contextWithoutCurrent);
+        let filtered = context.items.filter((i) => i.type !== 'chapter_content');
+        // Apply user exclusions (L2-L5 items toggled off in UI)
+        if (excludeSet) {
+          filtered = filtered.filter((i) => !i.id || !excludeSet.has(i.id));
+        }
+        const formattedContext = this.chapterContextBuilder.formatContext(filtered);
         return this.promptAssembler.assemble('continue', {
           context: formattedContext,
           current_content: chapter.content ?? '',

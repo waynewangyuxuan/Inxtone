@@ -13,9 +13,10 @@ import {
   useSelectedChapterId,
   useAIPanelOpen,
   useLeftPanelTab,
+  useCursorPosition,
   useEditorActions,
 } from '../stores/useEditorStore';
-import { useChapterWithContent, useSaveContent } from '../hooks';
+import { useSaveContent } from '../hooks';
 import { ChapterListPanel } from './Write/ChapterListPanel';
 import { StoryBiblePanel } from './Write/StoryBiblePanel';
 import { ChapterForm } from './Write/ChapterForm';
@@ -33,10 +34,11 @@ export function Write(): React.ReactElement {
   const selectedId = useSelectedChapterId();
   const aiPanelOpen = useAIPanelOpen();
   const leftPanelTab = useLeftPanelTab();
+  const cursorPosition = useCursorPosition();
   const { setLeftPanelTab, clearAIState } = useEditorActions();
 
-  // For accept: append AI text to chapter content
-  const { data: chapter } = useChapterWithContent(selectedId);
+  // Ref to read editor's current local content (avoids stale Query cache)
+  const editorContentRef = React.useRef('');
   const saveMutation = useSaveContent();
 
   // Accept preview state
@@ -88,7 +90,7 @@ export function Write(): React.ReactElement {
       </div>
 
       <div className={styles.centerPanel}>
-        <EditorPanel />
+        <EditorPanel contentRef={editorContentRef} />
       </div>
 
       {aiPanelOpen && selectedId != null && (
@@ -101,8 +103,9 @@ export function Write(): React.ReactElement {
 
       <AcceptPreviewModal
         isOpen={showAcceptPreview}
-        currentContent={chapter?.content ?? ''}
+        currentContent={editorContentRef.current}
         newText={pendingAIText}
+        cursorPosition={cursorPosition}
         onConfirm={handlePreviewConfirm}
         onCancel={handlePreviewCancel}
       />

@@ -12,6 +12,7 @@ import {
   useSelectedChapterId,
   useAILoading,
   useAIResponse,
+  useExcludedContextIds,
   useEditorActions,
   useEditorStore,
 } from '../../stores/useEditorStore';
@@ -30,6 +31,7 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
   const selectedId = useSelectedChapterId();
   const isLoading = useAILoading();
   const aiResponse = useAIResponse();
+  const excludedIds = useExcludedContextIds();
   const { setAILoading, setAIResponse, appendAIContent, addRejectHistory, setBuiltContext } =
     useEditorActions();
 
@@ -84,6 +86,8 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
     if (!selectedId) return;
     const body: Record<string, unknown> = { chapterId: selectedId };
     if (promptText.trim()) body.userInstruction = promptText.trim();
+    const excluded = Array.from(excludedIds);
+    if (excluded.length > 0) body.excludedContextIds = excluded;
     void runStream('/ai/continue', body);
   };
 

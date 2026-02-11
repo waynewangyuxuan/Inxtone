@@ -54,6 +54,7 @@ const continueSchema = z.object({
   chapterId: z.coerce.number().int().positive(),
   options: aiGenerationOptionsSchema,
   userInstruction: z.string().optional(),
+  excludedContextIds: z.array(z.string()).optional(),
 });
 
 const dialogueSchema = z.object({
@@ -193,7 +194,8 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       const stream = aiService.continueScene(
         body.chapterId,
         body.options as AIGenerationOptions | undefined,
-        body.userInstruction
+        body.userInstruction,
+        body.excludedContextIds
       );
       await streamSSE(reply, stream);
       return reply;

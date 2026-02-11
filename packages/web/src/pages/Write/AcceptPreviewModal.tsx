@@ -1,5 +1,8 @@
 /**
  * AcceptPreviewModal — Preview merged content before accepting AI response
+ *
+ * Supports insertion at cursor position (3-part preview: before | AI | after)
+ * or append at end (2-part preview: existing | AI continuation).
  */
 
 import React from 'react';
@@ -11,6 +14,7 @@ interface AcceptPreviewModalProps {
   isOpen: boolean;
   currentContent: string;
   newText: string;
+  cursorPosition?: number | null;
   onConfirm: (mergedContent: string) => void;
   onCancel: () => void;
 }
@@ -19,6 +23,7 @@ export function AcceptPreviewModal({
   isOpen,
   currentContent,
   newText,
+  cursorPosition,
   onConfirm,
   onCancel,
 }: AcceptPreviewModalProps): React.ReactElement | null {
@@ -32,8 +37,24 @@ export function AcceptPreviewModal({
     }
   }, [isOpen]);
 
+  // Determine if inserting mid-content or appending at end
+  const isInsertMode =
+    cursorPosition != null && cursorPosition >= 0 && cursorPosition < currentContent.length;
+
+  const beforeCursor = isInsertMode ? currentContent.slice(0, cursorPosition) : '';
+  const afterCursor = isInsertMode ? currentContent.slice(cursorPosition) : '';
+
   const handleConfirm = () => {
-    const merged = currentContent + (currentContent ? '\n\n' : '') + newText;
+    let merged: string;
+    if (isInsertMode) {
+      const before = beforeCursor;
+      const after = afterCursor;
+      const sep1 = before && !before.endsWith('\n') ? '\n\n' : '';
+      const sep2 = after && !after.startsWith('\n') ? '\n\n' : '';
+      merged = before + sep1 + newText + sep2 + after;
+    } else {
+      merged = currentContent + (currentContent ? '\n\n' : '') + newText;
+    }
     onConfirm(merged);
   };
 
@@ -42,7 +63,7 @@ export function AcceptPreviewModal({
   return (
     <Modal
       isOpen
-      title="Preview AI Continuation"
+      title={isInsertMode ? 'Preview AI Insertion' : 'Preview AI Continuation'}
       onClose={onCancel}
       onSubmit={handleConfirm}
       submitLabel="Confirm Accept"
@@ -50,17 +71,45 @@ export function AcceptPreviewModal({
       size="lg"
     >
       <div className={styles.preview} data-color-mode="dark">
-        {currentContent && (
-          <div className={styles.existingContent}>
-            <MDEditor.Markdown source={currentContent} />
-          </div>
+        {isInsertMode ? (
+          <>
+            {beforeCursor && (
+              <div className={styles.existingContent}>
+                <MDEditor.Markdown source={beforeCursor} />
+              </div>
+            )}
+            <div ref={dividerRef} className={styles.divider}>
+              <span className={styles.dividerLabel}>AI Insertion</span>
+            </div>
+            <div className={styles.newContent}>
+              <MDEditor.Markdown source={newText} />
+            </div>
+            {afterCursor && (
+              <>
+                <div className={styles.dividerAfter}>
+                  <span className={styles.dividerLabel}>Continues</span>
+                </div>
+                <div className={styles.existingContent}>
+                  <MDEditor.Markdown source={afterCursor} />
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {currentContent && (
+              <div className={styles.existingContent}>
+                <MDEditor.Markdown source={currentContent} />
+              </div>
+            )}
+            <div ref={dividerRef} className={styles.divider}>
+              <span className={styles.dividerLabel}>AI Continuation</span>
+            </div>
+            <div className={styles.newContent}>
+              <MDEditor.Markdown source={newText} />
+            </div>
+          </>
         )}
-        <div ref={dividerRef} className={styles.divider}>
-          <span className={styles.dividerLabel}>AI Continuation</span>
-        </div>
-        <div className={styles.newContent}>
-          <MDEditor.Markdown source={newText} />
-        </div>
       </div>
     </Modal>
   );
