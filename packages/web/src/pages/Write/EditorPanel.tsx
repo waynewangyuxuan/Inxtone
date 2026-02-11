@@ -13,6 +13,7 @@ import {
   useEditorActions,
 } from '../../stores/useEditorStore';
 import { EditorToolbar } from './EditorToolbar';
+import { OutlinePanel } from './OutlinePanel';
 import { EmptyState } from '../../components/ui';
 import styles from './EditorPanel.module.css';
 
@@ -130,6 +131,7 @@ export function EditorPanel({
   return (
     <div className={styles.panel}>
       <EditorToolbar content={content} onSave={handleSave} saving={saveMutation.isPending} />
+      <OutlinePanel />
       <div ref={editorWrapperRef} className={styles.editorWrapper} data-color-mode="dark">
         <MDEditor
           value={content}
