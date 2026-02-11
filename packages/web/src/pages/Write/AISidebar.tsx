@@ -19,6 +19,7 @@ import {
 import { useBuildContext } from '../../hooks';
 import { streamAI } from '../../lib/aiStream';
 import { ContextPreview } from './ContextPreview';
+import { PromptPresets } from './PromptPresets';
 import { StreamingResponse } from './StreamingResponse';
 import { RejectReasonModal } from './RejectReasonModal';
 import styles from './AISidebar.module.css';
@@ -153,6 +154,12 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
             </Button>
           )}
         </div>
+
+        <PromptPresets
+          onSelect={(instruction) => {
+            setPromptText((prev) => (prev ? `${prev}\n${instruction}` : instruction));
+          }}
+        />
 
         <div className={styles.prompt}>
           <Textarea
