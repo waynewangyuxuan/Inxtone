@@ -4,6 +4,65 @@
 
 ---
 
+## 2026-02-10 (M4: AI Quality + Writing UX — Pre-Phase + Phase 1 + Code Review)
+
+### Completed
+
+**Pre-Phase: Close Already-Fixed Issues** — 8 GitHub issues closed
+- #20 (content dedup), #21 (dialogue character context), #22 (ai_backup), #23 (context enrichment), #24 (userInstruction wiring), #26 (prevChapter cache), #27 (ContextBuilder hierarchy), #29 (hackathon checklist)
+- All were already fixed in M3 codebase with `#issue-number` comments
+
+**Phase 1: Chapter Ordering** (#25)
+- Migration 002: `sort_order INTEGER` column + backfill from id + composite index
+- `WritingRepository`: all 5 chapter query methods use `ORDER BY sort_order ASC, id ASC`
+- `createChapter()`: auto-assigns next `sort_order` via `MAX(sort_order) + 1` within volume
+- `reorderChapters()`: real implementation (was stub) — updates sort_order by array position
+- `Chapter` entity: added `sortOrder: number` field
+
+**Code Review Fixes** — 8 critical/high issues addressed
+- ChapterListPanel: sort by `sortOrder` (not `id`)
+- ChapterListPanel: defer `selectChapter(null)` to delete `onSuccess` callback
+- ContextPreview: consistent ID fallback (`idx-${i}`) in count + render (was `''` vs `idx-${i}`)
+- AcceptPreviewModal: ensure exactly `\n\n` paragraph breaks (handle single-newline edge cases)
+- StreamingResponse: only auto-scroll when user is near bottom (< 80px threshold)
+- AISidebar: abort stream on chapter switch (prevents wrong-chapter AI content)
+- AIService: wrap ai_backup version creation in try-catch (non-fatal failure)
+- BaseContextBuilder: stable sort with secondary index key in `truncateToFitBudget`
+
+**Documentation**
+- M4.md rewritten: "Search & Quality" → "AI Quality + Writing UX" (FTS/embeddings/QualityService deferred to M5)
+- Issue mapping table: 17 issues across 7 phases
+
+### New Files (1)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/db/migrations/002_chapter_sort_order.ts` | Add sort_order column to chapters |
+
+### Modified Files (10)
+| File | Change |
+|------|--------|
+| `packages/core/src/db/migrations/index.ts` | Register migration 002 |
+| `packages/core/src/db/repositories/WritingRepository.ts` | sort_order in all chapter queries + real reorderChapters |
+| `packages/core/src/types/entities.ts` | `sortOrder: number` on Chapter |
+| `packages/core/src/ai/AIService.ts` | ai_backup try-catch |
+| `packages/core/src/ai/BaseContextBuilder.ts` | Stable sort in truncateToFitBudget |
+| `packages/web/src/pages/Write/ChapterListPanel.tsx` | Sort by sortOrder + delete onSuccess fix |
+| `packages/web/src/pages/Write/ContextPreview.tsx` | Consistent ID fallback |
+| `packages/web/src/pages/Write/AcceptPreviewModal.tsx` | Paragraph break separator logic |
+| `packages/web/src/pages/Write/StreamingResponse.tsx` | Near-bottom auto-scroll |
+| `packages/web/src/pages/Write/AISidebar.tsx` | Abort stream on chapter switch |
+
+### Stats
+- Tests: **1016 passed** (44 files), 0 failures
+- Build: clean (0 TS errors)
+- GitHub issues closed: 9 total (#20-27, #29)
+
+### Next
+- Phase 2: Auto-save (#31)
+- Phase 3: Prompt presets (#32)
+
+---
+
 ## 2026-02-10 (M3 Phase 6: Testing & Polish + Deferred Features) ✅
 
 ### Completed
