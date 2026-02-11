@@ -1,0 +1,74 @@
+import { describe, it, expect } from 'vitest';
+import { parseBrainstorm } from '../parseBrainstorm';
+
+describe('parseBrainstorm', () => {
+  it('parses bold-title numbered format', () => {
+    const text = `1. **The Hidden Letter**: A mysterious letter is discovered under the floorboards.
+2. **A Rival Appears**: The antagonist's apprentice arrives in town.
+3. **Broken Trust**: The protagonist discovers their mentor lied about the prophecy.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(3);
+    expect(result[0]).toEqual({
+      id: 1,
+      title: 'The Hidden Letter',
+      body: 'A mysterious letter is discovered under the floorboards.',
+    });
+    expect(result[1].title).toBe('A Rival Appears');
+    expect(result[2].title).toBe('Broken Trust');
+  });
+
+  it('parses plain numbered format with colon separator', () => {
+    const text = `1. Hidden Letter: A mysterious letter is found.
+2. Rival Appears: The antagonist shows up.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(2);
+    expect(result[0].title).toBe('Hidden Letter');
+    expect(result[0].body).toBe('A mysterious letter is found.');
+  });
+
+  it('parses plain numbered format with dash separator', () => {
+    const text = `1. Hidden Letter - A mysterious letter is found.
+2. Rival Appears - The antagonist shows up.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(2);
+    expect(result[0].title).toBe('Hidden Letter');
+    expect(result[0].body).toBe('A mysterious letter is found.');
+  });
+
+  it('handles multi-line body text', () => {
+    const text = `1. **The Hidden Letter**: A mysterious letter is discovered.
+   It contains a map to the ancient temple.
+   The ink appears to be blood.
+2. **A Rival Appears**: The antagonist arrives.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(2);
+    expect(result[0].body).toContain('map to the ancient temple');
+    expect(result[0].body).toContain('ink appears to be blood');
+  });
+
+  it('falls back to single card when no numbered items', () => {
+    const text = 'This is just a freeform brainstorm response with no numbered items.';
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Brainstorm Result');
+    expect(result[0].body).toBe(text);
+  });
+
+  it('returns empty array for empty text', () => {
+    expect(parseBrainstorm('')).toEqual([]);
+    expect(parseBrainstorm('   ')).toEqual([]);
+  });
+
+  it('truncates long plain titles', () => {
+    const longLine =
+      '1. This is a very long title that exceeds sixty characters and should be truncated appropriately by the parser';
+    const result = parseBrainstorm(longLine);
+    expect(result).toHaveLength(1);
+    expect(result[0].title.length).toBeLessThanOrEqual(60);
+    expect(result[0].title).toContain('...');
+  });
+});

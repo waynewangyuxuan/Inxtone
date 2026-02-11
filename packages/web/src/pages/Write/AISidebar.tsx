@@ -2,7 +2,7 @@
  * AISidebar — AI panel orchestrator
  *
  * Quick actions (Continue, Brainstorm), prompt input, streaming response,
- * accept/reject/regenerate action bar.
+ * accept/reject/regenerate action bar, brainstorm suggestion cards.
  */
 
 import React from 'react';
@@ -18,9 +18,11 @@ import {
 } from '../../stores/useEditorStore';
 import { useBuildContext } from '../../hooks';
 import { streamAI } from '../../lib/aiStream';
+import { parseBrainstorm } from '../../lib/parseBrainstorm';
 import { ContextPreview } from './ContextPreview';
 import { PromptPresets } from './PromptPresets';
 import { StreamingResponse } from './StreamingResponse';
+import { BrainstormPanel } from './BrainstormPanel';
 import { RejectReasonModal } from './RejectReasonModal';
 import styles from './AISidebar.module.css';
 
@@ -43,6 +45,9 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
   const lastActionRef = React.useRef<{ endpoint: string; body: Record<string, unknown> } | null>(
     null
   );
+
+  // Track current AI action for distinguishing continue vs brainstorm
+  const aiAction = useEditorStore((s) => s.aiAction);
 
   // Sync context data to store
   React.useEffect(() => {
@@ -92,6 +97,14 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
     void runStream('/ai/continue', body);
   };
 
+  const handleBrainstorm = () => {
+    if (!selectedId) return;
+    const topic = promptText.trim() || 'What should happen next in this chapter?';
+    const body: Record<string, unknown> = { topic };
+    if (selectedId) body.chapterId = selectedId;
+    void runStream('/ai/brainstorm', body);
+  };
+
   const handleStop = () => {
     abortRef.current?.abort();
     setAILoading(false);
@@ -121,6 +134,27 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
     void runStream(endpoint, body);
   };
 
+  // Parse brainstorm suggestions when brainstorm finishes
+  const brainstormSuggestions = React.useMemo(() => {
+    if (aiAction !== '/ai/brainstorm' || isLoading || !aiResponse) return null;
+    return parseBrainstorm(aiResponse);
+  }, [aiAction, isLoading, aiResponse]);
+
+  const handleUseAsInstruction = (suggestion: { title: string; body: string }) => {
+    const instruction = suggestion.body
+      ? `${suggestion.title}: ${suggestion.body}`
+      : suggestion.title;
+    setPromptText(instruction);
+    // Clear brainstorm state so user can run Continue with this instruction
+    const { clearAIState } = useEditorStore.getState();
+    clearAIState();
+  };
+
+  const handleDismissBrainstorm = () => {
+    const { clearAIState } = useEditorStore.getState();
+    clearAIState();
+  };
+
   // Abort stream on chapter switch or unmount
   React.useEffect(() => {
     return () => {
@@ -128,7 +162,8 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
     };
   }, [selectedId]);
 
-  const hasResponse = !!aiResponse && !isLoading;
+  const isBrainstormResult = brainstormSuggestions != null && brainstormSuggestions.length > 0;
+  const isContinueResult = !!aiResponse && !isLoading && !isBrainstormResult;
 
   return (
     <div className={styles.sidebar}>
@@ -147,6 +182,14 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
             disabled={isLoading || !selectedId}
           >
             Continue
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleBrainstorm}
+            disabled={isLoading || !selectedId}
+          >
+            Brainstorm
           </Button>
           {isLoading && (
             <Button size="sm" variant="ghost" onClick={handleStop}>
@@ -172,9 +215,19 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
         </div>
       </div>
 
-      <StreamingResponse />
+      {/* Show brainstorm cards OR streaming response, not both */}
+      {isBrainstormResult ? (
+        <BrainstormPanel
+          suggestions={brainstormSuggestions}
+          onUseAsInstruction={handleUseAsInstruction}
+          onRegenerate={handleRegenerate}
+          onDismiss={handleDismissBrainstorm}
+        />
+      ) : (
+        <StreamingResponse />
+      )}
 
-      {hasResponse && (
+      {isContinueResult && (
         <div className={styles.actionBar}>
           <Button size="sm" variant="primary" onClick={handleAccept}>
             Accept
