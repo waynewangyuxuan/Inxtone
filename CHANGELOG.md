@@ -59,6 +59,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Hook Tracker: hooks grouped by chapter with color-coded strength bars (low/mid/high)
   - Sidebar navigation with plot icon, 3-tab layout (Arcs | Foreshadowing | Hooks)
   - 10 new files, build clean
+- **M3 Phase 6: Testing & Polish** — E2E tests, performance benchmarks, and deferred feature completion
+  - Accept at cursor position: AI text inserts at editor cursor (3-part preview), not just appended
+  - Context item toggle: checkboxes to exclude L2-L5 context items before AI generation
+  - E2E tests: 7 tests covering writing flow, version rollback, plot lifecycle, status transitions, word count
+  - Performance tests: 7 benchmarks (all under threshold — save 1ms, load 1ms, context build 2ms)
+  - Context exclusion wired through full stack: web store → AISidebar → server schema → AIService filter
+  - 1015 tests passing across 44 files
 
 ## [0.1.0] - 2026-02-05
 

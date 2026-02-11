@@ -476,7 +476,8 @@ export interface IAIService {
   continueScene(
     chapterId: ChapterId,
     options?: AIGenerationOptions,
-    userInstruction?: string
+    userInstruction?: string,
+    excludedContextIds?: string[]
   ): AsyncIterable<AIStreamChunk>;
 
   /**

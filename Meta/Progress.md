@@ -4,6 +4,76 @@
 
 ---
 
+## 2026-02-10 (M3 Phase 6: Testing & Polish + Deferred Features) ✅
+
+### Completed
+- **Accept at Cursor Position** (Part B) — AI-generated text now inserts at the editor's cursor position instead of always appending at the end
+  - `useEditorStore`: added `cursorPosition` state + `setCursorPosition` action
+  - `EditorPanel`: DOM-level cursor tracking via `keyup`/`mouseup` on internal textarea + `requestAnimationFrame` in onChange
+  - `EditorPanel`: exposes local content to parent via `contentRef` prop (fixes stale content issue from PR #40 review / Issue #42)
+  - `AcceptPreviewModal`: 3-part preview (before | AI Insertion | after) when cursor is mid-content, 2-part preview (existing | AI Continuation) when appending
+  - Smart separator logic: checks `endsWith('\n')` / `startsWith('\n')` to avoid double line breaks
+- **Context Item Toggle** (Part C) — Users can now toggle L2-L5 context items on/off before AI generation
+  - `useEditorStore`: added `excludedContextIds: Set<string>` state + `toggleContextItem`/`clearExcludedContext` actions
+  - `ContextPreview`: checkboxes per item — L1 items (content, outline, prev_tail) locked on, L2-L5 toggleable
+  - Excluded items rendered dimmed (opacity 0.4) with strikethrough on preview text
+  - Header shows active/total item count
+  - `AISidebar`: passes `excludedContextIds` array in Continue request body
+  - Server `ai.ts`: added `excludedContextIds` to `continueSchema` Zod validation
+  - `IAIService.continueScene`: added `excludedContextIds?: string[]` param
+  - `AIService.continueScene`: filters excluded items before formatting context
+- **E2E Tests** (`packages/server/src/routes/__tests__/e2e-writing-ai.test.ts`) — 7 tests
+  - Writing flow: create chapter → save content → create version
+  - Merged content after AI accept
+  - Version rollback: save → version → modify → rollback → verify
+  - Foreshadowing lifecycle: plant → hint → resolve
+  - Foreshadowing abandon
+  - Chapter status state machine: outline → draft → revision → done
+  - Word count stats tracking
+- **Performance Tests** (`packages/core/src/__tests__/writing-performance.test.ts`) — 7 benchmarks
+  - 10K+ word content save: 1ms (< 50ms)
+  - Large chapter load with content: 1ms (< 20ms)
+  - Chapter metadata load: 0ms (< 10ms)
+  - Save + version create: 2ms (< 50ms)
+  - Rollback: 1ms (< 100ms)
+  - Minimal context build: 1ms (< 100ms)
+  - Full context build (16 items, 5 chars, 3 locs, arc, relationships, foreshadowing): 2ms (< 500ms)
+- **AI Route Tests** — Updated existing tests for `excludedContextIds` passthrough + 1 new test
+
+### New Files (2)
+| File | Purpose |
+|------|---------|
+| `packages/server/src/routes/__tests__/e2e-writing-ai.test.ts` | 7 E2E tests for writing + plot integration |
+| `packages/core/src/__tests__/writing-performance.test.ts` | 7 performance benchmarks |
+
+### Modified Files (13)
+| File | Change |
+|------|--------|
+| `packages/web/src/stores/useEditorStore.ts` | +cursorPosition, +excludedContextIds state/actions |
+| `packages/web/src/pages/Write/EditorPanel.tsx` | DOM cursor tracking + contentRef prop |
+| `packages/web/src/pages/Write.tsx` | Pass cursor + local content to modal |
+| `packages/web/src/pages/Write/AcceptPreviewModal.tsx` | Insert-at-cursor merge + 3-part preview |
+| `packages/web/src/pages/Write/AcceptPreviewModal.module.css` | +dividerAfter style |
+| `packages/web/src/pages/Write/ContextPreview.tsx` | +checkboxes per item, excluded styling |
+| `packages/web/src/pages/Write/ContextPreview.module.css` | +checkbox, +itemExcluded styles |
+| `packages/web/src/pages/Write/AISidebar.tsx` | Pass excludedContextIds in request |
+| `packages/server/src/routes/ai.ts` | +excludedContextIds in continueSchema |
+| `packages/core/src/types/services.ts` | Updated continueScene signature |
+| `packages/core/src/ai/AIService.ts` | Filter excluded context items |
+| `packages/server/src/routes/__tests__/ai.test.ts` | Updated assertions + new exclusion test |
+| `README.md` | Gemini 2.5 Pro → Gemini 3 Pro model name update |
+
+### Stats
+- Tests: **1015 passed** (44 files), 1 pre-existing flaky failure (WritingRepository cleanup timing)
+- Build: clean (0 TS errors)
+- All performance targets met with significant margin
+
+### Deferred Items Resolved
+- ~~Accept at cursor position~~ → implemented
+- ~~Context item toggle on/off~~ → implemented
+
+---
+
 ## 2026-02-09 (M3.5: Hackathon Submission) ✅
 
 ### Completed

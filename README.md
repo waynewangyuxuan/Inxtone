@@ -2,13 +2,13 @@
 
 **AI-Native Storytelling Framework** — Where your AI actually knows your story.
 
-Inxtone is a writing tool for serial fiction authors that deeply integrates Gemini 2.5 Pro with a structured Story Bible. Instead of sending blind prompts to an LLM, Inxtone automatically assembles five layers of story context — characters, relationships, world rules, plot threads, and foreshadowing — so every AI generation is grounded in YOUR story.
+Inxtone is a writing tool for serial fiction authors that deeply integrates Gemini 3 Pro with a structured Story Bible. Instead of sending blind prompts to an LLM, Inxtone automatically assembles five layers of story context — characters, relationships, world rules, plot threads, and foreshadowing — so every AI generation is grounded in YOUR story.
 
 ## Features
 
 **Story Bible** — Define characters with layered motivations, track relationships with independent goals, build world systems with rules and constraints, manage factions, timeline events, and locations.
 
-**Context-Aware AI Writing** — Six AI modes powered by Gemini 2.5 Pro: scene continuation, dialogue generation, scene description, brainstorming, story bible Q&A, and freeform completion. Every mode receives structured context from your Story Bible via a five-layer priority system.
+**Context-Aware AI Writing** — Six AI modes powered by Gemini 3 Pro: scene continuation, dialogue generation, scene description, brainstorming, story bible Q&A, and freeform completion. Every mode receives structured context from your Story Bible via a five-layer priority system.
 
 **Chapter Editor** — Three-panel layout with chapter management, markdown editor (with live preview), and an AI sidebar with real-time streaming responses. Accept, reject with feedback, or regenerate.
 
@@ -18,7 +18,7 @@ Inxtone is a writing tool for serial fiction authors that deeply integrates Gemi
 
 ## Tech Stack
 
-- **AI**: Gemini 2.5 Pro via `@google/genai` SDK
+- **AI**: Gemini 3 Pro via `@google/genai` SDK
 - **Backend**: TypeScript, Fastify, SQLite (better-sqlite3), FTS5 full-text search
 - **Frontend**: React 18, Vite, Zustand, React Query, CSS Modules
 - **Architecture**: pnpm monorepo with 4 packages (core, server, web, tui)
@@ -87,4 +87,4 @@ MIT
 
 ## Built With
 
-Built for the [Gemini API Developer Competition](https://ai.google.dev/competition) using Gemini 2.5 Pro.
+Built for the [Gemini API Developer Competition](https://ai.google.dev/competition) using Gemini 3.

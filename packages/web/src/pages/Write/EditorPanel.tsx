@@ -5,12 +5,23 @@
 import React from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import { useChapterWithContent, useSaveContent } from '../../hooks';
-import { useSelectedChapterId, useIsDirty, useEditorActions } from '../../stores/useEditorStore';
+import {
+  useEditorStore,
+  useSelectedChapterId,
+  useIsDirty,
+  useEditorActions,
+} from '../../stores/useEditorStore';
 import { EditorToolbar } from './EditorToolbar';
 import { EmptyState } from '../../components/ui';
 import styles from './EditorPanel.module.css';
 
-export function EditorPanel(): React.ReactElement {
+interface EditorPanelProps {
+  contentRef?: React.MutableRefObject<string>;
+}
+
+export function EditorPanel({
+  contentRef: externalContentRef,
+}: EditorPanelProps): React.ReactElement {
   const selectedId = useSelectedChapterId();
   const isDirty = useIsDirty();
   const { markDirty, markSaved } = useEditorActions();
@@ -20,6 +31,10 @@ export function EditorPanel(): React.ReactElement {
   const [content, setContent] = React.useState('');
   const contentRef = React.useRef(content);
   contentRef.current = content;
+  if (externalContentRef) externalContentRef.current = content;
+
+  const editorWrapperRef = React.useRef<HTMLDivElement>(null);
+  const setCursorPosition = useEditorStore((s) => s.setCursorPosition);
 
   // Sync content from server when chapter changes
   React.useEffect(() => {
@@ -35,7 +50,28 @@ export function EditorPanel(): React.ReactElement {
     const newVal = val ?? '';
     setContent(newVal);
     markDirty();
+    // Read cursor position after React re-renders the textarea
+    requestAnimationFrame(() => {
+      const textarea = editorWrapperRef.current?.querySelector('textarea');
+      if (textarea) setCursorPosition(textarea.selectionStart);
+    });
   };
+
+  // Track cursor position via DOM events on the editor textarea
+  React.useEffect(() => {
+    const wrapper = editorWrapperRef.current;
+    if (!wrapper) return;
+    const updateCursor = () => {
+      const textarea = wrapper.querySelector('textarea');
+      if (textarea) setCursorPosition(textarea.selectionStart);
+    };
+    wrapper.addEventListener('keyup', updateCursor);
+    wrapper.addEventListener('mouseup', updateCursor);
+    return () => {
+      wrapper.removeEventListener('keyup', updateCursor);
+      wrapper.removeEventListener('mouseup', updateCursor);
+    };
+  }, [setCursorPosition]);
 
   const handleSave = React.useCallback(
     (createVersion: boolean) => {
@@ -85,7 +121,7 @@ export function EditorPanel(): React.ReactElement {
   return (
     <div className={styles.panel}>
       <EditorToolbar content={content} onSave={handleSave} saving={saveMutation.isPending} />
-      <div className={styles.editorWrapper} data-color-mode="dark">
+      <div ref={editorWrapperRef} className={styles.editorWrapper} data-color-mode="dark">
         <MDEditor
           value={content}
           onChange={handleChange}

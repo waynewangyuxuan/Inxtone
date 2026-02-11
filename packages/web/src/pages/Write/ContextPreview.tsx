@@ -1,10 +1,17 @@
 /**
- * ContextPreview — displays built AI context items
+ * ContextPreview — displays built AI context items with toggle support
+ *
+ * L1 items are always included (disabled checkbox).
+ * L2-L5 items can be toggled on/off to exclude from AI generation.
  */
 
 import React from 'react';
 import { Badge } from '../../components/ui';
-import { useBuiltContextState } from '../../stores/useEditorStore';
+import {
+  useBuiltContextState,
+  useExcludedContextIds,
+  useEditorActions,
+} from '../../stores/useEditorStore';
 import type { ContextItemType } from '@inxtone/core';
 import styles from './ContextPreview.module.css';
 
@@ -38,8 +45,16 @@ const layerMap: Record<ContextItemType, string> = {
   custom: 'L5',
 };
 
+const L1_TYPES = new Set<ContextItemType>([
+  'chapter_content',
+  'chapter_outline',
+  'chapter_prev_tail',
+]);
+
 export function ContextPreview(): React.ReactElement {
   const context = useBuiltContextState();
+  const excludedIds = useExcludedContextIds();
+  const { toggleContextItem } = useEditorActions();
   const [open, setOpen] = React.useState(false);
 
   if (!context) {
@@ -53,29 +68,51 @@ export function ContextPreview(): React.ReactElement {
     );
   }
 
+  const activeCount = context.items.filter((item) => {
+    const itemId = item.id ?? '';
+    return !excludedIds.has(itemId);
+  }).length;
+
   return (
     <div className={styles.wrapper}>
       <button className={styles.header} onClick={() => setOpen(!open)}>
         <span className={styles.chevron}>{open ? '\u25BE' : '\u25B8'}</span>
         <span className={styles.label}>Context</span>
         <span className={styles.meta}>
-          {context.items.length} items &middot; ~{context.totalTokens} tokens
+          {activeCount}/{context.items.length} items &middot; ~{context.totalTokens} tokens
           {context.truncated && ' (truncated)'}
         </span>
       </button>
       {open && (
         <div className={styles.items}>
-          {context.items.map((item, i) => (
-            <div key={i} className={styles.item}>
-              <Badge variant="muted" size="sm">
-                {layerMap[item.type]}
-              </Badge>
-              <span className={styles.itemType}>{typeLabels[item.type]}</span>
-              <span className={styles.itemPreview}>
-                {item.content.length > 50 ? item.content.slice(0, 50) + '...' : item.content}
-              </span>
-            </div>
-          ))}
+          {context.items.map((item, i) => {
+            const itemId = item.id ?? `idx-${i}`;
+            const isL1 = L1_TYPES.has(item.type);
+            const isExcluded = !isL1 && excludedIds.has(itemId);
+
+            return (
+              <div
+                key={itemId}
+                className={`${styles.item} ${isExcluded ? styles.itemExcluded : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={!isExcluded}
+                  disabled={isL1}
+                  onChange={() => toggleContextItem(itemId)}
+                  title={isL1 ? 'L1 items are always included' : 'Toggle this context item'}
+                />
+                <Badge variant="muted" size="sm">
+                  {layerMap[item.type]}
+                </Badge>
+                <span className={styles.itemType}>{typeLabels[item.type]}</span>
+                <span className={styles.itemPreview}>
+                  {item.content.length > 50 ? item.content.slice(0, 50) + '...' : item.content}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

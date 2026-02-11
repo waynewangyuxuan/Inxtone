@@ -130,7 +130,7 @@ describe('AI API Routes - /api/ai', () => {
       expect(events[1]).toEqual({ type: 'content', content: '在庭院中' });
       expect(events[2]).toEqual({ type: 'done', content: '' });
 
-      expect(aiService.continueScene).toHaveBeenCalledWith(1, undefined, undefined);
+      expect(aiService.continueScene).toHaveBeenCalledWith(1, undefined, undefined, undefined);
     });
 
     it('should pass options to the service', async () => {
@@ -141,7 +141,26 @@ describe('AI API Routes - /api/ai', () => {
       });
 
       expect(response.statusCode).toBe(200);
-      expect(aiService.continueScene).toHaveBeenCalledWith(1, { temperature: 0.5 }, undefined);
+      expect(aiService.continueScene).toHaveBeenCalledWith(
+        1,
+        { temperature: 0.5 },
+        undefined,
+        undefined
+      );
+    });
+
+    it('should pass excludedContextIds to the service', async () => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/api/ai/continue',
+        payload: { chapterId: 1, excludedContextIds: ['C001', 'rel-5'] },
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(aiService.continueScene).toHaveBeenCalledWith(1, undefined, undefined, [
+        'C001',
+        'rel-5',
+      ]);
     });
   });
 

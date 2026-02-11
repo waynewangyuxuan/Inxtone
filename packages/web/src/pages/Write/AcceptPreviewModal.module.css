@@ -41,6 +41,26 @@
   white-space: nowrap;
 }
 
+.dividerAfter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  margin: var(--space-sm) 0;
+}
+
+.dividerAfter::before,
+.dividerAfter::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.dividerAfter .dividerLabel {
+  color: var(--color-text-muted);
+}
+
 .newContent {
   border-left: 3px solid var(--color-success);
   background: rgba(74, 222, 128, 0.06);
