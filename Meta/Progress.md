@@ -4,6 +4,81 @@
 
 ---
 
+## 2026-02-11 (M4: AI Quality + Writing UX — Phases 2-6 Complete)
+
+### Completed
+
+**Phase 2: Auto-Save** (#31)
+- `useAutoSave.ts` hook: 3s debounce, calls `apiPut` directly (avoids cache overwrite)
+- EditorToolbar: auto-save indicator with pulsing dot + status label (Saving.../Saved/Error)
+- `useEditorStore`: `autoSaveStatus` state + `setAutoSaveStatus` action
+
+**Phase 3: Prompt Presets** (#32)
+- `presets.ts`: 16 presets across 4 categories (pacing/style/content/character)
+- `PromptPresets.tsx`: category filter tabs + scrollable chip bar
+- AISidebar: chip click appends instruction to prompt textarea
+
+**Phase 4: Chapter Outline Editing** (#33)
+- `OutlinePanel.tsx`: collapsible panel with goal/scenes/hookEnding fields
+- 1.5s debounced auto-save via `useUpdateChapter`
+- Mounted above MDEditor in EditorPanel
+
+**Phase 5: Brainstorm Redesign** (#37)
+- `parseBrainstorm.ts`: parse numbered AI responses into title/body suggestion cards
+- `BrainstormPanel.tsx`: card grid with Use/Regenerate/Dismiss actions
+- AISidebar: Brainstorm button restored, routes brainstorm results to card view
+- 7 unit tests for parser
+
+**Phase 6: Tech Debt + E2E Tests** (#2, #3, #6, #42)
+- `BaseRepository.parseJson`: optional Zod schema param for runtime validation (#2)
+- Type assertions audited — all justified, no unsafe casts in production (#3)
+- Error module: 29 unit tests covering all 9 error classes + type guards + helpers (#6)
+- `mergeContent` utility extracted from AcceptPreviewModal (#42)
+- CSS tokens: hardcoded rgba → `var(--color-success-bg)`, z-index → `var(--z-base)` (#42)
+- M4 E2E tests: chapter ordering, auto-save without version, outline persistence (7 tests)
+
+### New Files (11)
+| File | Purpose |
+|------|---------|
+| `packages/web/src/hooks/useAutoSave.ts` | Auto-save hook with 3s debounce |
+| `packages/core/src/ai/presets.ts` | 16 prompt presets across 4 categories |
+| `packages/web/src/pages/Write/PromptPresets.tsx` | Preset chip bar component |
+| `packages/web/src/pages/Write/PromptPresets.module.css` | Chip bar styles |
+| `packages/web/src/pages/Write/OutlinePanel.tsx` | Chapter outline editing panel |
+| `packages/web/src/pages/Write/OutlinePanel.module.css` | Outline panel styles |
+| `packages/web/src/lib/parseBrainstorm.ts` | AI brainstorm response parser |
+| `packages/web/src/pages/Write/BrainstormPanel.tsx` | Suggestion cards component |
+| `packages/web/src/pages/Write/BrainstormPanel.module.css` | Card styles |
+| `packages/web/src/lib/mergeContent.ts` | Content merge utility |
+| `packages/core/src/errors/__tests__/errors.test.ts` | 29 error module tests |
+
+### Modified Files (11)
+| File | Change |
+|------|--------|
+| `packages/web/src/stores/useEditorStore.ts` | +autoSaveStatus state |
+| `packages/web/src/pages/Write/EditorPanel.tsx` | Auto-save integration + OutlinePanel mount |
+| `packages/web/src/pages/Write/EditorToolbar.tsx` | Auto-save indicator |
+| `packages/web/src/pages/Write/EditorToolbar.module.css` | +autoSave styles |
+| `packages/web/src/pages/Write/AISidebar.tsx` | Brainstorm button + preset chips + BrainstormPanel |
+| `packages/core/src/index.ts` | Export presets |
+| `packages/core/src/db/repositories/BaseRepository.ts` | Zod schema param in parseJson |
+| `packages/web/src/pages/Write/AcceptPreviewModal.tsx` | Use mergeContent utility |
+| `packages/web/src/pages/Write/AcceptPreviewModal.module.css` | CSS token for bg color |
+| `packages/web/src/pages/Write.module.css` | z-index → var(--z-base) |
+| `packages/web/src/pages/StoryBible/TimelineList.module.css` | z-index → var(--z-base) |
+
+### Stats
+- Tests: **1067 passed** (48 files), 0 failures, 44 new tests
+- Build: clean (0 TS errors)
+- GitHub issues closed: 13 total (#25, #31, #32, #33, #37, #2, #3, #6, #42)
+
+### M4 Total Summary
+- **17 GitHub issues closed** (8 pre-phase + 9 phases 1-6)
+- **6 phases completed** across writing UX and tech debt
+- Tests grew from 1016 → 1067 (+51 new)
+
+---
+
 ## 2026-02-10 (M4: AI Quality + Writing UX — Pre-Phase + Phase 1 + Code Review)
 
 ### Completed
