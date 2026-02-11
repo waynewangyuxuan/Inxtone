@@ -4,6 +4,7 @@
  * Provides common functionality for CRUD operations on SQLite.
  */
 
+import type { ZodType } from 'zod';
 import type { Database } from '../Database.js';
 import type { ISODateTime } from '../../types/entities.js';
 
@@ -42,15 +43,21 @@ export abstract class BaseRepository<_T, ID> {
   }
 
   /**
-   * Parse JSON field safely.
+   * Parse JSON field safely with optional Zod schema validation.
    *
    * @param value - JSON string or null
+   * @param schema - Optional Zod schema for runtime validation
    * @returns Parsed value or undefined
    */
-  protected parseJson<R>(value: string | null | undefined): R | undefined {
+  protected parseJson<R>(value: string | null | undefined, schema?: ZodType<R>): R | undefined {
     if (!value) return undefined;
     try {
-      return JSON.parse(value) as R;
+      const parsed: unknown = JSON.parse(value);
+      if (schema) {
+        const result = schema.safeParse(parsed);
+        return result.success ? result.data : undefined;
+      }
+      return parsed as R;
     } catch {
       return undefined;
     }
