@@ -8,6 +8,29 @@
 
 - [ ] **i18n system setup** — react-i18next + translation files; 36 preset strings are English-only
 - [ ] **Web package test infra** — jsdom + @testing-library/react for hook/component tests (useAutoSave etc.)
+## High Priority (M4 Phase 7 — Code Review Fixes)
+
+**Must Fix**
+- [ ] **useAutoSave race condition** — capture chapterId at debounce start, not setTimeout fire
+
+**Should Fix**
+- [ ] **Auto-save collision** — `notifyManualSave()` clear pending timer + AbortController for in-flight requests
+- [ ] **useAutoSave unit tests** — no client-side test coverage
+- [ ] **i18n: prompt presets** — 36 hardcoded English strings → `t('key')`
+- [ ] **Outline CSS** — hardcoded `#ef4444` → `var(--color-danger)`
+- [ ] **Brainstorm loading state** — no feedback during regeneration
+- [ ] **tokens.css** — define `--color-success-bg`, chip bg token
+- [ ] **Schema.md** — add `sort_order` column
+- [ ] **Accessibility** — `aria-pressed` on preset toggles, `aria-expanded` on outline header
+- [ ] **reorderChapters E2E** — verify actual sort order persisted
+- [ ] **Preset tests** — data integrity (unique IDs, valid categories)
+- [ ] **Brainstorm parser tests** — en-dash separator, mixed formats
+- [ ] **Outline save indicator** — no user feedback on outline auto-save
+- [ ] **Redundant chapterId guard** — AISidebar handleBrainstorm
+
+**Nits**
+- [ ] parseBrainstorm regex inline comments
+- [ ] Dev-mode logging for parseJson Zod failures
 
 ## Medium Priority
 
