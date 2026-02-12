@@ -67,6 +67,29 @@ describe('Chapter Ordering', () => {
     expect(chapters[chapters.length - 1].id).toBe(ch3.id);
     expect(chapters[chapters.length - 2].id).toBe(ch2.id);
   });
+
+  it('should persist correct sortOrder values after reorder', async () => {
+    const ch1 = await ctx.writingService.createChapter({ title: 'A' });
+    const ch2 = await ctx.writingService.createChapter({ title: 'B' });
+    const ch3 = await ctx.writingService.createChapter({ title: 'C' });
+
+    // Reorder: ch3, ch1, ch2
+    await ctx.server.inject({
+      method: 'POST',
+      url: '/api/chapters/reorder',
+      payload: { chapterIds: [ch3.id, ch1.id, ch2.id] },
+    });
+
+    const res = await ctx.server.inject({ method: 'GET', url: '/api/chapters' });
+    const chapters = res.json().data;
+
+    // Verify sortOrder values are strictly ascending
+    expect(chapters[0].sortOrder).toBeLessThan(chapters[1].sortOrder);
+    expect(chapters[1].sortOrder).toBeLessThan(chapters[2].sortOrder);
+
+    // Verify the order matches requested order
+    expect(chapters.map((c: { id: number }) => c.id)).toEqual([ch3.id, ch1.id, ch2.id]);
+  });
 });
 
 // ===================================

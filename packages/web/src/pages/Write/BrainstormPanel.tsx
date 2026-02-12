@@ -16,6 +16,7 @@ interface BrainstormPanelProps {
   onUseAsInstruction: (suggestion: BrainstormSuggestion) => void;
   onRegenerate: () => void;
   onDismiss: () => void;
+  isRegenerating?: boolean;
 }
 
 export function BrainstormPanel({
@@ -23,32 +24,40 @@ export function BrainstormPanel({
   onUseAsInstruction,
   onRegenerate,
   onDismiss,
+  isRegenerating,
 }: BrainstormPanelProps): React.ReactElement {
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
         <span className={styles.label}>Brainstorm Ideas</span>
-        <span className={styles.count}>{suggestions.length}</span>
+        {!isRegenerating && <span className={styles.count}>{suggestions.length}</span>}
       </div>
       <div className={styles.cards}>
-        {suggestions.map((s) => (
-          <div key={s.id} className={styles.card}>
-            <div className={styles.cardHeader}>
-              <span className={styles.cardTitle}>{s.title}</span>
-              <button
-                className={styles.useBtn}
-                onClick={() => onUseAsInstruction(s)}
-                title="Use this idea as instruction for Continue"
-              >
-                Use
-              </button>
-            </div>
-            {s.body && <p className={styles.cardBody}>{s.body}</p>}
+        {isRegenerating ? (
+          <div className={styles.regenerating}>
+            <span className={styles.pulse} />
+            Regenerating ideas...
           </div>
-        ))}
+        ) : (
+          suggestions.map((s) => (
+            <div key={s.id} className={styles.card}>
+              <div className={styles.cardHeader}>
+                <span className={styles.cardTitle}>{s.title}</span>
+                <button
+                  className={styles.useBtn}
+                  onClick={() => onUseAsInstruction(s)}
+                  title="Use this idea as instruction for Continue"
+                >
+                  Use
+                </button>
+              </div>
+              {s.body && <p className={styles.cardBody}>{s.body}</p>}
+            </div>
+          ))
+        )}
       </div>
       <div className={styles.actions}>
-        <Button size="sm" variant="secondary" onClick={onRegenerate}>
+        <Button size="sm" variant="secondary" onClick={onRegenerate} disabled={isRegenerating}>
           Regenerate
         </Button>
         <Button size="sm" variant="ghost" onClick={onDismiss}>

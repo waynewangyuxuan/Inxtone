@@ -41,7 +41,7 @@
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-bg-inset);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-sm);
@@ -91,6 +91,28 @@
   color: var(--color-text-secondary);
   line-height: var(--leading-normal);
   margin: 4px 0 0;
+}
+
+.regenerating {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg) var(--space-md);
+  color: var(--color-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
 .actions {

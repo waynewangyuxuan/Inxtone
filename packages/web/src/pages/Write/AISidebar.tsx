@@ -100,8 +100,7 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
   const handleBrainstorm = () => {
     if (!selectedId) return;
     const topic = promptText.trim() || 'What should happen next in this chapter?';
-    const body: Record<string, unknown> = { topic };
-    if (selectedId) body.chapterId = selectedId;
+    const body: Record<string, unknown> = { topic, chapterId: selectedId };
     void runStream('/ai/brainstorm', body);
   };
 
@@ -163,6 +162,7 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
   }, [selectedId]);
 
   const isBrainstormResult = brainstormSuggestions != null && brainstormSuggestions.length > 0;
+  const isBrainstormLoading = aiAction === '/ai/brainstorm' && isLoading;
   const isContinueResult = !!aiResponse && !isLoading && !isBrainstormResult;
 
   return (
@@ -215,13 +215,14 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
         </div>
       </div>
 
-      {/* Show brainstorm cards OR streaming response, not both */}
-      {isBrainstormResult ? (
+      {/* Show brainstorm cards (or regenerating state), OR streaming response */}
+      {isBrainstormResult || isBrainstormLoading ? (
         <BrainstormPanel
-          suggestions={brainstormSuggestions}
+          suggestions={brainstormSuggestions ?? []}
           onUseAsInstruction={handleUseAsInstruction}
           onRegenerate={handleRegenerate}
           onDismiss={handleDismissBrainstorm}
+          isRegenerating={isBrainstormLoading}
         />
       ) : (
         <StreamingResponse />

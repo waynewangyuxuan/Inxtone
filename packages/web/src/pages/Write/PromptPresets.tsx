@@ -28,6 +28,7 @@ export function PromptPresets({ onSelect }: PromptPresetsProps): React.ReactElem
         <button
           className={`${styles.catChip} ${activeCategory === null ? styles.catChipActive : ''}`}
           onClick={() => setActiveCategory(null)}
+          aria-pressed={activeCategory === null}
         >
           All
         </button>
@@ -36,6 +37,7 @@ export function PromptPresets({ onSelect }: PromptPresetsProps): React.ReactElem
             key={key}
             className={`${styles.catChip} ${activeCategory === key ? styles.catChipActive : ''}`}
             onClick={() => setActiveCategory(activeCategory === key ? null : key)}
+            aria-pressed={activeCategory === key}
           >
             {label}
           </button>

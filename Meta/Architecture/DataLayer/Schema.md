@@ -179,6 +179,7 @@ CREATE TABLE chapters (
     id INTEGER PRIMARY KEY,           -- 1, 2, 3, ... (章节号)
     volume_id INTEGER REFERENCES volumes(id),
     arc_id TEXT REFERENCES arcs(id),
+    sort_order INTEGER DEFAULT 0,     -- 显示排序 (migration 002)
     title TEXT,
     status TEXT CHECK(status IN ('outline', 'draft', 'revision', 'done')),
 
@@ -205,6 +206,8 @@ CREATE TABLE chapters (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_chapters_sort_order ON chapters(volume_id, sort_order);
 ```
 
 ## 写作相关

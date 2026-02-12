@@ -22,7 +22,9 @@ export function OutlinePanel(): React.ReactElement | null {
   const [goal, setGoal] = React.useState('');
   const [scenes, setScenes] = React.useState<string[]>([]);
   const [hookEnding, setHookEnding] = React.useState('');
+  const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved'>('idle');
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveStateTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync from server when chapter changes
   React.useEffect(() => {
@@ -37,16 +39,28 @@ export function OutlinePanel(): React.ReactElement | null {
       if (selectedId == null) return;
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        updateChapter.mutate({ id: selectedId, data: { outline } });
+        setSaveState('saving');
+        updateChapter.mutate(
+          { id: selectedId, data: { outline } },
+          {
+            onSuccess: () => {
+              setSaveState('saved');
+              if (saveStateTimerRef.current) clearTimeout(saveStateTimerRef.current);
+              saveStateTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
+            },
+            onError: () => setSaveState('idle'),
+          }
+        );
       }, SAVE_DELAY);
     },
     [selectedId, updateChapter]
   );
 
-  // Cleanup timer
+  // Cleanup timers
   React.useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (saveStateTimerRef.current) clearTimeout(saveStateTimerRef.current);
     };
   }, [selectedId]);
 
@@ -91,9 +105,14 @@ export function OutlinePanel(): React.ReactElement | null {
 
   return (
     <div className={styles.panel}>
-      <button className={styles.header} onClick={() => setOpen(!open)}>
+      <button className={styles.header} onClick={() => setOpen(!open)} aria-expanded={open}>
         <span className={styles.chevron}>{open ? '\u25BE' : '\u25B8'}</span>
         <span className={styles.title}>Outline</span>
+        {saveState !== 'idle' && (
+          <span className={styles.saveStatus}>
+            {saveState === 'saving' ? 'Saving...' : 'Saved'}
+          </span>
+        )}
         {!open && goal && <span className={styles.preview}>{goal}</span>}
       </button>
       {open && (

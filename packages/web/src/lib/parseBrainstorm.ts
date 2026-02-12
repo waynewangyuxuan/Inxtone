@@ -32,7 +32,21 @@ export function parseBrainstorm(text: string): BrainstormSuggestion[] {
   };
 
   for (const line of lines) {
-    // Match numbered items: "1. **Title**: body" or "1. Title - body" or "1. Title"
+    /**
+     * Match numbered items in these formats:
+     *   "1. **Bold Title**: rest"    → groups[1]=title, groups[2]=rest
+     *   "1. **Bold Title**– rest"    → groups[1]=title, groups[2]=rest (en-dash)
+     *   "1. Plain text line"         → groups[3]=full text
+     *
+     * Regex breakdown:
+     *   ^\d+\.\s+           — numbered prefix: "1. ", "2. ", etc.
+     *   (?:                 — non-capturing group for two alternatives:
+     *     \*\*(.+?)\*\*     — Alt A: bold title in **...**  → capture group 1
+     *     [:\-–]?\s*(.*)    — optional separator (colon/hyphen/en-dash) + rest → group 2
+     *   |                   — OR
+     *     (.*)              — Alt B: plain text → capture group 3
+     *   )$
+     */
     const numbered = /^\d+\.\s+(?:\*\*(.+?)\*\*[:\-–]?\s*(.*)|(.*))$/.exec(line);
     if (numbered) {
       flush();

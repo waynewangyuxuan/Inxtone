@@ -71,4 +71,39 @@ describe('parseBrainstorm', () => {
     expect(result[0].title.length).toBeLessThanOrEqual(60);
     expect(result[0].title).toContain('...');
   });
+
+  it('parses bold-title with en-dash separator', () => {
+    const text = `1. **The Hidden Letter**\u2013 A mysterious letter is found.
+2. **A Rival Appears**\u2013 The antagonist shows up.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(2);
+    expect(result[0].title).toBe('The Hidden Letter');
+    expect(result[0].body).toBe('A mysterious letter is found.');
+  });
+
+  it('parses mixed bold + plain formats', () => {
+    const text = `1. **Bold Title**: Description one.
+2. Plain Title: Description two.
+3. **Another Bold** Description three.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(3);
+    expect(result[0].title).toBe('Bold Title');
+    expect(result[1].title).toBe('Plain Title');
+    expect(result[2].title).toBe('Another Bold');
+    expect(result[2].body).toBe('Description three.');
+  });
+
+  it('parses bold-title without separator', () => {
+    const text = `1. **Title Only**
+2. **Another Title** with trailing text`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(2);
+    expect(result[0].title).toBe('Title Only');
+    expect(result[0].body).toBe('');
+    expect(result[1].title).toBe('Another Title');
+    expect(result[1].body).toBe('with trailing text');
+  });
 });

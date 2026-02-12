@@ -25,16 +25,21 @@ export function useAutoSave(chapterId: number | null, contentRef: React.MutableR
   const lastSavedRef = React.useRef('');
   const chapterIdRef = React.useRef(chapterId);
   chapterIdRef.current = chapterId;
+  const abortRef = React.useRef<AbortController | null>(null);
 
   // Stable ref for queryClient (doesn't change but satisfies closure)
   const qcRef = React.useRef(queryClient);
   qcRef.current = queryClient;
 
-  // Reset on chapter change
+  // Reset on chapter change — cancel pending timer + in-flight request
   React.useEffect(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
+    }
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
     }
     lastSavedRef.current = '';
     useEditorStore.getState().setAutoSaveStatus('idle');
@@ -44,6 +49,7 @@ export function useAutoSave(chapterId: number | null, contentRef: React.MutableR
   React.useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (abortRef.current) abortRef.current.abort();
     };
   }, []);
 
@@ -51,20 +57,28 @@ export function useAutoSave(chapterId: number | null, contentRef: React.MutableR
   const scheduleAutoSave = React.useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
 
+    // Capture chapterId NOW (at debounce start), not inside the timeout
+    const capturedId = chapterIdRef.current;
+
     timerRef.current = setTimeout(() => {
       timerRef.current = null;
-      const id = chapterIdRef.current;
-      if (id == null) return;
+      if (capturedId == null) return;
       const content = contentRef.current;
       if (content === lastSavedRef.current) return;
 
+      // Cancel any in-flight save before starting a new one
+      if (abortRef.current) abortRef.current.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       useEditorStore.getState().setAutoSaveStatus('saving');
 
-      apiPut<Chapter, { content: string; createVersion: boolean }>(`/chapters/${id}/content`, {
-        content,
-        createVersion: false,
-      })
+      apiPut<Chapter, { content: string; createVersion: boolean }>(
+        `/chapters/${capturedId}/content`,
+        { content, createVersion: false }
+      )
         .then(() => {
+          if (controller.signal.aborted) return;
           lastSavedRef.current = content;
           useEditorStore.getState().markSaved();
           useEditorStore.getState().setAutoSaveStatus('saved');
@@ -76,15 +90,25 @@ export function useAutoSave(chapterId: number | null, contentRef: React.MutableR
             useEditorStore.getState().setAutoSaveStatus('idle');
           }, SAVED_DISPLAY_DURATION);
         })
-        .catch(() => {
+        .catch((err: unknown) => {
+          if (controller.signal.aborted) return;
+          if (err instanceof Error && err.name === 'AbortError') return;
           useEditorStore.getState().setAutoSaveStatus('error');
         });
     }, AUTO_SAVE_DELAY);
   }, [contentRef]);
 
-  /** Call after manual save to sync lastSaved tracking */
+  /** Call after manual save — sync tracking + cancel pending auto-save */
   const notifyManualSave = React.useCallback((content: string) => {
     lastSavedRef.current = content;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
   }, []);
 
   return { scheduleAutoSave, notifyManualSave };

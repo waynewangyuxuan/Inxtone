@@ -55,10 +55,23 @@ export abstract class BaseRepository<_T, ID> {
       const parsed: unknown = JSON.parse(value);
       if (schema) {
         const result = schema.safeParse(parsed);
-        return result.success ? result.data : undefined;
+        if (result.success) return result.data;
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(
+            `[parseJson] Schema validation failed for ${this.tableName}:`,
+            result.error.issues
+          );
+        }
+        return undefined;
       }
       return parsed as R;
-    } catch {
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          `[parseJson] JSON parse failed for ${this.tableName}:`,
+          err instanceof Error ? err.message : err
+        );
+      }
       return undefined;
     }
   }
