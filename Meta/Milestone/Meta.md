@@ -34,7 +34,8 @@ Draft → Active → Complete → Archived
 | [M2](M2.md) | Story Bible Core | Complete | 2026-02-07 | 2 days |
 | [M3](M3.md) | Writing Workspace + AI | Complete | 2026-02-08 | 1 day |
 | [M3.5](M3.5.md) | Hackathon Submission | Complete | 2026-02-09 | 1 day |
-| [M4](M4.md) | Writing UX Polish | Active | 2026-02-20 | 10 days |
+| [M4](M4.md) | Writing UX Polish | Complete | 2026-02-20 | 10 days |
+| [M4.5](M4.5.md) | Writing Intelligence | Draft | TBD | 2 weeks |
 | [M5](M5.md) | Export | Draft | TBD | 1.5 weeks |
 | [M6](M6.md) | Smart Intake | Draft | TBD | 3 weeks |
 | [M7](M7.md) | Search, Quality & v0.1.0 Release | Draft | TBD | 3 weeks |

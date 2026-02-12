@@ -9,9 +9,9 @@
 
 ## 8. MVP Scope
 
-**Milestone Path:** M4 (Writing UX) → M5 (Export) → M6 (Smart Intake) → M7 (Search, Quality & v0.1.0)
+**Milestone Path:** M4 (Writing UX) → M4.5 (Writing Intelligence) → M5 (Export) → M6 (Smart Intake) → M7 (Search, Quality & v0.1.0)
 
-### M4: Writing UX (Active)
+### M4: Writing UX (Complete)
 
 - [x] Project scaffolding, web UI server, dashboard
 - [x] Chapter editor with auto-save
@@ -23,6 +23,17 @@
 - [x] Chapter outline editing
 - [x] Brainstorm mode with suggestion cards
 - [ ] Code review fixes (Phase 7)
+
+### M4.5: Writing Intelligence (Draft)
+
+- [ ] FTS5 full-text search + Cmd+K modal
+- [ ] Interactive Bible panel (click-to-expand, inject-to-context)
+- [ ] Relationship map visualization (force-directed graph)
+- [ ] Timeline visualization
+- [ ] Pacing visualization (word count + emotion curve)
+- [ ] Chapter setup assist (heuristic entity suggestion)
+- [ ] Post-accept entity extraction (AI detects entities from generated text)
+- [ ] Keyboard shortcuts
 
 ### M5: Export (Draft)
 
