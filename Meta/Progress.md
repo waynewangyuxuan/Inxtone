@@ -4,6 +4,140 @@
 
 ---
 
+## 2026-02-11 (M4: AI Quality + Writing UX — Phases 2-6 Complete)
+
+### Completed
+
+**Phase 2: Auto-Save** (#31)
+- `useAutoSave.ts` hook: 3s debounce, calls `apiPut` directly (avoids cache overwrite)
+- EditorToolbar: auto-save indicator with pulsing dot + status label (Saving.../Saved/Error)
+- `useEditorStore`: `autoSaveStatus` state + `setAutoSaveStatus` action
+
+**Phase 3: Prompt Presets** (#32)
+- `presets.ts`: 16 presets across 4 categories (pacing/style/content/character)
+- `PromptPresets.tsx`: category filter tabs + scrollable chip bar
+- AISidebar: chip click appends instruction to prompt textarea
+
+**Phase 4: Chapter Outline Editing** (#33)
+- `OutlinePanel.tsx`: collapsible panel with goal/scenes/hookEnding fields
+- 1.5s debounced auto-save via `useUpdateChapter`
+- Mounted above MDEditor in EditorPanel
+
+**Phase 5: Brainstorm Redesign** (#37)
+- `parseBrainstorm.ts`: parse numbered AI responses into title/body suggestion cards
+- `BrainstormPanel.tsx`: card grid with Use/Regenerate/Dismiss actions
+- AISidebar: Brainstorm button restored, routes brainstorm results to card view
+- 7 unit tests for parser
+
+**Phase 6: Tech Debt + E2E Tests** (#2, #3, #6, #42)
+- `BaseRepository.parseJson`: optional Zod schema param for runtime validation (#2)
+- Type assertions audited — all justified, no unsafe casts in production (#3)
+- Error module: 29 unit tests covering all 9 error classes + type guards + helpers (#6)
+- `mergeContent` utility extracted from AcceptPreviewModal (#42)
+- CSS tokens: hardcoded rgba → `var(--color-success-bg)`, z-index → `var(--z-base)` (#42)
+- M4 E2E tests: chapter ordering, auto-save without version, outline persistence (7 tests)
+
+### New Files (11)
+| File | Purpose |
+|------|---------|
+| `packages/web/src/hooks/useAutoSave.ts` | Auto-save hook with 3s debounce |
+| `packages/core/src/ai/presets.ts` | 16 prompt presets across 4 categories |
+| `packages/web/src/pages/Write/PromptPresets.tsx` | Preset chip bar component |
+| `packages/web/src/pages/Write/PromptPresets.module.css` | Chip bar styles |
+| `packages/web/src/pages/Write/OutlinePanel.tsx` | Chapter outline editing panel |
+| `packages/web/src/pages/Write/OutlinePanel.module.css` | Outline panel styles |
+| `packages/web/src/lib/parseBrainstorm.ts` | AI brainstorm response parser |
+| `packages/web/src/pages/Write/BrainstormPanel.tsx` | Suggestion cards component |
+| `packages/web/src/pages/Write/BrainstormPanel.module.css` | Card styles |
+| `packages/web/src/lib/mergeContent.ts` | Content merge utility |
+| `packages/core/src/errors/__tests__/errors.test.ts` | 29 error module tests |
+
+### Modified Files (11)
+| File | Change |
+|------|--------|
+| `packages/web/src/stores/useEditorStore.ts` | +autoSaveStatus state |
+| `packages/web/src/pages/Write/EditorPanel.tsx` | Auto-save integration + OutlinePanel mount |
+| `packages/web/src/pages/Write/EditorToolbar.tsx` | Auto-save indicator |
+| `packages/web/src/pages/Write/EditorToolbar.module.css` | +autoSave styles |
+| `packages/web/src/pages/Write/AISidebar.tsx` | Brainstorm button + preset chips + BrainstormPanel |
+| `packages/core/src/index.ts` | Export presets |
+| `packages/core/src/db/repositories/BaseRepository.ts` | Zod schema param in parseJson |
+| `packages/web/src/pages/Write/AcceptPreviewModal.tsx` | Use mergeContent utility |
+| `packages/web/src/pages/Write/AcceptPreviewModal.module.css` | CSS token for bg color |
+| `packages/web/src/pages/Write.module.css` | z-index → var(--z-base) |
+| `packages/web/src/pages/StoryBible/TimelineList.module.css` | z-index → var(--z-base) |
+
+### Stats
+- Tests: **1067 passed** (48 files), 0 failures, 44 new tests
+- Build: clean (0 TS errors)
+- GitHub issues closed: 13 total (#25, #31, #32, #33, #37, #2, #3, #6, #42)
+
+### M4 Total Summary
+- **17 GitHub issues closed** (8 pre-phase + 9 phases 1-6)
+- **6 phases completed** across writing UX and tech debt
+- Tests grew from 1016 → 1067 (+51 new)
+
+---
+
+## 2026-02-10 (M4: AI Quality + Writing UX — Pre-Phase + Phase 1 + Code Review)
+
+### Completed
+
+**Pre-Phase: Close Already-Fixed Issues** — 8 GitHub issues closed
+- #20 (content dedup), #21 (dialogue character context), #22 (ai_backup), #23 (context enrichment), #24 (userInstruction wiring), #26 (prevChapter cache), #27 (ContextBuilder hierarchy), #29 (hackathon checklist)
+- All were already fixed in M3 codebase with `#issue-number` comments
+
+**Phase 1: Chapter Ordering** (#25)
+- Migration 002: `sort_order INTEGER` column + backfill from id + composite index
+- `WritingRepository`: all 5 chapter query methods use `ORDER BY sort_order ASC, id ASC`
+- `createChapter()`: auto-assigns next `sort_order` via `MAX(sort_order) + 1` within volume
+- `reorderChapters()`: real implementation (was stub) — updates sort_order by array position
+- `Chapter` entity: added `sortOrder: number` field
+
+**Code Review Fixes** — 8 critical/high issues addressed
+- ChapterListPanel: sort by `sortOrder` (not `id`)
+- ChapterListPanel: defer `selectChapter(null)` to delete `onSuccess` callback
+- ContextPreview: consistent ID fallback (`idx-${i}`) in count + render (was `''` vs `idx-${i}`)
+- AcceptPreviewModal: ensure exactly `\n\n` paragraph breaks (handle single-newline edge cases)
+- StreamingResponse: only auto-scroll when user is near bottom (< 80px threshold)
+- AISidebar: abort stream on chapter switch (prevents wrong-chapter AI content)
+- AIService: wrap ai_backup version creation in try-catch (non-fatal failure)
+- BaseContextBuilder: stable sort with secondary index key in `truncateToFitBudget`
+
+**Documentation**
+- M4.md rewritten: "Search & Quality" → "AI Quality + Writing UX" (FTS/embeddings/QualityService deferred to M5)
+- Issue mapping table: 17 issues across 7 phases
+
+### New Files (1)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/db/migrations/002_chapter_sort_order.ts` | Add sort_order column to chapters |
+
+### Modified Files (10)
+| File | Change |
+|------|--------|
+| `packages/core/src/db/migrations/index.ts` | Register migration 002 |
+| `packages/core/src/db/repositories/WritingRepository.ts` | sort_order in all chapter queries + real reorderChapters |
+| `packages/core/src/types/entities.ts` | `sortOrder: number` on Chapter |
+| `packages/core/src/ai/AIService.ts` | ai_backup try-catch |
+| `packages/core/src/ai/BaseContextBuilder.ts` | Stable sort in truncateToFitBudget |
+| `packages/web/src/pages/Write/ChapterListPanel.tsx` | Sort by sortOrder + delete onSuccess fix |
+| `packages/web/src/pages/Write/ContextPreview.tsx` | Consistent ID fallback |
+| `packages/web/src/pages/Write/AcceptPreviewModal.tsx` | Paragraph break separator logic |
+| `packages/web/src/pages/Write/StreamingResponse.tsx` | Near-bottom auto-scroll |
+| `packages/web/src/pages/Write/AISidebar.tsx` | Abort stream on chapter switch |
+
+### Stats
+- Tests: **1016 passed** (44 files), 0 failures
+- Build: clean (0 TS errors)
+- GitHub issues closed: 9 total (#20-27, #29)
+
+### Next
+- Phase 2: Auto-save (#31)
+- Phase 3: Prompt presets (#32)
+
+---
+
 ## 2026-02-10 (M3 Phase 6: Testing & Polish + Deferred Features) ✅
 
 ### Completed

@@ -4,6 +4,10 @@
 
 ---
 
+## High Priority (Deferred from M4)
+
+- [ ] **i18n system setup** — react-i18next + translation files; 36 preset strings are English-only
+- [ ] **Web package test infra** — jsdom + @testing-library/react for hook/component tests (useAutoSave etc.)
 ## High Priority (M4 Phase 7 — Code Review Fixes)
 
 **Must Fix**

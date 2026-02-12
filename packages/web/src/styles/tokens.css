@@ -36,6 +36,10 @@
   --color-success: var(--green);
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
+  --color-bg-inset: rgba(255, 255, 255, 0.04);
+  --color-bg-subtle: rgba(255, 255, 255, 0.06);
+  --color-bg-subtle-hover: rgba(255, 255, 255, 0.1);
+  --color-success-bg: rgba(74, 222, 128, 0.15);
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-hover: var(--gold-dim);
   --color-border-dim: rgba(255, 255, 255, 0.04);

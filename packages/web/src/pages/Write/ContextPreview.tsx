@@ -68,8 +68,8 @@ export function ContextPreview(): React.ReactElement {
     );
   }
 
-  const activeCount = context.items.filter((item) => {
-    const itemId = item.id ?? '';
+  const activeCount = context.items.filter((item, i) => {
+    const itemId = item.id ?? `idx-${i}`;
     return !excludedIds.has(itemId);
   }).length;
 

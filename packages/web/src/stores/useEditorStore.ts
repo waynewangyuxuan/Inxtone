@@ -9,15 +9,23 @@
 
 import { create } from 'zustand';
 import type { BuiltContext } from '@inxtone/core';
+import type { BrainstormSuggestion } from '../lib/parseBrainstorm';
 
 export type LeftPanelTab = 'chapters' | 'bible';
 export type ChapterFormMode = 'create' | 'edit' | null;
+export type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface AIHistoryEntry {
   action: string;
   response: string;
   rejectReason?: string;
   timestamp: number;
+}
+
+export interface BrainstormLayer {
+  suggestions: BrainstormSuggestion[];
+  selectedId: number | null;
+  topic: string;
 }
 
 interface EditorState {
@@ -34,6 +42,7 @@ interface EditorState {
   aiResponse: string | null;
   aiAction: string | null;
   aiHistory: AIHistoryEntry[];
+  brainstormStack: BrainstormLayer[];
 
   // Cursor
   cursorPosition: number | null;
@@ -41,6 +50,9 @@ interface EditorState {
   // Context
   builtContext: BuiltContext | null;
   excludedContextIds: Set<string>;
+
+  // Auto-save
+  autoSaveStatus: AutoSaveStatus;
 
   // UI state
   arcFilter: string | null;
@@ -59,9 +71,13 @@ interface EditorState {
   addRejectHistory: (reason: string) => void;
   setCursorPosition: (pos: number | null) => void;
   clearAIState: () => void;
+  pushBrainstormLayer: (layer: BrainstormLayer) => void;
+  popBrainstormLayer: () => void;
+  clearBrainstormStack: () => void;
   setBuiltContext: (context: BuiltContext | null) => void;
   toggleContextItem: (id: string) => void;
   clearExcludedContext: () => void;
+  setAutoSaveStatus: (status: AutoSaveStatus) => void;
   setArcFilter: (arcId: string | null) => void;
   setLeftPanelTab: (tab: LeftPanelTab) => void;
   openChapterForm: (mode: 'create' | 'edit', chapterId?: number) => void;
@@ -78,9 +94,11 @@ const initialState = {
   aiResponse: null as string | null,
   aiAction: null as string | null,
   aiHistory: [] as AIHistoryEntry[],
+  brainstormStack: [] as BrainstormLayer[],
   cursorPosition: null as number | null,
   builtContext: null as BuiltContext | null,
   excludedContextIds: new Set<string>(),
+  autoSaveStatus: 'idle' as AutoSaveStatus,
   arcFilter: null as string | null,
   leftPanelTab: 'chapters' as LeftPanelTab,
   chapterFormMode: null as ChapterFormMode,
@@ -98,6 +116,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       cursorPosition: null,
       aiResponse: null,
       aiAction: null,
+      brainstormStack: [],
       builtContext: null,
       excludedContextIds: new Set<string>(),
     }),
@@ -149,7 +168,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       aiLoading: false,
       aiResponse: null,
       aiAction: null,
+      brainstormStack: [],
     }),
+
+  pushBrainstormLayer: (layer) => set({ brainstormStack: [...get().brainstormStack, layer] }),
+
+  popBrainstormLayer: () => set({ brainstormStack: get().brainstormStack.slice(0, -1) }),
+
+  clearBrainstormStack: () => set({ brainstormStack: [] }),
 
   setBuiltContext: (context) => set({ builtContext: context }),
 
@@ -164,6 +190,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   clearExcludedContext: () => set({ excludedContextIds: new Set<string>() }),
+
+  setAutoSaveStatus: (status) => set({ autoSaveStatus: status }),
 
   setArcFilter: (arcId) => set({ arcFilter: arcId }),
 
@@ -197,6 +225,8 @@ export const useAIResponse = () => useEditorStore((s) => s.aiResponse);
 export const useCursorPosition = () => useEditorStore((s) => s.cursorPosition);
 export const useBuiltContextState = () => useEditorStore((s) => s.builtContext);
 export const useExcludedContextIds = () => useEditorStore((s) => s.excludedContextIds);
+export const useAutoSaveStatus = () => useEditorStore((s) => s.autoSaveStatus);
+export const useBrainstormStack = () => useEditorStore((s) => s.brainstormStack);
 export const useArcFilter = () => useEditorStore((s) => s.arcFilter);
 export const useLeftPanelTab = () => useEditorStore((s) => s.leftPanelTab);
 export const useChapterFormMode = () => useEditorStore((s) => s.chapterFormMode);
@@ -214,6 +244,9 @@ export const useEditorActions = () =>
     addRejectHistory: s.addRejectHistory,
     setCursorPosition: s.setCursorPosition,
     clearAIState: s.clearAIState,
+    pushBrainstormLayer: s.pushBrainstormLayer,
+    popBrainstormLayer: s.popBrainstormLayer,
+    clearBrainstormStack: s.clearBrainstormStack,
     setBuiltContext: s.setBuiltContext,
     toggleContextItem: s.toggleContextItem,
     clearExcludedContext: s.clearExcludedContext,

@@ -7,6 +7,7 @@
 
 import type { Migration } from '../MigrationRunner.js';
 import { migration001 } from './001_initial_schema.js';
+import { migration002 } from './002_chapter_sort_order.js';
 
 /**
  * All migrations in order of execution.
@@ -14,8 +15,8 @@ import { migration001 } from './001_initial_schema.js';
  */
 export const migrations: Migration[] = [
   migration001,
+  migration002,
   // Add new migrations here:
-  // migration002,
   // migration003,
   // ...
 ];

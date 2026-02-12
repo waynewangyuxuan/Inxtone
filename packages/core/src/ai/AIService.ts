@@ -440,13 +440,17 @@ export class AIService implements IAIService {
 
                 // Create ai_backup version before generation (#22)
                 if (chapter.content) {
-                  self.deps.writingRepo.createVersion({
-                    entityType: 'chapter',
-                    entityId: String(chapterId),
-                    content: { content: chapter.content, wordCount: chapter.wordCount },
-                    changeSummary: 'AI generation backup',
-                    source: 'ai_backup',
-                  });
+                  try {
+                    self.deps.writingRepo.createVersion({
+                      entityType: 'chapter',
+                      entityId: String(chapterId),
+                      content: { content: chapter.content, wordCount: chapter.wordCount },
+                      changeSummary: 'AI generation backup',
+                      source: 'ai_backup',
+                    });
+                  } catch {
+                    // ai_backup failure should not abort generation
+                  }
                 }
 
                 const context = self.chapterContextBuilder.build(chapterId);
