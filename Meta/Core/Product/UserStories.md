@@ -18,14 +18,18 @@ As a new writer, I want to install Inxtone and start a project quickly so that I
 - `inxtone serve` opens browser with welcome tutorial
 - First chapter creatable within 2 minutes
 
-**US-002: Import Existing Work**
+**US-002: Import Existing Work** `[M6 — Smart Intake]`
 As a writer with an in-progress novel, I want to import my existing chapters and notes so that I can use Inxtone without starting over.
 
 *Acceptance Criteria:*
-- Drop TXT/MD files into chapters/ folder
-- `inxtone import` detects and indexes files
-- AI assists in extracting characters/world info
+- Upload/paste chapter files (TXT/MD/DOCX) or bulk text
+- AI extracts characters, relationships, world rules, plot threads from imported content
+- Step-by-step review: AI suggests → writer confirms/edits → commit to Story Bible
+- Natural language descriptions also accepted (paste character sketch → structured card)
+- Outline import → auto-populate arc structure and chapter goals
 - Original content preserved exactly
+
+*Note: M6 scope, not part of MVP. See [M6.md](../../Milestone/M6.md), [ADR-0003](../../Decisions/ADR-0003-milestone-reorder-smart-intake.md).*
 
 **US-002b: Configure AI**
 As a writer, I want to set up my Gemini API key easily so that I can use AI features.

@@ -30,11 +30,24 @@ Draft → Active → Complete → Archived
 
 | Milestone | Title | Status | Target | Duration |
 |-----------|-------|--------|--------|----------|
-| [M1](M1.md) | Foundation + Interface Contract | Complete | 2026-02-28 | 2 weeks |
-| [M2](M2.md) | Story Bible Core | Complete | 2026-03-21 | 3 weeks |
-| [M3](M3.md) | Writing Workspace | Active | 2026-04-11 | 3 weeks |
-| [M4](M4.md) | Search & Quality | Draft | 2026-04-25 | 2 weeks |
-| [M5](M5.md) | Export & Polish (MVP) | Draft | 2026-05-09 | 2 weeks |
+| [M1](M1.md) | Foundation + Interface Contract | Complete | 2026-02-05 | 1 day |
+| [M2](M2.md) | Story Bible Core | Complete | 2026-02-07 | 2 days |
+| [M3](M3.md) | Writing Workspace + AI | Complete | 2026-02-08 | 1 day |
+| [M3.5](M3.5.md) | Hackathon Submission | Complete | 2026-02-09 | 1 day |
+| [M4](M4.md) | Writing UX Polish | Active | 2026-02-20 | 10 days |
+| [M5](M5.md) | Export | Draft | TBD | 1.5 weeks |
+| [M6](M6.md) | Smart Intake | Draft | TBD | 3 weeks |
+| [M7](M7.md) | Search, Quality & v0.1.0 Release | Draft | TBD | 3 weeks |
+
+### Post-MVP Roadmap
+
+| Milestone | Title | Status |
+|-----------|-------|--------|
+| M8 | Multi-Model AI + Relationship Graph + Ambient Detection | Draft |
+| M9 | EPUB/PDF Export + Plugin System | Draft |
+| M10 | Cloud Sync + Community Features | Draft |
+
+See [ADR-0003](../Decisions/ADR-0003-milestone-reorder-smart-intake.md) for rationale behind M5→M6→M7 ordering.
 
 ## Creating a New Milestone
 

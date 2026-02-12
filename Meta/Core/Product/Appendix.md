@@ -20,21 +20,33 @@
 
 ---
 
-## 11. Future Roadmap
+## 11. Roadmap
 
-**Phase 2: Enhanced AI & Polish (Q2 2026)**
-- Advanced consistency checking
+### Active Development
+
+| Milestone | Focus | Status |
+|-----------|-------|--------|
+| M4 | Writing UX Polish | Active |
+| M5 | Export | Draft |
+| M6 | Smart Intake | Draft |
+| M7 | Search, Quality & v0.1.0 Release | Draft |
+
+See [Milestone Index](../../Milestone/Meta.md) for full details.
+See [ADR-0003](../../Decisions/ADR-0003-milestone-reorder-smart-intake.md) for M5→M6→M7 ordering rationale.
+
+### Post-v0.1.0
+
+**M8: Multi-Model AI + Visualization (Q2 2026)**
 - Multi-model support (Claude, GPT, local Ollama)
-- Better context management (embeddings)
-- Plugin/extension system
+- Relationship graph visualization
+- Ambient entity detection during writing
 
-**Phase 3: Power Features (Q3 2026)**
+**M9: Export+ & Plugin System (Q3 2026)**
+- EPUB/PDF export
+- Plugin/extension architecture
 - Style matching from your writing
-- Advanced relationship graph
-- Timeline view for plot
-- EPUB export
 
-**Phase 4: Ecosystem (Q4 2026)**
+**M10: Ecosystem (Q4 2026)**
 - Optional cloud sync (encrypted)
 - Template marketplace
 - VS Code extension
