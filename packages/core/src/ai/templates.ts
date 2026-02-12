@@ -106,12 +106,12 @@ You are a fiction writing consultant. Brainstorm based on the current story stat
 
 {{user_instruction}}
 
-Provide 3-5 possible directions or creative ideas. Each direction should include:
-1. A short title
-2. Core concept (2-3 sentences)
-3. How it connects to the current plot
+Provide 3-5 possible directions. Use EXACTLY this format:
 
-List each direction in a clear format.`;
+1. **Title**: Core concept in 2-3 sentences. How it connects to the current plot.
+2. **Title**: Core concept in 2-3 sentences. How it connects to the current plot.
+
+Keep each direction to 2-4 sentences. Use bold **Title** followed by a colon.`;
 
 export const ASK_BIBLE_TEMPLATE = `---
 name: ask_bible

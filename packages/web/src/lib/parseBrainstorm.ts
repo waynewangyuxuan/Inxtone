@@ -1,9 +1,10 @@
 /**
  * parseBrainstorm — parse AI brainstorm response into suggestion cards
  *
- * Expects numbered format like:
+ * Handles multiple numbered formats:
  *   1. **Title**: Description
- *   2. **Title**: Description
+ *   ### 1. Title
+ *   1. Plain Title: Description
  *
  * Falls back to a single card with the full text if parsing fails.
  */
@@ -26,7 +27,7 @@ export function parseBrainstorm(text: string): BrainstormSuggestion[] {
       suggestions.push({
         id: currentId,
         title: currentTitle || `Idea ${currentId}`,
-        body: currentBody.join('\n').trim(),
+        body: currentBody.join('\n\n').trim(),
       });
     }
   };
@@ -34,20 +35,22 @@ export function parseBrainstorm(text: string): BrainstormSuggestion[] {
   for (const line of lines) {
     /**
      * Match numbered items in these formats:
-     *   "1. **Bold Title**: rest"    → groups[1]=title, groups[2]=rest
-     *   "1. **Bold Title**– rest"    → groups[1]=title, groups[2]=rest (en-dash)
-     *   "1. Plain text line"         → groups[3]=full text
+     *   "1. **Bold Title**: rest"       → groups[1]=title, groups[2]=rest
+     *   "### 1. **Bold Title**– rest"   → groups[1]=title, groups[2]=rest
+     *   "### 1. Plain text line"        → groups[3]=full text
+     *   "1. Plain text line"            → groups[3]=full text
      *
      * Regex breakdown:
-     *   ^\d+\.\s+           — numbered prefix: "1. ", "2. ", etc.
-     *   (?:                 — non-capturing group for two alternatives:
-     *     \*\*(.+?)\*\*     — Alt A: bold title in **...**  → capture group 1
-     *     [:\-–]?\s*(.*)    — optional separator (colon/hyphen/en-dash) + rest → group 2
-     *   |                   — OR
-     *     (.*)              — Alt B: plain text → capture group 3
+     *   ^(?:#{1,6}\s+)?    — optional markdown heading prefix: "### ", "## ", etc.
+     *   \d+\.\s+           — numbered prefix: "1. ", "2. ", etc.
+     *   (?:                — non-capturing group for two alternatives:
+     *     \*\*(.+?)\*\*    — Alt A: bold title in **...**  → capture group 1
+     *     [:\-–]?\s*(.*)   — optional separator (colon/hyphen/en-dash) + rest → group 2
+     *   |                  — OR
+     *     (.*)             — Alt B: plain text → capture group 3
      *   )$
      */
-    const numbered = /^\d+\.\s+(?:\*\*(.+?)\*\*[:\-–]?\s*(.*)|(.*))$/.exec(line);
+    const numbered = /^(?:#{1,6}\s+)?\d+\.\s+(?:\*\*(.+?)\*\*[:\-–]?\s*(.*)|(.*))$/.exec(line);
     if (numbered) {
       flush();
       currentId++;

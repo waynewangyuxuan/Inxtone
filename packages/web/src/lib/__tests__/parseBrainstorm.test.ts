@@ -106,4 +106,33 @@ describe('parseBrainstorm', () => {
     expect(result[1].title).toBe('Another Title');
     expect(result[1].body).toBe('with trailing text');
   });
+
+  it('parses markdown heading format (### N.)', () => {
+    const text = `### 1. The Vacuum of Silence
+**Core Concept:** Elara creates a zone of absolute silence.
+**Connection to Plot:** This reinforces the mentor's warning.
+### 2. The Unbound Intervention
+**Core Concept:** Maren breaks the silence with oral magic.
+### 3. The Cryptic Distraction
+**Core Concept:** Pip drops a forbidden volume.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(3);
+    expect(result[0].title).toBe('The Vacuum of Silence');
+    expect(result[0].body).toContain('Core Concept');
+    expect(result[0].body).toContain('Connection to Plot');
+    expect(result[1].title).toBe('The Unbound Intervention');
+    expect(result[2].title).toBe('The Cryptic Distraction');
+  });
+
+  it('parses ## N. heading format', () => {
+    const text = `## 1. **Bold in Heading**: Description here.
+## 2. **Another Heading**: More description.`;
+
+    const result = parseBrainstorm(text);
+    expect(result).toHaveLength(2);
+    expect(result[0].title).toBe('Bold in Heading');
+    expect(result[0].body).toBe('Description here.');
+    expect(result[1].title).toBe('Another Heading');
+  });
 });
