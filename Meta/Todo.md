@@ -4,14 +4,29 @@
 
 ---
 
-## High Priority (M2 — Story Bible Core)
+## High Priority (M4 Phase 7 — Code Review Fixes)
 
-- [x] **M2 Phase 1: Repository Layer** — 7 repositories + 341 tests (2026-02-07)
-- [x] **M2 Phase 2: Service Layer** — EventBus + StoryBibleService + 61 tests (2026-02-07)
-- [x] **M2 Phase 3: API Layer** — 45 endpoints, 9 domains, 76 route tests (2026-02-07)
-- [ ] **M2 Phase 4: Web UI** — Character, World, Relationship pages
-- [ ] **M2 Phase 5: CLI Commands** — `inxtone bible list/show/search`
-- [ ] **M2 Phase 6: Testing & Polish** — E2E tests, performance testing
+**Must Fix**
+- [ ] **useAutoSave race condition** — capture chapterId at debounce start, not setTimeout fire
+
+**Should Fix**
+- [ ] **Auto-save collision** — `notifyManualSave()` clear pending timer + AbortController for in-flight requests
+- [ ] **useAutoSave unit tests** — no client-side test coverage
+- [ ] **i18n: prompt presets** — 36 hardcoded English strings → `t('key')`
+- [ ] **Outline CSS** — hardcoded `#ef4444` → `var(--color-danger)`
+- [ ] **Brainstorm loading state** — no feedback during regeneration
+- [ ] **tokens.css** — define `--color-success-bg`, chip bg token
+- [ ] **Schema.md** — add `sort_order` column
+- [ ] **Accessibility** — `aria-pressed` on preset toggles, `aria-expanded` on outline header
+- [ ] **reorderChapters E2E** — verify actual sort order persisted
+- [ ] **Preset tests** — data integrity (unique IDs, valid categories)
+- [ ] **Brainstorm parser tests** — en-dash separator, mixed formats
+- [ ] **Outline save indicator** — no user feedback on outline auto-save
+- [ ] **Redundant chapterId guard** — AISidebar handleBrainstorm
+
+**Nits**
+- [ ] parseBrainstorm regex inline comments
+- [ ] Dev-mode logging for parseJson Zod failures
 
 ## Medium Priority
 

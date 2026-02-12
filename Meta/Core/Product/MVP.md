@@ -7,40 +7,47 @@
 
 ---
 
-## 8. MVP Scope (Phase 1)
+## 8. MVP Scope
 
-### Must Have (P0)
+**Milestone Path:** M4 (Writing UX) → M5 (Export) → M6 (Smart Intake) → M7 (Search, Quality & v0.1.0)
 
-- [ ] `inxtone` — TUI mode (interactive terminal)
-- [ ] `inxtone init [name]` — Project scaffolding
-- [ ] `inxtone serve` — HTTP Server + TUI
-- [ ] `inxtone serve --no-tui` — Headless mode
-- [ ] Project dashboard (list chapters, word count)
-- [ ] Chapter editor (markdown, manual save)
-- [ ] Character cards (structured data in SQLite)
-- [ ] World rules (basic structure)
-- [ ] Plot outliner (2 levels: Arc → Chapter)
-- [ ] Gemini/Claude integration (continuation, dialogue)
-- [ ] Basic context injection (current chapter + selected entities)
-- [ ] `inxtone export md` — Markdown export
-- [ ] `inxtone export docx` — Word export
-- [ ] `inxtone config set/get` — API key management
+### M4: Writing UX (Active)
 
-### Should Have (P1)
+- [x] Project scaffolding, web UI server, dashboard
+- [x] Chapter editor with auto-save
+- [x] Story Bible: characters, world, locations, factions, timeline, relationships
+- [x] Plot system: arcs, foreshadowing, hooks
+- [x] Gemini 3.0 Pro integration (continuation, dialogue, brainstorm, describe, ask)
+- [x] 5-layer context injection engine
+- [x] Prompt presets (16 presets, 4 categories)
+- [x] Chapter outline editing
+- [x] Brainstorm mode with suggestion cards
+- [ ] Code review fixes (Phase 7)
 
-- [ ] Relationship map (visual, D3.js or similar)
-- [ ] Foreshadowing tracker
-- [ ] Full-text search across project
-- [ ] Multiple AI prompt templates
-- [ ] `inxtone ai ask "question"` — CLI query interface
-- [ ] `inxtone bible list/show/search` — Story Bible CLI
+### M5: Export (Draft)
 
-### Nice to Have (P2)
+- [ ] `inxtone export md/docx/txt` — Multi-format export
+- [ ] Story Bible export (structured document)
+- [ ] Web UI export controls + CLI commands
 
-- [ ] Consistency checker
-- [ ] File watcher (auto-reload on external edit)
-- [ ] Chapter summaries (auto-generated)
-- [ ] Daily word count goals
+### M6: Smart Intake (Draft) — Key Adoption Unlock
+
+**Deliberately excluded from MVP core, but critical for real-world adoption:**
+- [ ] Natural language → Story Bible (paste text → structured entities)
+- [ ] Chapter import + auto-extraction (bulk chapters → full Story Bible)
+- [ ] Outline import → plot architecture
+- [ ] "AI suggests → human confirms" review flow
+
+See [M6.md](../../Milestone/M6.md), [ADR-0003](../../Decisions/ADR-0003-milestone-reorder-smart-intake.md).
+
+### M7: Search, Quality & v0.1.0 (Draft)
+
+- [ ] FTS5 full-text search + Cmd+K modal
+- [ ] Semantic search (sqlite-vec embeddings)
+- [ ] QualityService (26 consistency rules + Wayne Principles)
+- [ ] Version history + diff viewer
+- [ ] CLI completeness, performance, documentation
+- [ ] v0.1.0 release
 
 ---
 
@@ -79,5 +86,7 @@
 
 ## See Also
 
-- [../../Milestone/M1.md](../../Milestone/M1.md) - First milestone tasks
+- [../../Milestone/Meta.md](../../Milestone/Meta.md) - Milestone index
+- [../../Milestone/M6.md](../../Milestone/M6.md) - Smart Intake milestone
+- [../../Decisions/ADR-0003-milestone-reorder-smart-intake.md](../../Decisions/ADR-0003-milestone-reorder-smart-intake.md) - Reorder rationale
 - [Appendix.md](Appendix.md) - Roadmap and risks
