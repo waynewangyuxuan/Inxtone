@@ -79,6 +79,20 @@ export {
   useDeleteHook,
 } from './useHooks';
 
+// Search
+export { searchKeys, useSearch } from './useSearch';
+
+// Keyboard Shortcuts
+export { useShortcut, getShortcutDefinitions, SHORTCUT_REFERENCE } from './useKeyboardShortcuts';
+export type { ShortcutDef } from './useKeyboardShortcuts';
+
+// Entity Extraction
+export { useExtractEntities } from './useEntityExtraction';
+
+// Chapter Setup Assist
+export { setupKeys, useChapterSetup } from './useChapterSetup';
+export type { SetupSuggestion } from './useChapterSetup';
+
 // Chapters & Volumes
 export {
   chapterKeys,

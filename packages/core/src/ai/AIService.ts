@@ -24,6 +24,7 @@ import type {
   ContextItem,
   BuiltContext,
   AIStreamChunk,
+  ExtractedEntities,
 } from '../types/services.js';
 import type { ChapterId, CharacterId, LocationId } from '../types/entities.js';
 import type { WritingRepository } from '../db/repositories/WritingRepository.js';
@@ -351,6 +352,44 @@ export class AIService implements IAIService {
   // eslint-disable-next-line @typescript-eslint/require-await
   async searchRelevantContext(_query: string, _maxItems?: number): Promise<ContextItem[]> {
     return [];
+  }
+
+  // ===================================
+  // Entity Extraction
+  // ===================================
+
+  /**
+   * Extract entities (characters, locations) from content using AI.
+   * Non-streaming — calls generateJSON for structured output.
+   */
+  async extractEntities(
+    chapterId: ChapterId,
+    content: string,
+    options?: AIGenerationOptions
+  ): Promise<ExtractedEntities> {
+    // Build known entity lists for matching
+    const allCharacters = this.deps.characterRepo.findAll();
+    const allLocations = this.deps.locationRepo.findAll();
+
+    const knownCharacters =
+      allCharacters.map((c) => `- ${c.name} (ID: ${c.id})`).join('\n') || '(none)';
+    const knownLocations =
+      allLocations.map((l) => `- ${l.name} (ID: ${l.id})`).join('\n') || '(none)';
+
+    // Build chapter context for grounding
+    const builtContext = this.chapterContextBuilder.build(chapterId);
+    const contextText = builtContext.items
+      .map((item) => `[${item.type}] ${item.content}`)
+      .join('\n\n');
+
+    const prompt = this.promptAssembler.assemble('extract_entities', {
+      context: contextText,
+      content,
+      known_characters: knownCharacters,
+      known_locations: knownLocations,
+    });
+
+    return this.provider.generateJSON<ExtractedEntities>(prompt, options);
   }
 
   // ===================================

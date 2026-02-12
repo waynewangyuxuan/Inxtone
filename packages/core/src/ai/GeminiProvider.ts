@@ -125,6 +125,48 @@ export class GeminiProvider {
   }
 
   /**
+   * Non-streaming JSON generation.
+   * Uses responseMimeType: 'application/json' for structured output.
+   * Retries on retriable errors with exponential backoff.
+   */
+  async generateJSON<T>(prompt: string, options?: AIGenerationOptions): Promise<T> {
+    if (!this.isConfigured()) {
+      throw new Error('AI_PROVIDER_ERROR: Gemini API key not configured.');
+    }
+
+    const model = options?.model ?? this.options.model;
+    const temperature = options?.temperature ?? 0.3;
+    const maxOutputTokens = options?.maxTokens ?? this.options.maxOutputTokens;
+    const fullPrompt = `${prompt}\n\nRespond with valid JSON only. No markdown, no explanation, no code fences.`;
+
+    for (let attempt = 1; attempt <= this.options.retryCount; attempt++) {
+      try {
+        const client = this.getClient();
+        const response = await client.models.generateContent({
+          model,
+          contents: fullPrompt,
+          config: {
+            temperature,
+            maxOutputTokens,
+            responseMimeType: 'application/json',
+          },
+        });
+
+        const text = response.text ?? '';
+        return JSON.parse(text) as T;
+      } catch (err: unknown) {
+        if (this.isRetriable(err) && attempt < this.options.retryCount) {
+          await this.sleep(this.options.retryDelayMs * Math.pow(2, attempt - 1));
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw new Error('AI_PROVIDER_ERROR: Max retries exceeded.');
+  }
+
+  /**
    * Estimate token count for text using the estimation-based counter.
    */
   countTokens(text: string): number {

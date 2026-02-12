@@ -10,6 +10,7 @@ import { Badge } from '../../components/ui';
 import {
   useBuiltContextState,
   useExcludedContextIds,
+  useInjectedEntities,
   useEditorActions,
 } from '../../stores/useEditorStore';
 import type { ContextItemType } from '@inxtone/core';
@@ -54,8 +55,14 @@ const L1_TYPES = new Set<ContextItemType>([
 export function ContextPreview(): React.ReactElement {
   const context = useBuiltContextState();
   const excludedIds = useExcludedContextIds();
-  const { toggleContextItem } = useEditorActions();
+  const injectedEntities = useInjectedEntities();
+  const { toggleContextItem, removeInjectedEntity } = useEditorActions();
   const [open, setOpen] = React.useState(false);
+
+  const injectedIds = React.useMemo(
+    () => new Set(injectedEntities.map((e) => e.id).filter(Boolean)),
+    [injectedEntities]
+  );
 
   if (!context) {
     return (
@@ -89,6 +96,7 @@ export function ContextPreview(): React.ReactElement {
             const itemId = item.id ?? `idx-${i}`;
             const isL1 = L1_TYPES.has(item.type);
             const isExcluded = !isL1 && excludedIds.has(itemId);
+            const isPinned = injectedIds.has(itemId);
 
             return (
               <div
@@ -103,13 +111,22 @@ export function ContextPreview(): React.ReactElement {
                   onChange={() => toggleContextItem(itemId)}
                   title={isL1 ? 'L1 items are always included' : 'Toggle this context item'}
                 />
-                <Badge variant="muted" size="sm">
-                  {layerMap[item.type]}
+                <Badge variant={isPinned ? 'primary' : 'muted'} size="sm">
+                  {isPinned ? 'Pinned' : layerMap[item.type]}
                 </Badge>
                 <span className={styles.itemType}>{typeLabels[item.type]}</span>
                 <span className={styles.itemPreview}>
                   {item.content.length > 50 ? item.content.slice(0, 50) + '...' : item.content}
                 </span>
+                {isPinned && (
+                  <button
+                    className={styles.unpinButton}
+                    onClick={() => removeInjectedEntity(itemId)}
+                    title="Unpin from context"
+                  >
+                    &times;
+                  </button>
+                )}
               </div>
             );
           })}

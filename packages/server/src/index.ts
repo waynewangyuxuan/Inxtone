@@ -8,7 +8,12 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import { VERSION } from '@inxtone/core';
-import type { IStoryBibleService, IAIService, IWritingService } from '@inxtone/core';
+import type {
+  IStoryBibleService,
+  IAIService,
+  IWritingService,
+  ISearchService,
+} from '@inxtone/core';
 import {
   Database,
   CharacterRepository,
@@ -22,7 +27,14 @@ import {
   HookRepository,
   WritingRepository,
 } from '@inxtone/core/db';
-import { EventBus, StoryBibleService, AIService, WritingService } from '@inxtone/core/services';
+import {
+  EventBus,
+  StoryBibleService,
+  AIService,
+  WritingService,
+  SearchService,
+  ChapterSetupAssist,
+} from '@inxtone/core/services';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -41,6 +53,8 @@ export interface ServerOptions {
   storyBibleService?: IStoryBibleService;
   aiService?: IAIService;
   writingService?: IWritingService;
+  searchService?: ISearchService;
+  setupAssist?: ChapterSetupAssist;
 
   // Database instance for seed routes
   db?: InstanceType<typeof Database>;
@@ -95,6 +109,7 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
         foreshadowing: '/api/foreshadowing',
         hooks: '/api/hooks',
         ai: '/api/ai',
+        search: '/api/search',
         // Writing API
         volumes: '/api/volumes',
         chapters: '/api/chapters',
@@ -117,6 +132,12 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
     }
     if (options.writingService) {
       deps.writingService = options.writingService;
+    }
+    if (options.searchService) {
+      deps.searchService = options.searchService;
+    }
+    if (options.setupAssist) {
+      deps.setupAssist = options.setupAssist;
     }
     if (options.db) {
       deps.db = options.db;
@@ -182,6 +203,8 @@ function createServices(options: {
   storyBibleService: IStoryBibleService;
   aiService: IAIService;
   writingService: IWritingService;
+  searchService: ISearchService;
+  setupAssist: ChapterSetupAssist;
   db: InstanceType<typeof Database>;
 } {
   // Use provided path or default to ~/.inxtone/data.db
@@ -257,7 +280,18 @@ function createServices(options: {
     eventBus,
   });
 
-  return { storyBibleService, aiService, writingService, db };
+  // Create SearchService
+  const searchService = new SearchService(db);
+
+  // Create ChapterSetupAssist
+  const setupAssist = new ChapterSetupAssist({
+    writingRepo,
+    characterRepo,
+    locationRepo,
+    foreshadowingRepo,
+  });
+
+  return { storyBibleService, aiService, writingService, searchService, setupAssist, db };
 }
 
 /**
@@ -285,10 +319,8 @@ if (isMainModule) {
   const geminiApiKey = process.env.GEMINI_API_KEY;
 
   // Create all services with shared infrastructure
-  const { storyBibleService, aiService, writingService, db } = createServices({
-    dbPath,
-    geminiApiKey,
-  });
+  const { storyBibleService, aiService, writingService, searchService, setupAssist, db } =
+    createServices({ dbPath, geminiApiKey });
 
   console.log('Starting Inxtone server...');
   console.log(`Database: ${dbPath ?? path.join(os.homedir(), '.inxtone', 'data.db')}`);
@@ -298,7 +330,15 @@ if (isMainModule) {
     console.log('AI Service: No server key — clients provide key via BYOK');
   }
 
-  startServer({ port, storyBibleService, aiService, writingService, db })
+  startServer({
+    port,
+    storyBibleService,
+    aiService,
+    writingService,
+    searchService,
+    setupAssist,
+    db,
+  })
     .then(() => {
       console.log(`Server running at http://localhost:${port}`);
       console.log(`API available at http://localhost:${port}/api`);

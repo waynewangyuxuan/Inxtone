@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **M4.5: Writing Intelligence** — Search, interactive Bible panel, keyboard shortcuts, setup assist, entity extraction
+  - Unified FTS5 `search_index` table: 6 entity types (character, chapter, location, faction, arc, foreshadowing), 18 auto-sync triggers, migration 003
+  - SearchService: FTS5 MATCH with BM25 ranking, snippet highlighting, entity type filtering
+  - Cmd+K search modal: 300ms debounced search, grouped results, keyboard navigation (arrows + Enter/Escape), entity type filter chips
+  - Interactive Bible panel: 8 collapsible sections (Characters, Relationships, Locations, Arc, Foreshadowing, Hooks, World, Factions), inline detail cards, quick-search filter
+  - Inject-to-context: pin Bible entities as L5 context items for AI generation, visual indicators in ContextPreview
+  - Keyboard shortcuts: `Cmd+K` (search), `Cmd+S` (save), `Cmd+Enter` (AI Continue), `Cmd+/` (shortcut reference modal)
+  - Chapter Setup Assist: heuristic engine (previous chapter carry-over, arc roster, outline mention), suggestion chips with one-click attach
+  - Post-accept entity extraction: `generateJSON<T>()` on GeminiProvider, extraction prompt template, background extraction after AI accept, ExtractionReview panel with Link/Create/Dismiss actions
+  - Search API route: `GET /api/search?q=&types=&limit=`
+  - Extract entities API route: `POST /api/ai/extract-entities`
+  - 1093 tests passing across 50 files
 - **M3.5: Hackathon Submission** — Gemini 3 Hackathon deployment readiness
   - English AI prompts: all 5 templates + context builder labels translated
   - BYOK API key architecture: per-request `X-Gemini-Key` header, `POST /api/ai/verify-key` endpoint

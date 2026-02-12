@@ -566,6 +566,34 @@ export interface IAIService {
    * Get token count for text
    */
   countTokens(text: string, provider?: AIProvider): number;
+
+  // === Entity Extraction ===
+  /**
+   * Extract entities (characters, locations) from AI-generated content.
+   * Non-streaming — returns structured JSON.
+   */
+  extractEntities(
+    chapterId: ChapterId,
+    content: string,
+    options?: AIGenerationOptions
+  ): Promise<ExtractedEntities>;
+}
+
+// ===========================================
+// Entity Extraction Types
+// ===========================================
+
+/** A single entity extracted from content */
+export interface ExtractedEntity {
+  name: string;
+  existingId: string | null; // matched against Bible, null if new
+  isNew: boolean;
+}
+
+/** Result of entity extraction */
+export interface ExtractedEntities {
+  characters: ExtractedEntity[];
+  locations: ExtractedEntity[];
 }
 
 // ===========================================

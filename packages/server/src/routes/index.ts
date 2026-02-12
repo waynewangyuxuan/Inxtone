@@ -6,7 +6,13 @@
  */
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import type { IStoryBibleService, IAIService, IWritingService } from '@inxtone/core';
+import type {
+  IStoryBibleService,
+  IAIService,
+  IWritingService,
+  ISearchService,
+} from '@inxtone/core';
+import type { ChapterSetupAssist } from '@inxtone/core/services';
 import type { Database } from '@inxtone/core/db';
 
 import { characterRoutes } from './characters.js';
@@ -21,6 +27,7 @@ import { hookRoutes } from './hooks.js';
 import { aiRoutes } from './ai.js';
 import { volumeRoutes, chapterRoutes, versionRoutes, statsRoutes } from './writing.js';
 import { seedRoutes } from './seed.js';
+import { searchRoutes } from './search.js';
 
 /**
  * Dependencies required by route handlers.
@@ -29,6 +36,8 @@ export interface RouteDeps {
   storyBibleService: IStoryBibleService;
   aiService?: IAIService;
   writingService?: IWritingService;
+  searchService?: ISearchService;
+  setupAssist?: ChapterSetupAssist;
   db?: Database;
 }
 
@@ -61,6 +70,13 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
     await fastify.register(chapterRoutes(deps), { prefix: '/api/chapters' });
     await fastify.register(versionRoutes(deps), { prefix: '/api/versions' });
     await fastify.register(statsRoutes(deps), { prefix: '/api/stats' });
+  }
+
+  // Search routes (optional - only registered if searchService is provided)
+  if (deps.searchService) {
+    await fastify.register(searchRoutes({ searchService: deps.searchService }), {
+      prefix: '/api/search',
+    });
   }
 
   // Seed routes (optional - only registered if db is provided)

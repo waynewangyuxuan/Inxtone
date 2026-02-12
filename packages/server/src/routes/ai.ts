@@ -96,6 +96,12 @@ const buildContextSchema = z.object({
   additionalItems: z.array(contextItemSchema).optional(),
 });
 
+const extractEntitiesSchema = z.object({
+  chapterId: z.coerce.number().int().positive(),
+  content: z.string().min(1),
+  options: aiGenerationOptionsSchema,
+});
+
 /**
  * Validate request body against a Zod schema.
  * Returns parsed data on success, or sends a 400 error and returns null.
@@ -294,6 +300,21 @@ export const aiRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       const result = await aiService.buildContext(
         body.chapterId,
         body.additionalItems as ContextItem[] | undefined
+      );
+      return success(result);
+    });
+
+    /**
+     * POST /extract-entities - Extract entities from content (JSON)
+     */
+    fastify.post('/extract-entities', async (request, reply) => {
+      const body = validateBody(request.body, extractEntitiesSchema, reply);
+      if (!body) return reply;
+      injectApiKey(request, aiService);
+      const result = await aiService.extractEntities(
+        body.chapterId,
+        body.content,
+        body.options as AIGenerationOptions | undefined
       );
       return success(result);
     });

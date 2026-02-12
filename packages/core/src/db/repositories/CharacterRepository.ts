@@ -192,9 +192,10 @@ export class CharacterRepository extends BaseRepository<Character, CharacterId> 
 
     const rows = this.db.query<CharacterRow>(
       `SELECT c.* FROM characters c
-       JOIN characters_fts fts ON c.rowid = fts.rowid
-       WHERE characters_fts MATCH ?
-       ORDER BY rank`,
+       WHERE c.id IN (
+         SELECT entity_id FROM search_index
+         WHERE entity_type = 'character' AND search_index MATCH ?
+       )`,
       [sanitizedQuery]
     );
 

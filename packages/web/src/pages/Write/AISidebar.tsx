@@ -14,6 +14,7 @@ import {
   useAILoading,
   useAIResponse,
   useExcludedContextIds,
+  useInjectedEntities,
   useEditorActions,
   useEditorStore,
   useBrainstormStack,
@@ -38,6 +39,7 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
   const isLoading = useAILoading();
   const aiResponse = useAIResponse();
   const excludedIds = useExcludedContextIds();
+  const injectedEntities = useInjectedEntities();
   const brainstormStack = useBrainstormStack();
   const {
     setAILoading,
@@ -50,7 +52,8 @@ export function AISidebar({ onAccept }: AISidebarProps): React.ReactElement {
     clearBrainstormStack,
   } = useEditorActions();
 
-  const { data: contextData } = useBuildContext(selectedId);
+  const additionalItems = injectedEntities.length > 0 ? injectedEntities : undefined;
+  const { data: contextData } = useBuildContext(selectedId, additionalItems);
   const [promptText, setPromptText] = React.useState('');
   const [showRejectModal, setShowRejectModal] = React.useState(false);
   const abortRef = React.useRef<AbortController | null>(null);

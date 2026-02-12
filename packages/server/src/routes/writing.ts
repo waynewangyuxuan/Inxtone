@@ -246,6 +246,16 @@ export const chapterRoutes = (deps: RouteDeps): FastifyPluginAsync => {
       return success({ reordered: true });
     });
 
+    /** GET /:id/setup-suggestions - Chapter setup assist suggestions */
+    if (deps.setupAssist) {
+      const setupAssist = deps.setupAssist;
+      // eslint-disable-next-line @typescript-eslint/require-await
+      fastify.get<{ Params: { id: string } }>('/:id/setup-suggestions', async (request) => {
+        const suggestions = setupAssist.suggest(Number(request.params.id));
+        return success(suggestions);
+      });
+    }
+
     /** GET /:id - Get chapter (with optional content via ?includeContent=true) */
     fastify.get<{
       Params: { id: string };

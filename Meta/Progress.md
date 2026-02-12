@@ -4,6 +4,116 @@
 
 ---
 
+## 2026-02-12 (M4.5: Writing Intelligence — Complete) ✅
+
+### Completed
+
+**Phase 1: Search Infrastructure**
+- Migration 003: Unified `search_index` FTS5 table (6 entity types, 18 triggers, backfill from existing data, drop old `chapters_fts`/`characters_fts`)
+- `SearchService`: FTS5 MATCH with BM25 ranking, `snippet()` highlighting, entity type filtering, query sanitization
+- `CharacterRepository.search()` updated to use `search_index`
+- Search API route: `GET /api/search?q=&types=&limit=`
+- `useSearch` React Query hook (300ms debounce, enabled when query ≥ 2 chars)
+- SearchService tests + search route integration tests
+
+**Phase 2: Cmd+K Search Modal**
+- `SearchModal.tsx`: portal-based overlay, debounced search, results grouped by entity type with icons + snippets
+- Keyboard navigation: Arrow keys, Enter to navigate/inject, Escape to close
+- Entity type filter chips (All / Characters / Chapters / Locations / ...)
+- Integration in AppShell with global Cmd+K trigger
+
+**Phase 3: Interactive Bible Panel**
+- `StoryBiblePanel.tsx` rewritten: 8 collapsible sections (Characters, Relationships, Locations, Arc, Foreshadowing, Hooks, World, Factions)
+- Inline detail cards per entity (reuses Story Bible detail patterns)
+- Inject-to-context: `useEditorStore` gains `injectedEntities` state, pin/unpin buttons per entity
+- `ContextPreview` shows pinned L5 items with unpin button
+- Quick-search filter within Bible panel
+
+**Phase 4: Keyboard Shortcuts**
+- `useKeyboardShortcuts.ts`: global shortcut registry with `ShortcutDef` interface
+- Shortcuts: `Cmd+K` (search), `Cmd+S` (save), `Cmd+Enter` (AI Continue), `Cmd+/` (reference modal)
+- `ShortcutReferenceModal.tsx`: grouped by category, shows key combos + descriptions
+- Migrated inline Ctrl+S handler from EditorPanel to shortcut system
+
+**Phase 5: Chapter Setup Assist**
+- `ChapterSetupAssist.ts` (core): heuristic engine with 3 sources — previous chapter carry-over, arc roster, outline mention
+- Confidence ranking: outline mention > previous chapter > arc roster; deduplication with highest confidence wins
+- API route: `GET /api/chapters/:id/setup-suggestions`
+- `useChapterSetup.ts` hook + `SetupAssistPanel.tsx` UI: suggestion chips with source labels, one-click attach
+- 14 unit tests covering all heuristic sources, deduplication, foreshadowing resolved filtering
+
+**Phase 6: Post-Accept Entity Extraction**
+- `GeminiProvider.generateJSON<T>()`: non-streaming structured JSON output via `responseMimeType: 'application/json'`
+- `ENTITY_EXTRACTION_TEMPLATE`: extraction prompt with known entity matching
+- `AIService.extractEntities()`: builds known entity lists, assembles prompt, calls generateJSON
+- API route: `POST /api/ai/extract-entities`
+- `useEditorStore`: `pendingExtraction` state + `setPendingExtraction` action
+- `useExtractEntities.ts` mutation hook: background extraction after AI accept
+- `ExtractionReview.tsx`: review panel with Link/Create & Link/Dismiss per entity, batch Link All/Dismiss All
+- Trigger wired in `Write.tsx` `handlePreviewConfirm`
+
+**Phase 7: Deferred Issues + Polish**
+- Created GitHub issues: #4 (Relationship Map), #5 (Timeline Visualization), #6 (Pacing Visualization)
+- Build: clean (0 TS errors)
+- Documentation updated (CHANGELOG.md, Progress.md, M4.5.md)
+
+### New Files (18)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/db/migrations/003_unified_search_index.ts` | FTS5 search_index + 18 triggers |
+| `packages/core/src/services/SearchService.ts` | Full-text search service |
+| `packages/core/src/services/ChapterSetupAssist.ts` | Heuristic setup assist engine |
+| `packages/core/src/services/__tests__/SearchService.test.ts` | Search service tests |
+| `packages/core/src/services/__tests__/ChapterSetupAssist.test.ts` | 14 setup assist tests |
+| `packages/server/src/routes/search.ts` | Search API route |
+| `packages/server/src/routes/__tests__/search.test.ts` | Search route integration tests |
+| `packages/web/src/hooks/useSearch.ts` | React Query search hook |
+| `packages/web/src/hooks/useChapterSetup.ts` | Setup suggestions hook |
+| `packages/web/src/hooks/useEntityExtraction.ts` | Entity extraction mutation hook |
+| `packages/web/src/hooks/useKeyboardShortcuts.ts` | Global shortcut registry |
+| `packages/web/src/components/SearchModal.tsx` | Cmd+K search modal |
+| `packages/web/src/components/SearchModal.module.css` | Search modal styles |
+| `packages/web/src/components/ShortcutReferenceModal.tsx` | Shortcut reference modal |
+| `packages/web/src/components/ShortcutReferenceModal.module.css` | Reference modal styles |
+| `packages/web/src/pages/Write/SetupAssistPanel.tsx` | Setup assist chip UI |
+| `packages/web/src/pages/Write/SetupAssistPanel.module.css` | Setup assist styles |
+| `packages/web/src/pages/Write/ExtractionReview.tsx` | Entity extraction review UI |
+| `packages/web/src/pages/Write/ExtractionReview.module.css` | Extraction review styles |
+
+### Modified Files (18)
+| File | Change |
+|------|--------|
+| `packages/core/src/db/migrations/index.ts` | Register migration 003 |
+| `packages/core/src/db/repositories/CharacterRepository.ts` | Search via search_index |
+| `packages/core/src/ai/GeminiProvider.ts` | +generateJSON<T>() method |
+| `packages/core/src/ai/templates.ts` | +ENTITY_EXTRACTION_TEMPLATE |
+| `packages/core/src/ai/PromptAssembler.ts` | Register extract_entities template |
+| `packages/core/src/ai/AIService.ts` | +extractEntities() method |
+| `packages/core/src/types/services.ts` | +ExtractedEntity, ExtractedEntities, extractEntities on IAIService |
+| `packages/core/src/ai/__tests__/PromptAssembler.test.ts` | Updated template counts (6/7) |
+| `packages/server/src/index.ts` | +SearchService, +ChapterSetupAssist wiring |
+| `packages/server/src/routes/index.ts` | +searchRoutes, +setupAssist in RouteDeps |
+| `packages/server/src/routes/ai.ts` | +POST /extract-entities route |
+| `packages/server/src/routes/writing.ts` | +GET /chapters/:id/setup-suggestions |
+| `packages/web/src/stores/useEditorStore.ts` | +injectedEntities, +pendingExtraction state |
+| `packages/web/src/hooks/index.ts` | Export new hooks |
+| `packages/web/src/pages/Write.tsx` | Extraction trigger in handlePreviewConfirm |
+| `packages/web/src/pages/Write/StoryBiblePanel.tsx` | 8 sections + ExtractionReview + SetupAssistPanel |
+| `packages/web/src/pages/Write/ContextPreview.tsx` | Pinned L5 items with unpin |
+| `packages/web/src/components/layout/AppShell.tsx` | SearchModal + ShortcutReferenceModal + useGlobalShortcuts |
+
+### Stats
+- Tests: **1093 passed** (50 files), 0 failures, 26 new tests
+- Build: clean (0 TS errors)
+- GitHub issues created: 3 (#4 Relationship Map, #5 Timeline Viz, #6 Pacing Viz)
+
+### M4.5 Summary
+- **7 phases completed** across search, Bible panel, shortcuts, setup assist, entity extraction
+- Tests grew from 1067 → 1093 (+26 new)
+- **3 features deferred** to GitHub issues (Relationship Map, Timeline Viz, Pacing Viz)
+
+---
+
 ## 2026-02-11 (M4: AI Quality + Writing UX — Phases 2-6 Complete)
 
 ### Completed

@@ -93,3 +93,19 @@
   text-overflow: ellipsis;
   flex: 1;
 }
+
+.unpinButton {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  padding: 0 var(--space-xs);
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+.unpinButton:hover {
+  color: var(--color-accent);
+}
