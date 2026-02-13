@@ -8,7 +8,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Badge } from '../../components/ui';
+import { Badge, Select } from '../../components/ui';
 import {
   useChapterWithContent,
   useCharacters,
@@ -691,18 +691,19 @@ export function StoryBiblePanel(): React.ReactElement {
           <div className={styles.arcSelector}>
             <label className={styles.arcLabel}>Assign chapter to arc:</label>
             <div className={styles.arcSelectRow}>
-              <select
-                className={styles.arcSelect}
+              <Select
+                size="sm"
                 value={chapter.arcId ?? ''}
                 onChange={(e) => handleArcChange(e.target.value)}
-              >
-                <option value="">-- No arc --</option>
-                {(allArcs ?? []).map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name} ({a.status})
-                  </option>
-                ))}
-              </select>
+                placeholder="-- No arc --"
+                options={[
+                  { value: '', label: '-- No arc --' },
+                  ...(allArcs ?? []).map((a) => ({
+                    value: a.id,
+                    label: `${a.name} (${a.status})`,
+                  })),
+                ]}
+              />
               {arc && (
                 <button
                   className={`${styles.pinButton} ${injectedIds.has(arc.id) ? styles.pinned : ''}`}
