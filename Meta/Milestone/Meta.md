@@ -37,16 +37,17 @@ Draft → Active → Complete → Archived
 | [M4](M4.md) | Writing UX Polish | Complete | 2026-02-20 | 10 days |
 | [M4.5](M4.5.md) | Writing Intelligence | Complete | 2026-02-12 | 2 days |
 | [M5](M5.md) | Export | Draft | TBD | 1.5 weeks |
-| [M6](M6.md) | Smart Intake | Draft | TBD | 3 weeks |
-| [M7](M7.md) | Search, Quality & v0.1.0 Release | Draft | TBD | 3 weeks |
+| [M6](M6.md) | Smart Intake | Draft | TBD | 2.5 weeks |
+| [M7](M7.md) | Quality & Visualizations | Draft | TBD | 2 weeks |
+| [M8](M8.md) | Polish & v0.1.0 Release | Draft | TBD | 2 weeks |
 
 ### Post-MVP Roadmap
 
 | Milestone | Title | Status |
 |-----------|-------|--------|
-| M8 | Multi-Model AI + Relationship Graph + Ambient Detection | Draft |
-| M9 | EPUB/PDF Export + Plugin System | Draft |
-| M10 | Cloud Sync + Community Features | Draft |
+| M9 | Multi-Model AI + Outline Import + Ambient Detection | Draft |
+| M10 | EPUB/PDF Export + Plugin System | Draft |
+| M11 | Cloud Sync + Community Features | Draft |
 
 See [ADR-0003](../Decisions/ADR-0003-milestone-reorder-smart-intake.md) for rationale behind M5→M6→M7 ordering.
 
