@@ -71,6 +71,18 @@ function ensureGlobalListener(): void {
   window.addEventListener('keydown', handleGlobalKeydown);
 }
 
+// HMR cleanup: remove stale listeners when module is hot-replaced
+// @ts-expect-error - import.meta.hot is provided by Vite for HMR
+
+if (import.meta.hot) {
+  // @ts-expect-error - import.meta.hot.dispose is a Vite HMR API
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  import.meta.hot.dispose(() => {
+    window.removeEventListener('keydown', handleGlobalKeydown);
+    installed = false;
+  });
+}
+
 /**
  * Hook to register a keyboard shortcut for the component's lifetime.
  */

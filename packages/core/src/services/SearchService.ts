@@ -78,12 +78,44 @@ export class SearchService implements ISearchService {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async updateIndex(entityType: string, entityId: string): Promise<void> {
-    // Triggers handle this automatically; manual update available if needed
+    // Delete existing entry
     this.db.run(`DELETE FROM search_index WHERE entity_type = ? AND entity_id = ?`, [
       entityType,
       entityId,
     ]);
-    // Re-insert would need entity-specific logic; triggers handle this on source table updates
+
+    // Re-insert from source table (triggers normally handle this, but this is a manual fallback)
+    const reinsertSql = this.getReinsertSql(entityType);
+    if (reinsertSql) {
+      this.db.run(reinsertSql, [entityId]);
+    }
+  }
+
+  /**
+   * Get the SQL to re-insert a single entity into search_index from its source table.
+   */
+  private getReinsertSql(entityType: string): string | null {
+    const queries: Record<string, string> = {
+      character: `INSERT INTO search_index(title, body, entity_type, entity_id)
+                  SELECT name, COALESCE(appearance, ''), 'character', id
+                  FROM characters WHERE id = ?`,
+      chapter: `INSERT INTO search_index(title, body, entity_type, entity_id)
+                SELECT COALESCE(title, ''), COALESCE(content, ''), 'chapter', CAST(id AS TEXT)
+                FROM chapters WHERE CAST(id AS TEXT) = ?`,
+      location: `INSERT INTO search_index(title, body, entity_type, entity_id)
+                 SELECT name, COALESCE(significance, '') || ' ' || COALESCE(atmosphere, ''), 'location', id
+                 FROM locations WHERE id = ?`,
+      faction: `INSERT INTO search_index(title, body, entity_type, entity_id)
+                SELECT name, COALESCE(internal_conflict, '') || ' ' || COALESCE(stance_to_mc, ''), 'faction', id
+                FROM factions WHERE id = ?`,
+      arc: `INSERT INTO search_index(title, body, entity_type, entity_id)
+            SELECT name, COALESCE(type, ''), 'arc', id
+            FROM arcs WHERE id = ?`,
+      foreshadowing: `INSERT INTO search_index(title, body, entity_type, entity_id)
+                      SELECT content, COALESCE(planted_text, ''), 'foreshadowing', id
+                      FROM foreshadowing WHERE id = ?`,
+    };
+    return queries[entityType] ?? null;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

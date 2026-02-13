@@ -389,7 +389,13 @@ export class AIService implements IAIService {
       known_locations: knownLocations,
     });
 
-    return this.provider.generateJSON<ExtractedEntities>(prompt, options);
+    const result = await this.provider.generateJSON<ExtractedEntities>(prompt, options);
+
+    // Validate and normalize response shape
+    return {
+      characters: Array.isArray(result.characters) ? result.characters : [],
+      locations: Array.isArray(result.locations) ? result.locations : [],
+    };
   }
 
   // ===================================

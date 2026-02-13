@@ -49,8 +49,14 @@ export function ExtractionReview(): React.ReactElement | null {
       update.locations = [...current, entity.existingId];
     }
 
-    updateChapter.mutate({ id: chapterId, data: update });
-    removeEntity(entity);
+    updateChapter.mutate(
+      { id: chapterId, data: update },
+      {
+        onSuccess: () => {
+          removeEntity(entity);
+        },
+      }
+    );
   };
 
   const handleCreate = (entity: ExtractedEntity & { entityType: 'character' | 'location' }) => {
@@ -60,10 +66,17 @@ export function ExtractionReview(): React.ReactElement | null {
         {
           onSuccess: (newChar) => {
             const current = chapter.characters ?? [];
-            updateChapter.mutate({
-              id: chapterId,
-              data: { characters: [...current, newChar.id] },
-            });
+            updateChapter.mutate(
+              {
+                id: chapterId,
+                data: { characters: [...current, newChar.id] },
+              },
+              {
+                onSuccess: () => {
+                  removeEntity(entity);
+                },
+              }
+            );
           },
         }
       );
@@ -73,15 +86,21 @@ export function ExtractionReview(): React.ReactElement | null {
         {
           onSuccess: (newLoc) => {
             const current = chapter.locations ?? [];
-            updateChapter.mutate({
-              id: chapterId,
-              data: { locations: [...current, newLoc.id] },
-            });
+            updateChapter.mutate(
+              {
+                id: chapterId,
+                data: { locations: [...current, newLoc.id] },
+              },
+              {
+                onSuccess: () => {
+                  removeEntity(entity);
+                },
+              }
+            );
           },
         }
       );
     }
-    removeEntity(entity);
   };
 
   const removeEntity = (entity: ExtractedEntity & { entityType: string }) => {
@@ -123,16 +142,29 @@ export function ExtractionReview(): React.ReactElement | null {
     }
 
     if (update.characters || update.locations) {
-      updateChapter.mutate({ id: chapterId, data: update });
+      updateChapter.mutate(
+        { id: chapterId, data: update },
+        {
+          onSuccess: () => {
+            // Keep only new entities that need manual creation
+            const remaining = {
+              characters: pendingExtraction.characters.filter((e) => e.isNew),
+              locations: pendingExtraction.locations.filter((e) => e.isNew),
+            };
+            const count = remaining.characters.length + remaining.locations.length;
+            setPendingExtraction(count > 0 ? remaining : null);
+          },
+        }
+      );
+    } else {
+      // No existing entities to link, just clear the linked ones
+      const remaining = {
+        characters: pendingExtraction.characters.filter((e) => e.isNew),
+        locations: pendingExtraction.locations.filter((e) => e.isNew),
+      };
+      const count = remaining.characters.length + remaining.locations.length;
+      setPendingExtraction(count > 0 ? remaining : null);
     }
-
-    // Keep only new entities that need manual creation
-    const remaining = {
-      characters: pendingExtraction.characters.filter((e) => e.isNew),
-      locations: pendingExtraction.locations.filter((e) => e.isNew),
-    };
-    const count = remaining.characters.length + remaining.locations.length;
-    setPendingExtraction(count > 0 ? remaining : null);
   };
 
   return (

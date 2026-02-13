@@ -14,6 +14,7 @@ import { ApiKeyDialog } from './components/ApiKeyDialog';
 import { SearchModal } from './components/SearchModal';
 import { ShortcutReferenceModal } from './components/ShortcutReferenceModal';
 import { useApiKeyStore } from './stores/useApiKeyStore';
+import { useShortcut, SHORTCUT_REFERENCE } from './hooks/useKeyboardShortcuts';
 
 // Create QueryClient with default options
 const queryClient = new QueryClient({
@@ -40,20 +41,11 @@ export function App(): React.ReactElement {
   }, []);
 
   // Global keyboard shortcuts (Cmd+K search, Cmd+/ reference)
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey)) return;
-      if (e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen((prev) => !prev);
-      } else if (e.key === '/') {
-        e.preventDefault();
-        setShortcutsOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
+  const searchDef = SHORTCUT_REFERENCE.find((d) => d.id === 'search')!;
+  const shortcutsDef = SHORTCUT_REFERENCE.find((d) => d.id === 'shortcuts')!;
+
+  useShortcut(searchDef, () => setSearchOpen((prev) => !prev));
+  useShortcut(shortcutsDef, () => setShortcutsOpen((prev) => !prev));
 
   const closeSearch = useCallback(() => setSearchOpen(false), []);
   const closeShortcuts = useCallback(() => setShortcutsOpen(false), []);

@@ -153,7 +153,14 @@ export class GeminiProvider {
         });
 
         const text = response.text ?? '';
-        return JSON.parse(text) as T;
+        const parsed: unknown = JSON.parse(text);
+
+        // Basic validation: ensure result is not null/undefined
+        if (parsed == null) {
+          throw new Error('AI_PROVIDER_ERROR: AI returned null/empty JSON response.');
+        }
+
+        return parsed as T;
       } catch (err: unknown) {
         if (this.isRetriable(err) && attempt < this.options.retryCount) {
           await this.sleep(this.options.retryDelayMs * Math.pow(2, attempt - 1));

@@ -29,6 +29,19 @@ const ENTITY_TYPES: { value: EntityType; label: string }[] = [
   { value: 'foreshadowing', label: 'Foreshadowing' },
 ];
 
+// ───────────────────────────────────────────
+// Helpers
+// ───────────────────────────────────────────
+
+/**
+ * Sanitize FTS5 snippet HTML to only allow <mark> tags.
+ * Prevents XSS from user-generated content in the database.
+ */
+function sanitizeHighlight(html: string): string {
+  // Strip all HTML tags except <mark> and </mark>
+  return html.replace(/<(?!\/?mark\b)[^>]*>/gi, '');
+}
+
 const ENTITY_ICONS: Record<EntityType, string> = {
   character: '\u4eba', // 人
   chapter: '\u7ae0', // 章
@@ -231,7 +244,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps): React.ReactE
                   {item.highlight && (
                     <div
                       className={styles.resultHighlight}
-                      dangerouslySetInnerHTML={{ __html: item.highlight }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHighlight(item.highlight) }}
                     />
                   )}
                 </div>

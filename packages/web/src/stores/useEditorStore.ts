@@ -129,6 +129,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       brainstormStack: [],
       builtContext: null,
       excludedContextIds: new Set<string>(),
+      injectedEntities: [],
+      pendingExtraction: null,
     }),
 
   markDirty: () => set({ isDirty: true }),

@@ -57,16 +57,14 @@
 - Build: clean (0 TS errors)
 - Documentation updated (CHANGELOG.md, Progress.md, M4.5.md)
 
-### New Files (18)
+### New Files (16)
 | File | Purpose |
 |------|---------|
 | `packages/core/src/db/migrations/003_unified_search_index.ts` | FTS5 search_index + 18 triggers |
 | `packages/core/src/services/SearchService.ts` | Full-text search service |
 | `packages/core/src/services/ChapterSetupAssist.ts` | Heuristic setup assist engine |
-| `packages/core/src/services/__tests__/SearchService.test.ts` | Search service tests |
 | `packages/core/src/services/__tests__/ChapterSetupAssist.test.ts` | 14 setup assist tests |
 | `packages/server/src/routes/search.ts` | Search API route |
-| `packages/server/src/routes/__tests__/search.test.ts` | Search route integration tests |
 | `packages/web/src/hooks/useSearch.ts` | React Query search hook |
 | `packages/web/src/hooks/useChapterSetup.ts` | Setup suggestions hook |
 | `packages/web/src/hooks/useEntityExtraction.ts` | Entity extraction mutation hook |
@@ -100,7 +98,7 @@
 | `packages/web/src/pages/Write.tsx` | Extraction trigger in handlePreviewConfirm |
 | `packages/web/src/pages/Write/StoryBiblePanel.tsx` | 8 sections + ExtractionReview + SetupAssistPanel |
 | `packages/web/src/pages/Write/ContextPreview.tsx` | Pinned L5 items with unpin |
-| `packages/web/src/components/layout/AppShell.tsx` | SearchModal + ShortcutReferenceModal + useGlobalShortcuts |
+| `packages/web/src/App.tsx` | SearchModal + ShortcutReferenceModal + global Cmd+K/Cmd+/ shortcuts |
 
 ### Stats
 - Tests: **1093 passed** (50 files), 0 failures, 26 new tests
