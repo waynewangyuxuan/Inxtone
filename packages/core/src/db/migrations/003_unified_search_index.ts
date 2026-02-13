@@ -23,7 +23,8 @@ CREATE VIRTUAL TABLE search_index USING fts5(
     title,
     body,
     entity_type UNINDEXED,
-    entity_id UNINDEXED
+    entity_id UNINDEXED,
+    tokenize='unicode61'
 );
 
 -- ============================================

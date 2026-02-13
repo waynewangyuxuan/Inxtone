@@ -39,6 +39,18 @@ export const searchRoutes = (deps: SearchRouteDeps): FastifyPluginAsync => {
         });
       }
 
+      // Reject single non-CJK characters (e.g., 'a'), but allow single CJK characters (e.g., '墨')
+      const trimmed = q.trim();
+      if (trimmed.length === 1 && !/[\u4E00-\u9FFF]/.test(trimmed)) {
+        return reply.status(400).send({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Query must be at least 2 characters long',
+          },
+        });
+      }
+
       const validTypes = new Set<SearchResultItem['entityType']>([
         'character',
         'chapter',
@@ -65,7 +77,7 @@ export const searchRoutes = (deps: SearchRouteDeps): FastifyPluginAsync => {
       if (entityTypes) opts.entityTypes = entityTypes;
 
       const results = await searchService.search(q.trim(), opts);
-      return success(results);
+      return success({ results });
     });
   };
 };

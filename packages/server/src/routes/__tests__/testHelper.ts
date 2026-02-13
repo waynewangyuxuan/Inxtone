@@ -19,7 +19,7 @@ import {
   HookRepository,
   WritingRepository,
 } from '@inxtone/core/db';
-import { EventBus, StoryBibleService, WritingService } from '@inxtone/core/services';
+import { EventBus, StoryBibleService, WritingService, SearchService } from '@inxtone/core/services';
 import { errorHandler } from '../../middleware/errorHandler.js';
 import { registerRoutes } from '../index.js';
 
@@ -27,6 +27,7 @@ export interface TestContext {
   server: FastifyInstance;
   service: StoryBibleService;
   writingService: WritingService;
+  searchService: SearchService;
   db: Database;
 }
 
@@ -68,10 +69,12 @@ export async function createTestServer(): Promise<TestContext> {
     eventBus,
   });
 
+  const searchService = new SearchService(db);
+
   const server = Fastify({ logger: false });
   server.setErrorHandler(errorHandler);
-  await registerRoutes(server, { storyBibleService: service, writingService });
+  await registerRoutes(server, { storyBibleService: service, writingService, searchService });
   await server.ready();
 
-  return { server, service, writingService, db };
+  return { server, service, writingService, searchService, db };
 }

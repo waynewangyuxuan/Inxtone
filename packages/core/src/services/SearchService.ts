@@ -7,6 +7,7 @@
 
 import type { Database } from '../db/Database.js';
 import type { ISearchService, SearchResultItem, SearchOptions } from '../types/services.js';
+import { sanitizeFtsQuery } from '../utils/ftsQuery.js';
 
 /** Raw FTS5 result row */
 interface SearchRow {
@@ -26,7 +27,7 @@ export class SearchService implements ISearchService {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async fullTextSearch(query: string, options?: SearchOptions): Promise<SearchResultItem[]> {
-    const sanitized = this.sanitizeFtsQuery(query);
+    const sanitized = sanitizeFtsQuery(query);
     if (!sanitized) return [];
 
     const limit = options?.limit ?? 20;
@@ -37,7 +38,7 @@ export class SearchService implements ISearchService {
         entity_type,
         entity_id,
         title,
-        snippet(search_index, 1, '<mark>', '</mark>', '...', 32) as highlight,
+        snippet(search_index, -1, '<mark>', '</mark>', '...', 32) as highlight,
         rank
       FROM search_index
       WHERE search_index MATCH ?
@@ -53,7 +54,14 @@ export class SearchService implements ISearchService {
     sql += ` ORDER BY rank LIMIT ?`;
     params.push(limit);
 
-    const rows = this.db.query<SearchRow>(sql, params);
+    let rows = this.db.query<SearchRow>(sql, params);
+
+    // FTS5 fallback: For CJK-only queries without spaces, FTS5 unicode61 tokenizer
+    // treats CJK text as whole-word tokens, so '墨' won't match '林墨渊', and
+    // '真实身份' won't match '林墨渊的真实身份'. Fall back to LIKE search for better UX.
+    if (rows.length === 0 && this.isPureCJKQuery(query)) {
+      rows = this.fallbackLikeSearch(query, options);
+    }
 
     return rows.map((row) => ({
       entityType: row.entity_type as SearchResultItem['entityType'],
@@ -173,20 +181,53 @@ export class SearchService implements ISearchService {
   }
 
   /**
-   * Sanitize query for FTS5 — escapes special operators, adds prefix matching.
-   * Reuses the pattern from CharacterRepository.
+   * Check if query contains only CJK characters (no spaces, no ASCII).
    */
-  private sanitizeFtsQuery(query: string): string {
-    const sanitized = query.replace(/['"]/g, '').replace(/[*^]/g, '').trim();
+  private isPureCJKQuery(query: string): boolean {
+    const trimmed = query.trim();
+    if (!trimmed || trimmed.includes(' ')) return false;
+    // CJK Unified Ideographs: 4E00-9FFF (plus common CJK punctuation)
+    const cjkRegex = /^[\u4E00-\u9FFF\u3000-\u303F]+$/;
+    return cjkRegex.test(trimmed);
+  }
 
-    if (!sanitized) return '';
+  /**
+   * Fallback LIKE search for single-character CJK queries.
+   * Generates synthetic SearchRow results with highlights.
+   */
+  private fallbackLikeSearch(query: string, options?: SearchOptions): SearchRow[] {
+    const limit = options?.limit ?? 20;
+    const entityTypes = options?.entityTypes;
+    const pattern = `%${query}%`;
 
-    // Add prefix matching for single-word queries
-    if (!sanitized.includes(' ')) {
-      return `${sanitized}*`;
+    let sql = `
+      SELECT
+        entity_type,
+        entity_id,
+        title,
+        title as highlight,
+        -1.0 as rank
+      FROM search_index
+      WHERE (title LIKE ? OR body LIKE ?)
+    `;
+    const params: unknown[] = [pattern, pattern];
+
+    if (entityTypes && entityTypes.length > 0) {
+      const placeholders = entityTypes.map(() => '?').join(',');
+      sql += ` AND entity_type IN (${placeholders})`;
+      params.push(...entityTypes);
     }
 
-    return sanitized;
+    sql += ` LIMIT ?`;
+    params.push(limit);
+
+    const rows = this.db.query<SearchRow>(sql, params);
+
+    // Manually highlight matches
+    return rows.map((row) => ({
+      ...row,
+      highlight: row.title.replace(new RegExp(query, 'g'), `<mark>${query}</mark>`),
+    }));
   }
 
   /**
