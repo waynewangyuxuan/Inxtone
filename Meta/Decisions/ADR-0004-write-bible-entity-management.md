@@ -49,9 +49,17 @@ Characters (2 linked / 5 total)
   [ ] ☆ 方长老 [Mentor]
 ```
 
-- Checkbox `[✓]` / `[ ]` indicates linked status
-- Click checkbox → toggle link/unlink
-- Pin icon `☆/★` remains for temporary L5 injection
+**Entity-Specific Behaviors**:
+| Entity Type | Link/Unlink | Rationale |
+|-------------|-------------|-----------|
+| **Characters** | ✅ Checkbox | Many-to-many FK array |
+| **Locations** | ✅ Checkbox | Many-to-many FK array |
+| **Foreshadowing** | ✅ Checkbox | Many-to-many FK array |
+| **Relationships** | ❌ No UI | Derived from character links |
+| **Arc** | 🔽 Dropdown | 1:1 relationship, select from list |
+| **Hooks** | ❌ No UI | Managed via Outline panel |
+| **World** | ❌ No UI | Always available globally |
+| **Factions** | ❌ Not yet | Future feature |
 
 **Semantics**:
 | Operation | Scope | Persisted | UI |
@@ -98,6 +106,25 @@ scheduleOutlineSave = (outline) => {
 };
 ```
 
+### 4. Simplify Context Preview UI
+
+**Problem**: Original design had checkboxes in Context Preview panel for excluding entities, creating confusing dual-control layer.
+
+**Decision**: Remove checkboxes, redesign as **expandable cards**:
+```
+Context Preview
+  ▶ Characters (3)         ← Click to expand
+  ▼ Locations (2)          ← Expanded shows names
+    - 青云宗
+    - 天剑峰
+  ▶ Foreshadowing (1)
+```
+
+**Benefits**:
+- Simpler mental model: Link controls inclusion, Pin emphasizes temporarily
+- Clearer visibility of what's in context
+- Reduces UI clutter
+
 ## Alternatives Considered
 
 ### Alternative 1: Use Pin Icon for Both Temporary and Permanent
@@ -118,26 +145,37 @@ scheduleOutlineSave = (outline) => {
 - **Cons**: Complex dependency tracking, may cause excessive rebuilds
 - **Why not**: Manual invalidation is more explicit and controllable
 
+### Alternative 4: Keep Context Preview Checkboxes
+
+- **Pros**: Granular control over what appears in context
+- **Cons**: Confusing dual-control layer (Link checkbox + Context checkbox), cognitive overhead
+- **Why not**: Over-engineering. If entity is linked but user doesn't want it in context temporarily, they can unlink it. Simpler mental model wins.
+
 ## Consequences
 
 ### Positive
 
 - **Immediate entity management**: Users can add/remove entities without leaving Write page
-- **Clear semantics**: Checkbox = permanent, Star = temporary
+- **Clear semantics**:
+  - Checkbox = permanent link to chapter
+  - Star = temporary emphasis for next generation
+  - Dropdown = Arc assignment (1:1 relationship)
 - **Up-to-date context**: AI always uses latest chapter metadata and outline
 - **Better UX**: No need to memorize entity IDs or navigate to Bible page
+- **Simpler Context UI**: Expandable cards reduce clutter, clearer visibility
 
 ### Negative
 
 - **Slightly more visual clutter**: Showing all entities instead of just linked ones
 - **Performance**: More entities to render (mitigated by React virtualization if needed)
+- **Arc dropdown requires more clicks**: Changing Arc is less immediate than checkbox toggle
 
 ### Risks
 
 - **Context rebuild cost**: Frequent rebuilds could be expensive
   - *Mitigation*: Context building is cached (staleTime: 5min), only rebuilds when explicitly invalidated
-- **User confusion about checkbox vs star**: Need tooltip/documentation
-  - *Mitigation*: Clear tooltips ("Add to chapter" vs "Pin for this generation")
+- **User confusion about UI patterns**: Different entity types have different controls
+  - *Mitigation*: Tooltips + consistent patterns (many-to-many = checkbox, 1:1 = dropdown, derived = no control)
 
 ## Related
 

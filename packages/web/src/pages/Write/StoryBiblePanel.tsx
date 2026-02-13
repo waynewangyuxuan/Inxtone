@@ -76,9 +76,9 @@ interface EntityItemProps {
   name: string;
   badge?: string;
   badgeVariant?: 'default' | 'primary' | 'muted' | 'success' | 'warning' | 'danger';
-  isLinked: boolean;
-  onLink: () => void;
-  onUnlink: () => void;
+  isLinked?: boolean; // Optional - if undefined, no link checkbox shown
+  onLink?: () => void;
+  onUnlink?: () => void;
   isPinned: boolean;
   onPin: () => void;
   onUnpin: () => void;
@@ -107,20 +107,22 @@ function EntityItem({
   return (
     <div className={styles.entityItem}>
       <div className={styles.entityRow} onClick={() => onToggleExpand(id)}>
-        <button
-          className={`${styles.linkButton} ${isLinked ? styles.linked : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (isLinked) {
-              onUnlink();
-            } else {
-              onLink();
-            }
-          }}
-          title={isLinked ? 'Remove from chapter' : 'Add to chapter'}
-        >
-          {isLinked ? '\u2611' : '\u2610'}
-        </button>
+        {isLinked !== undefined && onLink && onUnlink && (
+          <button
+            className={`${styles.linkButton} ${isLinked ? styles.linked : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isLinked) {
+                onUnlink();
+              } else {
+                onLink();
+              }
+            }}
+            title={isLinked ? 'Remove from chapter' : 'Add to chapter'}
+          >
+            {isLinked ? '\u2611' : '\u2610'}
+          </button>
+        )}
         <span className={styles.expandChevron}>{isExpanded ? '\u25BE' : '\u25B8'}</span>
         <span className={styles.entityName}>{name}</span>
         {badge && (
@@ -272,11 +274,6 @@ function DetailField({ label, value }: { label: string; value: string }): React.
 // ───────────────────────────────────────────
 
 const L5_PRIORITY = 200;
-
-// No-op function for entities that don't support linking
-const noop = (): void => {
-  // Intentionally empty - some entities don't support link/unlink operations
-};
 
 function buildCharacterContext(c: Character): ContextItem {
   const parts = [c.name, c.role];
@@ -497,6 +494,23 @@ export function StoryBiblePanel(): React.ReactElement {
     [selectedId, chapter, updateChapter, queryClient]
   );
 
+  const handleArcChange = useCallback(
+    (arcId: string) => {
+      if (!selectedId) return;
+      updateChapter.mutate(
+        { id: selectedId, data: { arcId } },
+        {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: contextKeys.build(selectedId, undefined),
+            });
+          },
+        }
+      );
+    },
+    [selectedId, updateChapter, queryClient]
+  );
+
   if (!selectedId || !chapter) {
     return (
       <div className={styles.panel}>
@@ -539,9 +553,8 @@ export function StoryBiblePanel(): React.ReactElement {
     ...allLocs.filter((l) => !linkedLocIds.has(l.id)),
   ];
 
-  // 4. Arc — single arc from chapter.arcId (no change, arc is unique per chapter)
+  // 4. Arc — single arc from chapter.arcId (dropdown selection)
   const arc = chapter.arcId ? (allArcs ?? []).find((a) => a.id === chapter.arcId) : undefined;
-  const arcs = arc && matchFilter(arc.name) ? [arc] : [];
 
   // 5. Foreshadowing — show ALL, sorted by linked first
   const allForeshadowingItems = (allForeshadowing ?? []).filter((f) => matchFilter(f.content));
@@ -635,9 +648,6 @@ export function StoryBiblePanel(): React.ReactElement {
               id={relId}
               name={name}
               badge={r.type}
-              isLinked={true}
-              onLink={noop}
-              onUnlink={noop}
               isPinned={injectedIds.has(relId)}
               onPin={() => injectEntity(buildRelationshipContext(r, charMap))}
               onUnpin={() => removeInjectedEntity(relId)}
@@ -674,27 +684,50 @@ export function StoryBiblePanel(): React.ReactElement {
       </Section>
 
       {/* 4. Arc */}
-      <Section title="Arc" count={arcs.length} defaultOpen={false}>
-        {arcs.length === 0 && <p className={styles.emptySection}>No arc assigned</p>}
-        {arcs.map((a) => (
-          <EntityItem
-            key={a.id}
-            id={a.id}
-            name={a.name}
-            badge={a.status}
-            badgeVariant={a.status === 'in_progress' ? 'primary' : 'muted'}
-            isLinked={true}
-            onLink={noop}
-            onUnlink={noop}
-            isPinned={injectedIds.has(a.id)}
-            onPin={() => injectEntity(buildArcContext(a))}
-            onUnpin={() => removeInjectedEntity(a.id)}
-            expandedId={expandedId}
-            onToggleExpand={toggleExpand}
-          >
-            <ArcDetail arc={a} />
-          </EntityItem>
-        ))}
+      <Section title="Arc" count={chapter.arcId ? 1 : 0} defaultOpen={false}>
+        {(allArcs ?? []).length === 0 ? (
+          <p className={styles.emptySection}>No arcs created</p>
+        ) : (
+          <div className={styles.arcSelector}>
+            <label className={styles.arcLabel}>Assign chapter to arc:</label>
+            <div className={styles.arcSelectRow}>
+              <select
+                className={styles.arcSelect}
+                value={chapter.arcId ?? ''}
+                onChange={(e) => handleArcChange(e.target.value)}
+              >
+                <option value="">-- No arc --</option>
+                {(allArcs ?? []).map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({a.status})
+                  </option>
+                ))}
+              </select>
+              {arc && (
+                <button
+                  className={`${styles.pinButton} ${injectedIds.has(arc.id) ? styles.pinned : ''}`}
+                  onClick={() => {
+                    if (injectedIds.has(arc.id)) {
+                      removeInjectedEntity(arc.id);
+                    } else {
+                      injectEntity(buildArcContext(arc));
+                    }
+                  }}
+                  title={
+                    injectedIds.has(arc.id) ? 'Unpin from context' : 'Pin to AI context (temporary)'
+                  }
+                >
+                  {injectedIds.has(arc.id) ? '\u2605' : '\u2606'}
+                </button>
+              )}
+            </div>
+            {arc && (
+              <div className={styles.arcDetail}>
+                <ArcDetail arc={arc} />
+              </div>
+            )}
+          </div>
+        )}
       </Section>
 
       {/* 5. Foreshadowing */}
@@ -736,9 +769,6 @@ export function StoryBiblePanel(): React.ReactElement {
             id={h.id}
             name={h.content.length > 50 ? h.content.slice(0, 50) + '...' : h.content}
             {...(h.hookType ? { badge: h.hookType } : {})}
-            isLinked={true}
-            onLink={noop}
-            onUnlink={noop}
             isPinned={injectedIds.has(h.id)}
             onPin={() => injectEntity(buildHookContext(h))}
             onUnpin={() => removeInjectedEntity(h.id)}
@@ -797,9 +827,6 @@ export function StoryBiblePanel(): React.ReactElement {
                         : ('muted' as const),
                 }
               : {})}
-            isLinked={true}
-            onLink={noop}
-            onUnlink={noop}
             isPinned={injectedIds.has(`faction-${f.id}`)}
             onPin={() => injectEntity(buildFactionContext(f))}
             onUnpin={() => removeInjectedEntity(`faction-${f.id}`)}

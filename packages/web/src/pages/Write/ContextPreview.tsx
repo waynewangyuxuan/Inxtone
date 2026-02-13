@@ -1,19 +1,18 @@
 /**
- * ContextPreview — displays built AI context items with toggle support
+ * ContextPreview — displays built AI context items grouped by type
  *
- * L1 items are always included (disabled checkbox).
- * L2-L5 items can be toggled on/off to exclude from AI generation.
+ * Shows expandable cards for each entity type (Characters, Locations, etc.)
+ * with counts and individual entity previews when expanded.
  */
 
 import React from 'react';
 import { Badge } from '../../components/ui';
 import {
   useBuiltContextState,
-  useExcludedContextIds,
   useInjectedEntities,
   useEditorActions,
 } from '../../stores/useEditorStore';
-import type { ContextItemType } from '@inxtone/core';
+import type { ContextItemType, ContextItem } from '@inxtone/core';
 import styles from './ContextPreview.module.css';
 
 const typeLabels: Record<ContextItemType, string> = {
@@ -46,23 +45,29 @@ const layerMap: Record<ContextItemType, string> = {
   custom: 'L5',
 };
 
-const L1_TYPES = new Set<ContextItemType>([
-  'chapter_content',
-  'chapter_outline',
-  'chapter_prev_tail',
-]);
-
 export function ContextPreview(): React.ReactElement {
   const context = useBuiltContextState();
-  const excludedIds = useExcludedContextIds();
   const injectedEntities = useInjectedEntities();
-  const { toggleContextItem, removeInjectedEntity } = useEditorActions();
+  const { removeInjectedEntity } = useEditorActions();
   const [open, setOpen] = React.useState(false);
+  const [expandedTypes, setExpandedTypes] = React.useState<Set<ContextItemType>>(new Set());
 
   const injectedIds = React.useMemo(
     () => new Set(injectedEntities.map((e) => e.id).filter(Boolean)),
     [injectedEntities]
   );
+
+  // Group items by type
+  const itemsByType = React.useMemo(() => {
+    if (!context) return new Map<ContextItemType, ContextItem[]>();
+    const groups = new Map<ContextItemType, ContextItem[]>();
+    context.items.forEach((item) => {
+      const existing = groups.get(item.type) ?? [];
+      existing.push(item);
+      groups.set(item.type, existing);
+    });
+    return groups;
+  }, [context]);
 
   if (!context) {
     return (
@@ -75,10 +80,17 @@ export function ContextPreview(): React.ReactElement {
     );
   }
 
-  const activeCount = context.items.filter((item, i) => {
-    const itemId = item.id ?? `idx-${i}`;
-    return !excludedIds.has(itemId);
-  }).length;
+  const toggleTypeExpansion = (type: ContextItemType) => {
+    setExpandedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) {
+        next.delete(type);
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -86,46 +98,55 @@ export function ContextPreview(): React.ReactElement {
         <span className={styles.chevron}>{open ? '\u25BE' : '\u25B8'}</span>
         <span className={styles.label}>Context</span>
         <span className={styles.meta}>
-          {activeCount}/{context.items.length} items &middot; ~{context.totalTokens} tokens
+          {context.items.length} items &middot; ~{context.totalTokens} tokens
           {context.truncated && ' (truncated)'}
         </span>
       </button>
       {open && (
         <div className={styles.items}>
-          {context.items.map((item, i) => {
-            const itemId = item.id ?? `idx-${i}`;
-            const isL1 = L1_TYPES.has(item.type);
-            const isExcluded = !isL1 && excludedIds.has(itemId);
-            const isPinned = injectedIds.has(itemId);
-
+          {Array.from(itemsByType.entries()).map(([type, items]) => {
+            const isExpanded = expandedTypes.has(type);
             return (
-              <div
-                key={itemId}
-                className={`${styles.item} ${isExcluded ? styles.itemExcluded : ''}`}
-              >
-                <input
-                  type="checkbox"
-                  className={styles.checkbox}
-                  checked={!isExcluded}
-                  disabled={isL1}
-                  onChange={() => toggleContextItem(itemId)}
-                  title={isL1 ? 'L1 items are always included' : 'Toggle this context item'}
-                />
-                <Badge variant={isPinned ? 'primary' : 'muted'} size="sm">
-                  {isPinned ? 'Pinned' : layerMap[item.type]}
-                </Badge>
-                <span className={styles.itemType}>{typeLabels[item.type]}</span>
-                <span className={styles.itemPreview}>
-                  {item.content.length > 50 ? item.content.slice(0, 50) + '...' : item.content}
-                </span>
-                {isPinned && (
-                  <button
-                    className={styles.unpinButton}
-                    onClick={() => removeInjectedEntity(itemId)}
-                    title="Unpin from context"
-                  >
-                    &times;
-                  </button>
+              <div key={type} className={styles.typeCard}>
+                <button className={styles.typeHeader} onClick={() => toggleTypeExpansion(type)}>
+                  <span className={styles.typeChevron}>{isExpanded ? '\u25BE' : '\u25B8'}</span>
+                  <Badge variant="muted" size="sm">
+                    {layerMap[type]}
+                  </Badge>
+                  <span className={styles.typeLabel}>
+                    {typeLabels[type]} ({items.length})
+                  </span>
+                </button>
+                {isExpanded && (
+                  <div className={styles.typeItems}>
+                    {items.map((item, i) => {
+                      const itemId = item.id ?? `idx-${i}`;
+                      const isPinned = injectedIds.has(itemId);
+                      return (
+                        <div key={itemId} className={styles.item}>
+                          {isPinned && (
+                            <Badge variant="primary" size="sm">
+                              Pinned
+                            </Badge>
+                          )}
+                          <span className={styles.itemPreview}>
+                            {item.content.length > 60
+                              ? item.content.slice(0, 60) + '...'
+                              : item.content}
+                          </span>
+                          {isPinned && (
+                            <button
+                              className={styles.unpinButton}
+                              onClick={() => removeInjectedEntity(itemId)}
+                              title="Unpin from context"
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             );
