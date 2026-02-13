@@ -497,8 +497,13 @@ export function StoryBiblePanel(): React.ReactElement {
   const handleArcChange = useCallback(
     (arcId: string) => {
       if (!selectedId) return;
+      // Build data object conditionally for exactOptionalPropertyTypes
+      const data: { arcId?: string } = {};
+      if (arcId !== '') {
+        data.arcId = arcId;
+      }
       updateChapter.mutate(
-        { id: selectedId, data: { arcId } },
+        { id: selectedId, data },
         {
           onSuccess: () => {
             void queryClient.invalidateQueries({
