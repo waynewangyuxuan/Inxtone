@@ -438,5 +438,14 @@ Layer 1 永远不被裁剪。
 | `ai.error.rate` | 错误率 |
 ---
 
+## 八、相关决策
+
+- **ADR-0002**: AI Context Injection Strategy (L1-L5 分层设计)
+- **ADR-0004**: Write Page Bible Panel Entity Management & Context Auto-Rebuild
+  - 章节 FK 数组更新后自动触发 Context rebuild
+  - Outline 保存后自动触发 Context rebuild
+
+---
+
 *Review 重点: ContextBuilder 分层组装、批量查询策略、Scoped Relationships、Token 预算管理、SSE 流式输出*
 *MVP 决策: Gemini 2.5 Pro only, FK-based context (no semantic search), Sidebar Preview + Accept, Manual Save*

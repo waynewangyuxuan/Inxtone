@@ -25,7 +25,12 @@ export function useSearch(query: string, types?: string[], enabled = true) {
 
   return useQuery({
     queryKey: searchKeys.query(query, types),
-    queryFn: () => apiGet<SearchResultItem[]>(`/search?${params.toString()}`),
+    queryFn: async () => {
+      const response = await apiGet<{ results: SearchResultItem[] }>(
+        `/search?${params.toString()}`
+      );
+      return response.results;
+    },
     enabled: enabled && query.trim().length >= 2,
     staleTime: 30_000,
   });

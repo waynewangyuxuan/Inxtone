@@ -253,4 +253,12 @@ isDirty 状态管理:
 
 ---
 
+## 七、相关决策
+
+- **ADR-0004**: Write Page Bible Panel Entity Management & Context Auto-Rebuild
+  - 章节实体管理（添加/移除角色、地点等到章节 FK 数组）
+  - Outline 保存后触发 Context rebuild
+
+---
+
 *Review 重点: 手动保存 + isDirty 管理、版本分层存储、状态机、FK cleanup*

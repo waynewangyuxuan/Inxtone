@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '../../components/ui';
 import {
   useChapterWithContent,
@@ -18,12 +19,14 @@ import {
   useHooks,
   useWorld,
   useFactions,
+  useUpdateChapter,
 } from '../../hooks';
 import {
   useSelectedChapterId,
   useInjectedEntities,
   useEditorActions,
 } from '../../stores/useEditorStore';
+import { contextKeys } from '../../hooks/useChapters';
 import type { ContextItem, ContextItemType } from '@inxtone/core';
 import type {
   Character,
@@ -73,6 +76,9 @@ interface EntityItemProps {
   name: string;
   badge?: string;
   badgeVariant?: 'default' | 'primary' | 'muted' | 'success' | 'warning' | 'danger';
+  isLinked: boolean;
+  onLink: () => void;
+  onUnlink: () => void;
   isPinned: boolean;
   onPin: () => void;
   onUnpin: () => void;
@@ -86,6 +92,9 @@ function EntityItem({
   name,
   badge,
   badgeVariant,
+  isLinked,
+  onLink,
+  onUnlink,
   isPinned,
   onPin,
   onUnpin,
@@ -98,6 +107,20 @@ function EntityItem({
   return (
     <div className={styles.entityItem}>
       <div className={styles.entityRow} onClick={() => onToggleExpand(id)}>
+        <button
+          className={`${styles.linkButton} ${isLinked ? styles.linked : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isLinked) {
+              onUnlink();
+            } else {
+              onLink();
+            }
+          }}
+          title={isLinked ? 'Remove from chapter' : 'Add to chapter'}
+        >
+          {isLinked ? '\u2611' : '\u2610'}
+        </button>
         <span className={styles.expandChevron}>{isExpanded ? '\u25BE' : '\u25B8'}</span>
         <span className={styles.entityName}>{name}</span>
         {badge && (
@@ -115,7 +138,7 @@ function EntityItem({
               onPin();
             }
           }}
-          title={isPinned ? 'Unpin from context' : 'Pin to AI context'}
+          title={isPinned ? 'Unpin from context' : 'Pin to AI context (temporary)'}
         >
           {isPinned ? '\u2605' : '\u2606'}
         </button>
@@ -250,6 +273,11 @@ function DetailField({ label, value }: { label: string; value: string }): React.
 
 const L5_PRIORITY = 200;
 
+// No-op function for entities that don't support linking
+const noop = (): void => {
+  // Intentionally empty - some entities don't support link/unlink operations
+};
+
 function buildCharacterContext(c: Character): ContextItem {
   const parts = [c.name, c.role];
   if (c.appearance) parts.push(c.appearance);
@@ -332,6 +360,7 @@ function buildFactionContext(f: Faction): ContextItem {
 // ───────────────────────────────────────────
 
 export function StoryBiblePanel(): React.ReactElement {
+  const queryClient = useQueryClient();
   const selectedId = useSelectedChapterId();
   const { data: chapter } = useChapterWithContent(selectedId);
   const { data: allChars } = useCharacters();
@@ -343,6 +372,7 @@ export function StoryBiblePanel(): React.ReactElement {
   const { data: world } = useWorld();
   const { data: allFactions } = useFactions();
 
+  const updateChapter = useUpdateChapter();
   const injectedEntities = useInjectedEntities();
   const { injectEntity, removeInjectedEntity } = useEditorActions();
 
@@ -358,6 +388,115 @@ export function StoryBiblePanel(): React.ReactElement {
     setExpandedId((prev) => (prev === id ? null : id));
   }, []);
 
+  // Link/Unlink entity handlers
+  const handleLinkCharacter = useCallback(
+    (characterId: string) => {
+      if (!selectedId || !chapter) return;
+      const updated = [...(chapter.characters ?? []), characterId];
+      updateChapter.mutate(
+        { id: selectedId, data: { characters: updated } },
+        {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: contextKeys.build(selectedId, undefined),
+            });
+          },
+        }
+      );
+    },
+    [selectedId, chapter, updateChapter, queryClient]
+  );
+
+  const handleUnlinkCharacter = useCallback(
+    (characterId: string) => {
+      if (!selectedId || !chapter) return;
+      const updated = (chapter.characters ?? []).filter((id) => id !== characterId);
+      updateChapter.mutate(
+        { id: selectedId, data: { characters: updated } },
+        {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: contextKeys.build(selectedId, undefined),
+            });
+          },
+        }
+      );
+    },
+    [selectedId, chapter, updateChapter, queryClient]
+  );
+
+  const handleLinkLocation = useCallback(
+    (locationId: string) => {
+      if (!selectedId || !chapter) return;
+      const updated = [...(chapter.locations ?? []), locationId];
+      updateChapter.mutate(
+        { id: selectedId, data: { locations: updated } },
+        {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: contextKeys.build(selectedId, undefined),
+            });
+          },
+        }
+      );
+    },
+    [selectedId, chapter, updateChapter, queryClient]
+  );
+
+  const handleUnlinkLocation = useCallback(
+    (locationId: string) => {
+      if (!selectedId || !chapter) return;
+      const updated = (chapter.locations ?? []).filter((id) => id !== locationId);
+      updateChapter.mutate(
+        { id: selectedId, data: { locations: updated } },
+        {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: contextKeys.build(selectedId, undefined),
+            });
+          },
+        }
+      );
+    },
+    [selectedId, chapter, updateChapter, queryClient]
+  );
+
+  const handleLinkForeshadowing = useCallback(
+    (foreshadowingId: string) => {
+      if (!selectedId || !chapter) return;
+      const updated = [...(chapter.foreshadowingHinted ?? []), foreshadowingId];
+      updateChapter.mutate(
+        { id: selectedId, data: { foreshadowingHinted: updated } },
+        {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: contextKeys.build(selectedId, undefined),
+            });
+          },
+        }
+      );
+    },
+    [selectedId, chapter, updateChapter, queryClient]
+  );
+
+  const handleUnlinkForeshadowing = useCallback(
+    (foreshadowingId: string) => {
+      if (!selectedId || !chapter) return;
+      const updated = (chapter.foreshadowingHinted ?? []).filter((id) => id !== foreshadowingId);
+      updateChapter.mutate(
+        { id: selectedId, data: { foreshadowingHinted: updated } },
+        {
+          onSuccess: () => {
+            void queryClient.invalidateQueries({
+              queryKey: contextKeys.build(selectedId, undefined),
+            });
+          },
+        }
+      );
+    },
+    [selectedId, chapter, updateChapter, queryClient]
+  );
+
   if (!selectedId || !chapter) {
     return (
       <div className={styles.panel}>
@@ -372,12 +511,19 @@ export function StoryBiblePanel(): React.ReactElement {
   // Character map for relationship display
   const charMap = new Map((allChars ?? []).map((c) => [c.id, c]));
 
-  // 1. Characters — scoped to chapter FK refs
-  const characters = (allChars ?? []).filter(
-    (c) => chapter.characters?.includes(c.id) && matchFilter(c.name)
-  );
+  // Linked entity ID sets
+  const linkedCharIds = new Set(chapter.characters ?? []);
+  const linkedLocIds = new Set(chapter.locations ?? []);
+  const linkedForeshadowingIds = new Set(chapter.foreshadowingHinted ?? []);
 
-  // 2. Relationships — scoped to chapter characters
+  // 1. Characters — show ALL, sorted by linked first
+  const allCharacters = (allChars ?? []).filter((c) => matchFilter(c.name));
+  const characters = [
+    ...allCharacters.filter((c) => linkedCharIds.has(c.id)),
+    ...allCharacters.filter((c) => !linkedCharIds.has(c.id)),
+  ];
+
+  // 2. Relationships — scoped to chapter characters (only show if both chars are linked)
   const chapterCharIds = new Set(chapter.characters ?? []);
   const relationships = (allRels ?? []).filter(
     (r) =>
@@ -386,30 +532,41 @@ export function StoryBiblePanel(): React.ReactElement {
       matchFilter(`${charMap.get(r.sourceId)?.name ?? ''} ${charMap.get(r.targetId)?.name ?? ''}`)
   );
 
-  // 3. Locations — scoped to chapter FK refs
-  const locations = (allLocations ?? []).filter(
-    (l) => chapter.locations?.includes(l.id) && matchFilter(l.name)
-  );
+  // 3. Locations — show ALL, sorted by linked first
+  const allLocs = (allLocations ?? []).filter((l) => matchFilter(l.name));
+  const locations = [
+    ...allLocs.filter((l) => linkedLocIds.has(l.id)),
+    ...allLocs.filter((l) => !linkedLocIds.has(l.id)),
+  ];
 
-  // 4. Arc — single arc from chapter.arcId
+  // 4. Arc — single arc from chapter.arcId (no change, arc is unique per chapter)
   const arc = chapter.arcId ? (allArcs ?? []).find((a) => a.id === chapter.arcId) : undefined;
   const arcs = arc && matchFilter(arc.name) ? [arc] : [];
 
-  // 5. Foreshadowing — from chapter FK refs
-  const foreshadowing = (allForeshadowing ?? []).filter(
-    (f) => chapter.foreshadowingHinted?.includes(f.id) && matchFilter(f.content)
-  );
+  // 5. Foreshadowing — show ALL, sorted by linked first
+  const allForeshadowingItems = (allForeshadowing ?? []).filter((f) => matchFilter(f.content));
+  const foreshadowing = [
+    ...allForeshadowingItems.filter((f) => linkedForeshadowingIds.has(f.id)),
+    ...allForeshadowingItems.filter((f) => !linkedForeshadowingIds.has(f.id)),
+  ];
 
-  // 6. Hooks — filtered by chapter (already from useHooks)
+  // 6. Hooks — filtered by chapter (already from useHooks, no change)
   const hooks = (allHooks ?? []).filter((h) => matchFilter(h.content));
 
-  // 7. World — always available (no chapter filter)
+  // 7. World — always available (no chapter filter, no change)
   const hasWorld =
     (world?.powerSystem?.coreRules?.length ?? 0) > 0 ||
     (world?.socialRules && Object.keys(world.socialRules).length > 0);
 
-  // 8. Factions — all factions
+  // 8. Factions — all factions (no linking supported yet, no change)
   const factions = (allFactions ?? []).filter((f) => matchFilter(f.name));
+
+  // Count linked entities for section headers
+  const linkedCharCount = characters.filter((c) => linkedCharIds.has(c.id)).length;
+  const linkedLocCount = locations.filter((l) => linkedLocIds.has(l.id)).length;
+  const linkedForeshadowingCount = foreshadowing.filter((f) =>
+    linkedForeshadowingIds.has(f.id)
+  ).length;
 
   return (
     <div className={styles.panel}>
@@ -436,8 +593,11 @@ export function StoryBiblePanel(): React.ReactElement {
       </div>
 
       {/* 1. Characters */}
-      <Section title="Characters" count={characters.length}>
-        {characters.length === 0 && <p className={styles.emptySection}>None linked</p>}
+      <Section
+        title={`Characters (${linkedCharCount} / ${characters.length})`}
+        count={linkedCharCount}
+      >
+        {characters.length === 0 && <p className={styles.emptySection}>No characters available</p>}
         {characters.map((c) => (
           <EntityItem
             key={c.id}
@@ -445,6 +605,9 @@ export function StoryBiblePanel(): React.ReactElement {
             name={c.name}
             badge={c.role}
             badgeVariant="primary"
+            isLinked={linkedCharIds.has(c.id)}
+            onLink={() => handleLinkCharacter(c.id)}
+            onUnlink={() => handleUnlinkCharacter(c.id)}
             isPinned={injectedIds.has(c.id)}
             onPin={() => injectEntity(buildCharacterContext(c))}
             onUnpin={() => removeInjectedEntity(c.id)}
@@ -458,7 +621,9 @@ export function StoryBiblePanel(): React.ReactElement {
 
       {/* 2. Relationships */}
       <Section title="Relationships" count={relationships.length} defaultOpen={false}>
-        {relationships.length === 0 && <p className={styles.emptySection}>None linked</p>}
+        {relationships.length === 0 && (
+          <p className={styles.emptySection}>No relationships between linked characters</p>
+        )}
         {relationships.map((r) => {
           const relId = `rel-${r.id}`;
           const source = charMap.get(r.sourceId);
@@ -470,6 +635,9 @@ export function StoryBiblePanel(): React.ReactElement {
               id={relId}
               name={name}
               badge={r.type}
+              isLinked={true}
+              onLink={noop}
+              onUnlink={noop}
               isPinned={injectedIds.has(relId)}
               onPin={() => injectEntity(buildRelationshipContext(r, charMap))}
               onUnpin={() => removeInjectedEntity(relId)}
@@ -483,14 +651,17 @@ export function StoryBiblePanel(): React.ReactElement {
       </Section>
 
       {/* 3. Locations */}
-      <Section title="Locations" count={locations.length}>
-        {locations.length === 0 && <p className={styles.emptySection}>None linked</p>}
+      <Section title={`Locations (${linkedLocCount} / ${locations.length})`} count={linkedLocCount}>
+        {locations.length === 0 && <p className={styles.emptySection}>No locations available</p>}
         {locations.map((l) => (
           <EntityItem
             key={l.id}
             id={l.id}
             name={l.name}
             {...(l.type ? { badge: l.type } : {})}
+            isLinked={linkedLocIds.has(l.id)}
+            onLink={() => handleLinkLocation(l.id)}
+            onUnlink={() => handleUnlinkLocation(l.id)}
             isPinned={injectedIds.has(l.id)}
             onPin={() => injectEntity(buildLocationContext(l))}
             onUnpin={() => removeInjectedEntity(l.id)}
@@ -504,7 +675,7 @@ export function StoryBiblePanel(): React.ReactElement {
 
       {/* 4. Arc */}
       <Section title="Arc" count={arcs.length} defaultOpen={false}>
-        {arcs.length === 0 && <p className={styles.emptySection}>None assigned</p>}
+        {arcs.length === 0 && <p className={styles.emptySection}>No arc assigned</p>}
         {arcs.map((a) => (
           <EntityItem
             key={a.id}
@@ -512,6 +683,9 @@ export function StoryBiblePanel(): React.ReactElement {
             name={a.name}
             badge={a.status}
             badgeVariant={a.status === 'in_progress' ? 'primary' : 'muted'}
+            isLinked={true}
+            onLink={noop}
+            onUnlink={noop}
             isPinned={injectedIds.has(a.id)}
             onPin={() => injectEntity(buildArcContext(a))}
             onUnpin={() => removeInjectedEntity(a.id)}
@@ -524,8 +698,14 @@ export function StoryBiblePanel(): React.ReactElement {
       </Section>
 
       {/* 5. Foreshadowing */}
-      <Section title="Foreshadowing" count={foreshadowing.length} defaultOpen={false}>
-        {foreshadowing.length === 0 && <p className={styles.emptySection}>None linked</p>}
+      <Section
+        title={`Foreshadowing (${linkedForeshadowingCount} / ${foreshadowing.length})`}
+        count={linkedForeshadowingCount}
+        defaultOpen={false}
+      >
+        {foreshadowing.length === 0 && (
+          <p className={styles.emptySection}>No foreshadowing items available</p>
+        )}
         {foreshadowing.map((f) => (
           <EntityItem
             key={f.id}
@@ -533,6 +713,9 @@ export function StoryBiblePanel(): React.ReactElement {
             name={f.content.length > 50 ? f.content.slice(0, 50) + '...' : f.content}
             badge={f.status}
             badgeVariant={f.status === 'active' ? 'primary' : 'muted'}
+            isLinked={linkedForeshadowingIds.has(f.id)}
+            onLink={() => handleLinkForeshadowing(f.id)}
+            onUnlink={() => handleUnlinkForeshadowing(f.id)}
             isPinned={injectedIds.has(f.id)}
             onPin={() => injectEntity(buildForeshadowingContext(f))}
             onUnpin={() => removeInjectedEntity(f.id)}
@@ -546,13 +729,16 @@ export function StoryBiblePanel(): React.ReactElement {
 
       {/* 6. Hooks */}
       <Section title="Hooks" count={hooks.length} defaultOpen={false}>
-        {hooks.length === 0 && <p className={styles.emptySection}>None for this chapter</p>}
+        {hooks.length === 0 && <p className={styles.emptySection}>No hooks for this chapter</p>}
         {hooks.map((h) => (
           <EntityItem
             key={h.id}
             id={h.id}
             name={h.content.length > 50 ? h.content.slice(0, 50) + '...' : h.content}
             {...(h.hookType ? { badge: h.hookType } : {})}
+            isLinked={true}
+            onLink={noop}
+            onUnlink={noop}
             isPinned={injectedIds.has(h.id)}
             onPin={() => injectEntity(buildHookContext(h))}
             onUnpin={() => removeInjectedEntity(h.id)}
@@ -594,7 +780,7 @@ export function StoryBiblePanel(): React.ReactElement {
 
       {/* 8. Factions */}
       <Section title="Factions" count={factions.length} defaultOpen={false}>
-        {factions.length === 0 && <p className={styles.emptySection}>None created</p>}
+        {factions.length === 0 && <p className={styles.emptySection}>No factions created</p>}
         {factions.map((f) => (
           <EntityItem
             key={f.id}
@@ -611,6 +797,9 @@ export function StoryBiblePanel(): React.ReactElement {
                         : ('muted' as const),
                 }
               : {})}
+            isLinked={true}
+            onLink={noop}
+            onUnlink={noop}
             isPinned={injectedIds.has(`faction-${f.id}`)}
             onPin={() => injectEntity(buildFactionContext(f))}
             onUnpin={() => removeInjectedEntity(`faction-${f.id}`)}

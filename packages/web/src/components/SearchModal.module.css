@@ -119,6 +119,23 @@
   font-size: var(--text-sm);
 }
 
+.error {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.errorTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: #d32f2f;
+  margin-bottom: var(--space-xs);
+}
+
+.errorMessage {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
 .resultItem {
   display: flex;
   align-items: center;

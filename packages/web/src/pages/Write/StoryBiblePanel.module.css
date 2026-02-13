@@ -151,6 +151,27 @@
   min-width: 0;
 }
 
+.linkButton {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-base);
+  color: var(--color-text-tertiary);
+  padding: 0 2px;
+  line-height: 1;
+  transition: color var(--transition-fast);
+  margin-right: var(--space-xs);
+}
+
+.linkButton:hover {
+  color: var(--color-text);
+}
+
+.linked {
+  color: var(--color-accent);
+}
+
 .pinButton {
   flex-shrink: 0;
   background: none;

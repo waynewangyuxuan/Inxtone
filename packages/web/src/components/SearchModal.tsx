@@ -81,7 +81,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps): React.ReactE
 
   const filterTypes = useMemo(() => (typeFilter ? [typeFilter] : undefined), [typeFilter]);
 
-  const { data: results, isLoading } = useSearch(debouncedQuery, filterTypes, isOpen);
+  const { data: results, isLoading, error } = useSearch(debouncedQuery, filterTypes, isOpen);
 
   // Debounce query by 250ms
   useEffect(() => {
@@ -224,6 +224,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps): React.ReactE
         <div className={styles.results} ref={listRef}>
           {debouncedQuery.length < 2 ? (
             <div className={styles.empty}>Type 2+ characters to search</div>
+          ) : error ? (
+            <div className={styles.error}>
+              <div className={styles.errorTitle}>Search failed</div>
+              <div className={styles.errorMessage}>
+                {error instanceof Error ? error.message : 'An error occurred'}
+              </div>
+            </div>
           ) : isLoading ? (
             <div className={styles.empty}>Searching...</div>
           ) : !results || results.length === 0 ? (

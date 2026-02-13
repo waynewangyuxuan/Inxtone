@@ -13,6 +13,7 @@ import { Dashboard, StoryBible, Plot, Write, Settings } from './pages';
 import { ApiKeyDialog } from './components/ApiKeyDialog';
 import { SearchModal } from './components/SearchModal';
 import { ShortcutReferenceModal } from './components/ShortcutReferenceModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useApiKeyStore } from './stores/useApiKeyStore';
 import { useShortcut, SHORTCUT_REFERENCE } from './hooks/useKeyboardShortcuts';
 
@@ -51,21 +52,23 @@ export function App(): React.ReactElement {
   const closeShortcuts = useCallback(() => setShortcutsOpen(false), []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path="/" element={<AppShell />}>
-            <Route index element={<Dashboard />} />
-            <Route path="bible" element={<StoryBible />} />
-            <Route path="plot" element={<Plot />} />
-            <Route path="write" element={<Write />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-        <ApiKeyDialog />
-        <SearchModal isOpen={searchOpen} onClose={closeSearch} />
-        <ShortcutReferenceModal isOpen={shortcutsOpen} onClose={closeShortcuts} />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+            <Route path="/" element={<AppShell />}>
+              <Route index element={<Dashboard />} />
+              <Route path="bible" element={<StoryBible />} />
+              <Route path="plot" element={<Plot />} />
+              <Route path="write" element={<Write />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+          </Routes>
+          <ApiKeyDialog />
+          <SearchModal isOpen={searchOpen} onClose={closeSearch} />
+          <ShortcutReferenceModal isOpen={shortcutsOpen} onClose={closeShortcuts} />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

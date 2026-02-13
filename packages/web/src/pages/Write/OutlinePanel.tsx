@@ -6,14 +6,17 @@
  */
 
 import React from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useChapterWithContent, useUpdateChapter } from '../../hooks';
 import { useSelectedChapterId } from '../../stores/useEditorStore';
+import { contextKeys } from '../../hooks/useChapters';
 import type { ChapterOutline } from '@inxtone/core';
 import styles from './OutlinePanel.module.css';
 
 const SAVE_DELAY = 1500;
 
 export function OutlinePanel(): React.ReactElement | null {
+  const queryClient = useQueryClient();
   const selectedId = useSelectedChapterId();
   const { data: chapter } = useChapterWithContent(selectedId);
   const updateChapter = useUpdateChapter();
@@ -45,6 +48,10 @@ export function OutlinePanel(): React.ReactElement | null {
           {
             onSuccess: () => {
               setSaveState('saved');
+              // Trigger context rebuild since outline changed
+              void queryClient.invalidateQueries({
+                queryKey: contextKeys.build(selectedId, undefined),
+              });
               if (saveStateTimerRef.current) clearTimeout(saveStateTimerRef.current);
               saveStateTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
             },
@@ -53,7 +60,7 @@ export function OutlinePanel(): React.ReactElement | null {
         );
       }, SAVE_DELAY);
     },
-    [selectedId, updateChapter]
+    [selectedId, updateChapter, queryClient]
   );
 
   // Cleanup timers
