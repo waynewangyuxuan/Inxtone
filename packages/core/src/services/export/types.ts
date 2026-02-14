@@ -24,11 +24,6 @@ export interface VolumeGroup {
  * Chapters without a volumeId go into a group with volume = null (at the end).
  */
 export function groupChaptersByVolume(chapters: Chapter[], volumes: Volume[]): VolumeGroup[] {
-  const volumeMap = new Map<number, Volume>();
-  for (const v of volumes) {
-    volumeMap.set(v.id, v);
-  }
-
   const groups = new Map<number | null, Chapter[]>();
 
   for (const ch of chapters) {

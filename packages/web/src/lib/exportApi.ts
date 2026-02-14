@@ -36,8 +36,8 @@ async function fetchExport(path: string, body: unknown): Promise<void> {
 
   // Extract filename from Content-Disposition header
   const disposition = res.headers.get('Content-Disposition') ?? '';
-  const filenameMatch = /filename="(.+)"/.exec(disposition);
-  const filename = filenameMatch?.[1] ?? 'export';
+  const filenameMatch = /filename="([^"]+)"/.exec(disposition);
+  const filename = filenameMatch?.[1]?.replace(/[^a-zA-Z0-9._-]/g, '_') ?? 'export';
 
   // Download via blob + <a> trick
   const blob = await res.blob();

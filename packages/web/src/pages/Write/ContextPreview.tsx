@@ -18,10 +18,9 @@ import {
   useInjectedEntities,
   useEditorActions,
 } from '../../stores/useEditorStore';
+import { TOTAL_BUDGET } from '@inxtone/core';
 import type { ContextItemType, ContextItem } from '@inxtone/core';
 import styles from './ContextPreview.module.css';
-
-const TOTAL_BUDGET = 1_000_000;
 
 const typeLabels: Record<ContextItemType, string> = {
   chapter_content: 'Content',

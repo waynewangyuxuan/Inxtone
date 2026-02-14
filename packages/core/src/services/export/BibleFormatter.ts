@@ -43,6 +43,11 @@ const ALL_SECTIONS: SectionName[] = [
   'hooks',
 ];
 
+/** Escape pipe characters in markdown table cells */
+function escapeCell(value: string): string {
+  return value.replace(/\|/g, '\\|');
+}
+
 export class BibleFormatter {
   format(data: BibleData, options?: BibleExportOptions): ExportResult {
     const sections = options?.sections ?? ALL_SECTIONS;
@@ -99,22 +104,23 @@ export class BibleFormatter {
     lines.push('## Characters');
     lines.push('');
 
-    for (const c of characters) {
-      lines.push(`### ${c.name} (${c.role})`);
+    for (const char of characters) {
+      lines.push(`### ${char.name} (${char.role})`);
       lines.push('');
-      if (c.appearance) lines.push(`- **Appearance**: ${c.appearance}`);
-      if (c.motivation) {
-        lines.push(`- **Motivation (surface)**: ${c.motivation.surface}`);
-        if (c.motivation.hidden) lines.push(`- **Motivation (hidden)**: ${c.motivation.hidden}`);
-        if (c.motivation.core) lines.push(`- **Motivation (core)**: ${c.motivation.core}`);
+      if (char.appearance) lines.push(`- **Appearance**: ${char.appearance}`);
+      if (char.motivation) {
+        lines.push(`- **Motivation (surface)**: ${char.motivation.surface}`);
+        if (char.motivation.hidden)
+          lines.push(`- **Motivation (hidden)**: ${char.motivation.hidden}`);
+        if (char.motivation.core) lines.push(`- **Motivation (core)**: ${char.motivation.core}`);
       }
-      if (c.conflictType) lines.push(`- **Conflict**: ${c.conflictType}`);
-      if (c.template) lines.push(`- **Template**: ${c.template}`);
-      if (c.voiceSamples && c.voiceSamples.length > 0) {
-        lines.push(`- **Voice**: "${c.voiceSamples[0]}"`);
+      if (char.conflictType) lines.push(`- **Conflict**: ${char.conflictType}`);
+      if (char.template) lines.push(`- **Template**: ${char.template}`);
+      if (char.voiceSamples && char.voiceSamples.length > 0) {
+        lines.push(`- **Voice**: "${char.voiceSamples[0]}"`);
       }
-      if (c.arc) {
-        lines.push(`- **Arc**: ${c.arc.type} (${c.arc.startState} → ${c.arc.endState})`);
+      if (char.arc) {
+        lines.push(`- **Arc**: ${char.arc.type} (${char.arc.startState} → ${char.arc.endState})`);
       }
       lines.push('');
     }
@@ -130,11 +136,11 @@ export class BibleFormatter {
     lines.push('| Source | Target | Type | Join Reason | Independent Goal |');
     lines.push('|--------|--------|------|-------------|------------------|');
 
-    for (const r of relationships) {
-      const joinReason = r.joinReason ?? '-';
-      const independentGoal = r.independentGoal ?? '-';
+    for (const rel of relationships) {
+      const joinReason = escapeCell(rel.joinReason ?? '-');
+      const independentGoal = escapeCell(rel.independentGoal ?? '-');
       lines.push(
-        `| ${r.sourceId} | ${r.targetId} | ${r.type} | ${joinReason} | ${independentGoal} |`
+        `| ${escapeCell(rel.sourceId)} | ${escapeCell(rel.targetId)} | ${escapeCell(rel.type)} | ${joinReason} | ${independentGoal} |`
       );
     }
 
@@ -167,8 +173,8 @@ export class BibleFormatter {
       }
       if (world.powerSystem.constraints && world.powerSystem.constraints.length > 0) {
         lines.push('**Constraints:**');
-        for (const c of world.powerSystem.constraints) {
-          lines.push(`- ${c}`);
+        for (const constraint of world.powerSystem.constraints) {
+          lines.push(`- ${constraint}`);
         }
         lines.push('');
       }
@@ -210,14 +216,16 @@ export class BibleFormatter {
     lines.push('## Factions');
     lines.push('');
 
-    for (const f of factions) {
-      lines.push(`### ${f.name}`);
+    for (const faction of factions) {
+      lines.push(`### ${faction.name}`);
       lines.push('');
-      if (f.type) lines.push(`- **Type**: ${f.type}`);
-      if (f.status) lines.push(`- **Status**: ${f.status}`);
-      if (f.stanceToMC) lines.push(`- **Stance**: ${f.stanceToMC}`);
-      if (f.goals && f.goals.length > 0) lines.push(`- **Goals**: ${f.goals.join(', ')}`);
-      if (f.internalConflict) lines.push(`- **Internal Conflict**: ${f.internalConflict}`);
+      if (faction.type) lines.push(`- **Type**: ${faction.type}`);
+      if (faction.status) lines.push(`- **Status**: ${faction.status}`);
+      if (faction.stanceToMC) lines.push(`- **Stance**: ${faction.stanceToMC}`);
+      if (faction.goals && faction.goals.length > 0)
+        lines.push(`- **Goals**: ${faction.goals.join(', ')}`);
+      if (faction.internalConflict)
+        lines.push(`- **Internal Conflict**: ${faction.internalConflict}`);
       lines.push('');
     }
 
@@ -230,19 +238,21 @@ export class BibleFormatter {
     lines.push('## Story Arcs');
     lines.push('');
 
-    for (const a of arcs) {
-      lines.push(`### ${a.name} (${a.type}, ${a.status})`);
+    for (const arc of arcs) {
+      lines.push(`### ${arc.name} (${arc.type}, ${arc.status})`);
       lines.push('');
-      lines.push(`- **Progress**: ${a.progress}%`);
-      if (a.chapterStart != null)
-        lines.push(`- **Chapters**: ${a.chapterStart} - ${a.chapterEnd ?? '?'}`);
-      if (a.sections && a.sections.length > 0) {
+      lines.push(`- **Progress**: ${arc.progress}%`);
+      if (arc.chapterStart != null)
+        lines.push(`- **Chapters**: ${arc.chapterStart} - ${arc.chapterEnd ?? '?'}`);
+      if (arc.sections && arc.sections.length > 0) {
         lines.push('- **Sections**:');
-        for (const s of a.sections) {
-          lines.push(`  - ${s.name} (${s.status}): chapters ${s.chapters.join(', ')}`);
+        for (const section of arc.sections) {
+          lines.push(
+            `  - ${section.name} (${section.status}): chapters ${section.chapters.join(', ')}`
+          );
         }
       }
-      if (a.mainArcRelation) lines.push(`- **Main Arc Relation**: ${a.mainArcRelation}`);
+      if (arc.mainArcRelation) lines.push(`- **Main Arc Relation**: ${arc.mainArcRelation}`);
       lines.push('');
     }
 
@@ -257,17 +267,19 @@ export class BibleFormatter {
     lines.push('| ID | Content | Status | Term | Planted | Payoff |');
     lines.push('|----|---------|--------|------|---------|--------|');
 
-    for (const f of foreshadowing) {
-      const content = f.content.length > 50 ? f.content.slice(0, 50) + '...' : f.content;
-      const planted = f.plantedChapter != null ? `Ch ${f.plantedChapter}` : '-';
+    for (const item of foreshadowing) {
+      const content = escapeCell(
+        item.content.length > 50 ? item.content.slice(0, 50) + '...' : item.content
+      );
+      const planted = item.plantedChapter != null ? `Ch ${item.plantedChapter}` : '-';
       const payoff =
-        f.resolvedChapter != null
-          ? `Ch ${f.resolvedChapter}`
-          : f.plannedPayoff != null
-            ? `Ch ${f.plannedPayoff} (planned)`
+        item.resolvedChapter != null
+          ? `Ch ${item.resolvedChapter}`
+          : item.plannedPayoff != null
+            ? `Ch ${item.plannedPayoff} (planned)`
             : '-';
       lines.push(
-        `| ${f.id} | ${content} | ${f.status} | ${f.term ?? '-'} | ${planted} | ${payoff} |`
+        `| ${escapeCell(item.id)} | ${content} | ${escapeCell(item.status)} | ${escapeCell(item.term ?? '-')} | ${planted} | ${payoff} |`
       );
     }
 
@@ -283,11 +295,13 @@ export class BibleFormatter {
     lines.push('| Type | Chapter | Content | Style | Strength |');
     lines.push('|------|---------|---------|-------|----------|');
 
-    for (const h of hooks) {
-      const content = h.content.length > 50 ? h.content.slice(0, 50) + '...' : h.content;
-      const chapter = h.chapterId != null ? `Ch ${h.chapterId}` : '-';
+    for (const hook of hooks) {
+      const content = escapeCell(
+        hook.content.length > 50 ? hook.content.slice(0, 50) + '...' : hook.content
+      );
+      const chapter = hook.chapterId != null ? `Ch ${hook.chapterId}` : '-';
       lines.push(
-        `| ${h.type} | ${chapter} | ${content} | ${h.hookType ?? '-'} | ${h.strength ?? '-'} |`
+        `| ${escapeCell(hook.type)} | ${chapter} | ${content} | ${escapeCell(hook.hookType ?? '-')} | ${hook.strength ?? '-'} |`
       );
     }
 
