@@ -13,6 +13,7 @@ import type {
   IAIService,
   IWritingService,
   ISearchService,
+  IExportService,
 } from '@inxtone/core';
 import {
   Database,
@@ -34,6 +35,7 @@ import {
   WritingService,
   SearchService,
   ChapterSetupAssist,
+  ExportService,
 } from '@inxtone/core/services';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
@@ -54,6 +56,7 @@ export interface ServerOptions {
   aiService?: IAIService;
   writingService?: IWritingService;
   searchService?: ISearchService;
+  exportService?: IExportService;
   setupAssist?: ChapterSetupAssist;
 
   // Database instance for seed routes
@@ -115,9 +118,10 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
         chapters: '/api/chapters',
         versions: '/api/versions',
         stats: '/api/stats',
+        // Export API
+        export: '/api/export',
         // Future endpoints
         // quality: '/api/quality',
-        // export: '/api/export',
       },
     };
   });
@@ -135,6 +139,9 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
     }
     if (options.searchService) {
       deps.searchService = options.searchService;
+    }
+    if (options.exportService) {
+      deps.exportService = options.exportService;
     }
     if (options.setupAssist) {
       deps.setupAssist = options.setupAssist;
@@ -204,6 +211,7 @@ function createServices(options: {
   aiService: IAIService;
   writingService: IWritingService;
   searchService: ISearchService;
+  exportService: IExportService;
   setupAssist: ChapterSetupAssist;
   db: InstanceType<typeof Database>;
 } {
@@ -280,6 +288,19 @@ function createServices(options: {
     eventBus,
   });
 
+  // Create ExportService
+  const exportService = new ExportService({
+    writingRepo,
+    characterRepo,
+    relationshipRepo,
+    worldRepo,
+    locationRepo,
+    factionRepo,
+    arcRepo,
+    foreshadowingRepo,
+    hookRepo,
+  });
+
   // Create SearchService
   const searchService = new SearchService(db);
 
@@ -291,7 +312,15 @@ function createServices(options: {
     foreshadowingRepo,
   });
 
-  return { storyBibleService, aiService, writingService, searchService, setupAssist, db };
+  return {
+    storyBibleService,
+    aiService,
+    writingService,
+    searchService,
+    exportService,
+    setupAssist,
+    db,
+  };
 }
 
 /**
@@ -319,8 +348,15 @@ if (isMainModule) {
   const geminiApiKey = process.env.GEMINI_API_KEY;
 
   // Create all services with shared infrastructure
-  const { storyBibleService, aiService, writingService, searchService, setupAssist, db } =
-    createServices({ dbPath, geminiApiKey });
+  const {
+    storyBibleService,
+    aiService,
+    writingService,
+    searchService,
+    exportService,
+    setupAssist,
+    db,
+  } = createServices({ dbPath, geminiApiKey });
 
   console.log('Starting Inxtone server...');
   console.log(`Database: ${dbPath ?? path.join(os.homedir(), '.inxtone', 'data.db')}`);
@@ -336,6 +372,7 @@ if (isMainModule) {
     aiService,
     writingService,
     searchService,
+    exportService,
     setupAssist,
     db,
   })
