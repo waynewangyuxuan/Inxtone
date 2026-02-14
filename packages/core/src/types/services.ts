@@ -790,81 +790,60 @@ export interface ISearchService {
 }
 
 // ===========================================
-// ExportService
+// ExportService (simplified per ADR-0005)
 // ===========================================
 
-/** Export format */
-export type ExportFormat = 'md' | 'txt' | 'docx' | 'pdf';
+/** Export format (PDF deferred — see GitHub #10) */
+export type ExportFormat = 'md' | 'txt' | 'docx';
 
 /** Export range */
 export interface ExportRange {
   type: 'all' | 'volume' | 'chapters';
   volumeId?: VolumeId;
-  chapterStart?: ChapterId;
-  chapterEnd?: ChapterId;
+  chapterIds?: ChapterId[];
 }
 
 /** Export options */
 export interface ExportOptions {
   format: ExportFormat;
   range: ExportRange;
-  template?: string;
   includeOutline?: boolean;
   includeMetadata?: boolean;
-  outputPath: string;
 }
 
-/** Export progress */
-export interface ExportProgress {
-  current: number;
-  total: number;
-  currentItem: string;
+/** Story Bible export options */
+export interface BibleExportOptions {
+  sections?: Array<
+    | 'characters'
+    | 'relationships'
+    | 'world'
+    | 'locations'
+    | 'factions'
+    | 'arcs'
+    | 'foreshadowing'
+    | 'hooks'
+  >;
+}
+
+/** Export result — returned by all export methods */
+export interface ExportResult {
+  data: Buffer | string;
+  filename: string;
+  mimeType: string;
 }
 
 /**
- * ExportService - Multi-format export
+ * ExportService - Multi-format export (simplified per ADR-0005)
+ *
+ * Template system → GitHub #11
+ * Pre-export checks → GitHub #12 (depends on QualityService, M7)
  */
 export interface IExportService {
-  // === Export ===
-  /**
-   * Export chapters
-   */
-  exportChapters(options: ExportOptions): Promise<string>;
+  /** Export chapters in specified format */
+  exportChapters(options: ExportOptions): Promise<ExportResult>;
 
-  /**
-   * Export story bible
-   */
-  exportStoryBible(format: ExportFormat, outputPath: string): Promise<string>;
-
-  /**
-   * Export with progress callback
-   */
-  exportWithProgress(
-    options: ExportOptions,
-    onProgress: (progress: ExportProgress) => void
-  ): Promise<string>;
-
-  // === Templates ===
-  /**
-   * Get available export templates
-   */
-  getTemplates(): Promise<Array<{ id: string; name: string; description: string }>>;
-
-  /**
-   * Preview export with template
-   */
-  previewTemplate(templateId: string, chapterId: ChapterId): Promise<string>;
-
-  // === Pre-export Checks ===
-  /**
-   * Run pre-export checks
-   */
-  runPreExportChecks(range: ExportRange): Promise<{
-    hasErrors: boolean;
-    issues: Issue[];
-    unresolvedForeshadowing: Foreshadowing[];
-    incompleteChapters: Chapter[];
-  }>;
+  /** Export Story Bible as structured Markdown */
+  exportStoryBible(options?: BibleExportOptions): Promise<ExportResult>;
 }
 
 // ===========================================
