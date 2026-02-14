@@ -36,7 +36,7 @@ Draft → Active → Complete → Archived
 | [M3.5](M3.5.md) | Hackathon Submission | Complete | 2026-02-09 | 1 day |
 | [M4](M4.md) | Writing UX Polish | Complete | 2026-02-20 | 10 days |
 | [M4.5](M4.5.md) | Writing Intelligence | Complete | 2026-02-12 | 2 days |
-| [M5](M5.md) | Export + Issues #9 & #8 | Active | 2026-02-20 | 1.5 weeks |
+| [M5](M5.md) | Export + Issues #9 & #8 | Complete | 2026-02-13 | 1.5 weeks |
 | [M6](M6.md) | Smart Intake | Draft | TBD | 2.5 weeks |
 | [M7](M7.md) | Quality & Visualizations | Draft | TBD | 2 weeks |
 | [M8](M8.md) | Polish & v0.1.0 Release | Draft | TBD | 2 weeks |
