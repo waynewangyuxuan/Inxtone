@@ -4,6 +4,49 @@
 
 ---
 
+## 2026-02-13 (M5: Export + Issues #9 & #8 — Complete) ✅
+
+### Completed
+
+**Phase 0: ADR + Documentation**
+- ADR-0005: Export Interface Simplification — dropped PDF, templates, pre-export checks from IExportService
+- Updated ADR index, milestone index
+
+**Phase 1: ExportService Core**
+- Simplified IExportService: `exportChapters(options) → ExportResult`, `exportStoryBible(options?) → ExportResult`
+- 4 formatters: MarkdownFormatter (TOC + volume grouping), TxtFormatter (separators), DocxFormatter (docx package), BibleFormatter (8 sections)
+- 46 unit tests for ExportService + all formatters
+
+**Phase 2: API + Server Wiring**
+- `POST /api/export/chapters` — MD/TXT/DOCX with Content-Disposition attachment
+- `POST /api/export/story-bible` — Markdown with section filtering
+- Wire ExportService in server bootstrap, testHelper
+- 10 integration tests
+
+**Phase 3: Web UI Export Page**
+- `/export` page: format selector buttons, range picker (all/volume/chapters), outline/metadata checkboxes
+- Dedicated `exportApi.ts` fetch utility (blob download, not JSON)
+- Download icon + sidebar nav entry
+
+**Phase 4: CLI Commands**
+- `inxtone export md|txt|docx|bible` with `--output`, `--volume`, `--chapters`, `--outline`, `--metadata`
+
+**Phase 5: Issue #9 — StoryBiblePanel Refactor**
+- 848-line monolith → 15 modules: BibleSection, BibleEntityItem, 7 detail components, contextBuilders, barrel exports
+- Main component reduced to 479 lines (data hooks + handlers + JSX composition only)
+
+**Phase 6: Issue #8 — Context Preview UI**
+- Token usage progress bar (green < 50%, yellow 50-80%, red > 80%)
+- Color-coded L1-L5 layer badges with hover tooltips
+- Dedicated pinned items section with "Clear all" bulk unpin
+- Empty/not-built state messages
+
+**Phase 7: Tests + Polish**
+- E2E export tests: 9 tests covering all formats, volume scoping, empty project
+- Full test suite: 1188 tests passing across 59 files
+
+---
+
 ## 2026-02-12 (M4.5: Writing Intelligence — Complete) ✅
 
 ### Completed

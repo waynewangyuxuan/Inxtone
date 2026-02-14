@@ -9,6 +9,8 @@ export { StoryBibleService } from './StoryBibleService.js';
 export type { StoryBibleServiceDeps } from './StoryBibleService.js';
 export { WritingService } from './WritingService.js';
 export type { WritingServiceDeps } from './WritingService.js';
+export { ExportService } from './ExportService.js';
+export type { ExportServiceDeps } from './ExportService.js';
 export { SearchService } from './SearchService.js';
 export { ChapterSetupAssist } from './ChapterSetupAssist.js';
 export type { SetupSuggestion, ChapterSetupAssistDeps } from './ChapterSetupAssist.js';

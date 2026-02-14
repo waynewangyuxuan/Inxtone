@@ -15,6 +15,9 @@ export * from './errors/index.js';
 export { PROMPT_PRESETS, PRESET_CATEGORIES } from './ai/presets.js';
 export type { PromptPreset, PresetCategory } from './ai/presets.js';
 
+// AI constants (shared between web + server)
+export { TOTAL_BUDGET } from './ai/BaseContextBuilder.js';
+
 // Note: Database module is server-only, import via '@inxtone/core/db'
 // Note: Services module is server-only, import via '@inxtone/core/services'
 

@@ -11,6 +11,7 @@ import type {
   IAIService,
   IWritingService,
   ISearchService,
+  IExportService,
 } from '@inxtone/core';
 import type { ChapterSetupAssist } from '@inxtone/core/services';
 import type { Database } from '@inxtone/core/db';
@@ -28,6 +29,7 @@ import { aiRoutes } from './ai.js';
 import { volumeRoutes, chapterRoutes, versionRoutes, statsRoutes } from './writing.js';
 import { seedRoutes } from './seed.js';
 import { searchRoutes } from './search.js';
+import { exportRoutes } from './export.js';
 
 /**
  * Dependencies required by route handlers.
@@ -37,6 +39,7 @@ export interface RouteDeps {
   aiService?: IAIService;
   writingService?: IWritingService;
   searchService?: ISearchService;
+  exportService?: IExportService;
   setupAssist?: ChapterSetupAssist;
   db?: Database;
 }
@@ -70,6 +73,11 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
     await fastify.register(chapterRoutes(deps), { prefix: '/api/chapters' });
     await fastify.register(versionRoutes(deps), { prefix: '/api/versions' });
     await fastify.register(statsRoutes(deps), { prefix: '/api/stats' });
+  }
+
+  // Export routes (optional - only registered if exportService is provided)
+  if (deps.exportService) {
+    await fastify.register(exportRoutes(deps), { prefix: '/api/export' });
   }
 
   // Search routes (optional - only registered if searchService is provided)

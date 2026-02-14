@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **M5: Export + Issues #9 & #8** — Multi-format export, StoryBiblePanel refactor, Context Preview UI
+  - ExportService with formatter strategy pattern: MarkdownFormatter, TxtFormatter, DocxFormatter, BibleFormatter
+  - Export API: `POST /api/export/chapters` (MD/TXT/DOCX), `POST /api/export/story-bible` (Markdown) — raw file download with Content-Disposition
+  - Web UI Export page: format selector, range picker (all/volume/chapters), outline/metadata options, blob download
+  - CLI: `inxtone export md|txt|docx|bible` with `--output`, `--volume`, `--chapters`, `--outline`, `--metadata` options
+  - StoryBiblePanel refactored: 848-line monolith → 15 focused modules (BibleSection, BibleEntityItem, 7 detail components, contextBuilders)
+  - Context Preview UI: token usage progress bar (green/yellow/red), color-coded L1-L5 layer badges with tooltips, pinned items section with bulk clear, empty/not-built states
+  - ADR-0005: Export Interface Simplification (dropped PDF, templates, pre-export checks)
+  - 1188 tests passing across 59 files
 - **M4.5: Writing Intelligence** — Search, interactive Bible panel, keyboard shortcuts, setup assist, entity extraction
   - Unified FTS5 `search_index` table: 6 entity types (character, chapter, location, faction, arc, foreshadowing), 18 auto-sync triggers, migration 003
   - SearchService: FTS5 MATCH with BM25 ranking, snippet highlighting, entity type filtering
