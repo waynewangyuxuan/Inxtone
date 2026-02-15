@@ -4,6 +4,64 @@
 
 ---
 
+## 2026-02-13 (UI Consistency & Tech Debt Sweep)
+
+### Completed
+
+**Branch**: `fix/ui-consistency`
+
+**P0: Critical Fixes**
+- Removed debug `console.log` from CharacterForm.tsx
+- Replaced all hardcoded colors (`#ef4444`, `#22c55e`, `#d97706`, `rgba(...)`) with CSS tokens across TSX and CSS modules
+- Added missing design tokens to `tokens.css`: `--color-warning-text`, `--color-warning-bg`, `--color-danger-bg`, `--color-muted-bg`
+- Unified page header naming: `.subtitle` as primary class, `.description` composes from it
+
+**P1: Structural Improvements**
+- Created reusable `LoadingSpinner` component — replaced 16 ad-hoc spinner implementations
+- Deduplicated `@keyframes spin` into `global.css` (removed from 3 CSS modules)
+- Migrated all inline styles in Export.tsx (14 instances) and Settings.tsx (6 instances) to CSS module classes
+- Added form utility classes to `Page.module.css` (fieldGroup, fieldLabel, buttonRow, checkboxRow, etc.)
+- Replaced blocking `alert()` calls with toast notification system:
+  - New `useNotificationStore` (Zustand) + `NotificationToast` component
+  - `showError()` in `utils.ts` now uses notification store
+  - `CrudTable.tsx` uses state-based inline error display
+- Standardized Unicode chevron characters (`\u25BE`/`\u25B8`) across all expand/collapse toggles
+
+**P2: Polish**
+- Added `chevronDown`, `chevronRight`, `close` icons to `Icon.tsx`
+- Tokenized Badge, Button, Input, HookTracker, Dashboard CSS modules
+
+### New Files (5)
+| File | Purpose |
+|------|---------|
+| `packages/web/src/components/ui/LoadingSpinner.tsx` | Reusable loading spinner component |
+| `packages/web/src/components/ui/LoadingSpinner.module.css` | Spinner styles (sm/md/lg sizes) |
+| `packages/web/src/stores/useNotificationStore.ts` | Zustand store for toast notifications |
+| `packages/web/src/components/NotificationToast.tsx` | Toast notification UI |
+| `packages/web/src/components/NotificationToast.module.css` | Toast styles with slideIn animation |
+
+### Modified Files (25+)
+| File | Change |
+|------|--------|
+| `packages/web/src/styles/tokens.css` | Added 4 missing color tokens |
+| `packages/web/src/styles/global.css` | Added shared `@keyframes spin` |
+| `packages/web/src/components/ui/Badge.module.css` | All variants use CSS tokens |
+| `packages/web/src/components/ui/Button.module.css` | Danger/ghost use tokens, removed dup keyframes |
+| `packages/web/src/components/forms/Input.module.css` | Error states use tokens |
+| `packages/web/src/components/ui/index.ts` | Export LoadingSpinner |
+| `packages/web/src/components/Icon.tsx` | +3 icons (chevronDown, chevronRight, close) |
+| `packages/web/src/pages/Page.module.css` | +subtitle, +form utility classes, +feedback styles |
+| `packages/web/src/pages/Export.tsx` | Removed 14 inline styles → CSS modules |
+| `packages/web/src/pages/Settings.tsx` | Removed 6 inline styles → CSS modules |
+| `packages/web/src/lib/utils.ts` | showError → notification store (no more alert) |
+| `packages/web/src/components/CrudTable.tsx` | State-based error display (no more alert) |
+| `packages/web/src/App.tsx` | Added NotificationToast |
+| `packages/web/src/pages/Plot/ArcOutliner.tsx` | Standardized Unicode chevrons |
+| `packages/web/src/pages/Plot/ForeshadowingTracker.tsx` | Standardized Unicode chevrons |
+| 16 page/component files | Replaced ad-hoc spinners with `<LoadingSpinner>` |
+
+---
+
 ## 2026-02-13 (M5: Export + Issues #9 & #8 — Complete) ✅
 
 ### Completed

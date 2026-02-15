@@ -82,7 +82,7 @@ export function Export(): React.ReactElement {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1>Export</h1>
-        <p className={styles.description}>
+        <p className={styles.subtitle}>
           Download your chapters or Story Bible in multiple formats.
         </p>
       </header>
@@ -93,18 +93,9 @@ export function Export(): React.ReactElement {
           <h3>Chapter Export</h3>
 
           {/* Format selector */}
-          <div style={{ marginBottom: 'var(--space-lg)' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: 'var(--space-xs)',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              Format
-            </label>
-            <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Format</label>
+            <div className={styles.buttonRow}>
               {(['md', 'txt', 'docx'] as const).map((f) => (
                 <Button
                   key={f}
@@ -119,17 +110,8 @@ export function Export(): React.ReactElement {
           </div>
 
           {/* Range selector */}
-          <div style={{ marginBottom: 'var(--space-lg)' }}>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: 'var(--space-xs)',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              Range
-            </label>
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Range</label>
             <Select
               size="sm"
               value={rangeType}
@@ -144,7 +126,7 @@ export function Export(): React.ReactElement {
 
           {/* Volume picker (if range = volume) */}
           {rangeType === 'volume' && volumes && volumes.length > 0 && (
-            <div style={{ marginBottom: 'var(--space-lg)' }}>
+            <div className={styles.fieldGroup}>
               <Select
                 size="sm"
                 value={volumeId ? String(volumeId) : ''}
@@ -160,28 +142,9 @@ export function Export(): React.ReactElement {
 
           {/* Chapter multi-select (if range = chapters) */}
           {rangeType === 'chapters' && chapters && chapters.length > 0 && (
-            <div
-              style={{
-                marginBottom: 'var(--space-lg)',
-                maxHeight: 200,
-                overflow: 'auto',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm)',
-                padding: 'var(--space-sm)',
-              }}
-            >
+            <div className={styles.checkboxList}>
               {chapters.map((ch) => (
-                <label
-                  key={ch.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-sm)',
-                    padding: 'var(--space-xs) 0',
-                    fontSize: 'var(--text-sm)',
-                    cursor: 'pointer',
-                  }}
-                >
+                <label key={ch.id} className={styles.checkboxListItem}>
                   <input
                     type="checkbox"
                     checked={selectedChapters.includes(ch.id)}
@@ -194,22 +157,8 @@ export function Export(): React.ReactElement {
           )}
 
           {/* Options */}
-          <div
-            style={{
-              marginBottom: 'var(--space-lg)',
-              display: 'flex',
-              gap: 'var(--space-lg)',
-            }}
-          >
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-xs)',
-                fontSize: 'var(--text-sm)',
-                cursor: 'pointer',
-              }}
-            >
+          <div className={styles.checkboxRow}>
+            <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={includeOutline}
@@ -217,15 +166,7 @@ export function Export(): React.ReactElement {
               />
               Include outlines
             </label>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-xs)',
-                fontSize: 'var(--text-sm)',
-                cursor: 'pointer',
-              }}
-            >
+            <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={includeMetadata}
@@ -248,11 +189,7 @@ export function Export(): React.ReactElement {
 
           {chapterMessage && (
             <p
-              style={{
-                marginTop: 'var(--space-sm)',
-                fontSize: 'var(--text-xs)',
-                color: chapterMessage.startsWith('Error') ? '#ef4444' : '#22c55e',
-              }}
+              className={`${styles.feedbackMessage} ${chapterMessage.startsWith('Error') ? styles.feedbackError : styles.feedbackSuccess}`}
             >
               {chapterMessage}
             </p>
@@ -262,9 +199,7 @@ export function Export(): React.ReactElement {
         {/* Story Bible Export */}
         <div className={styles.card}>
           <h3>Story Bible Export</h3>
-          <p style={{ marginBottom: 'var(--space-md)' }}>
-            Export your complete Story Bible as structured Markdown.
-          </p>
+          <p>Export your complete Story Bible as structured Markdown.</p>
           <Button
             variant="secondary"
             size="sm"
@@ -276,11 +211,7 @@ export function Export(): React.ReactElement {
           </Button>
           {bibleMessage && (
             <p
-              style={{
-                marginTop: 'var(--space-sm)',
-                fontSize: 'var(--text-xs)',
-                color: bibleMessage.startsWith('Error') ? '#ef4444' : '#22c55e',
-              }}
+              className={`${styles.feedbackMessage} ${bibleMessage.startsWith('Error') ? styles.feedbackError : styles.feedbackSuccess}`}
             >
               {bibleMessage}
             </p>

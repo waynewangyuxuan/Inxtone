@@ -14,6 +14,7 @@ import { ApiKeyDialog } from './components/ApiKeyDialog';
 import { SearchModal } from './components/SearchModal';
 import { ShortcutReferenceModal } from './components/ShortcutReferenceModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { NotificationToast } from './components/NotificationToast';
 import { useApiKeyStore } from './stores/useApiKeyStore';
 import { useShortcut, SHORTCUT_REFERENCE } from './hooks/useKeyboardShortcuts';
 
@@ -68,6 +69,7 @@ export function App(): React.ReactElement {
           <ApiKeyDialog />
           <SearchModal isOpen={searchOpen} onClose={closeSearch} />
           <ShortcutReferenceModal isOpen={shortcutsOpen} onClose={closeShortcuts} />
+          <NotificationToast />
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>

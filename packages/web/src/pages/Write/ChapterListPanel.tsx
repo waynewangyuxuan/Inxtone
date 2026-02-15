@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Badge, Button, ConfirmDialog } from '../../components/ui';
+import { Badge, Button, ConfirmDialog, LoadingSpinner } from '../../components/ui';
 import { Select } from '../../components/forms';
 import { useChapters, useArcs, useDeleteChapter } from '../../hooks';
 import {
@@ -73,7 +73,7 @@ export function ChapterListPanel(): React.ReactElement {
       </div>
 
       <div className={styles.list}>
-        {isLoading && <p className={styles.loading}>Loading...</p>}
+        {isLoading && <LoadingSpinner text="Loading..." size="sm" />}
         {!isLoading && sorted.length === 0 && <p className={styles.empty}>No chapters yet</p>}
         {sorted.map((ch: Chapter) => (
           <div

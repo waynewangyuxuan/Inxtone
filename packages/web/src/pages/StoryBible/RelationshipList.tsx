@@ -6,7 +6,14 @@
  */
 
 import React, { useMemo, useCallback, useState } from 'react';
-import { Button, Card, EmptyState, Badge, ConfirmDialog } from '../../components/ui';
+import {
+  Button,
+  Card,
+  EmptyState,
+  Badge,
+  ConfirmDialog,
+  LoadingSpinner,
+} from '../../components/ui';
 import { useRelationships, useCharacters, useDeleteRelationship } from '../../hooks';
 import { useSelectedId, useStoryBibleActions } from '../../stores/useStoryBibleStore';
 import { RelationshipDetail } from './RelationshipDetail';
@@ -64,12 +71,7 @@ export function RelationshipList(): React.ReactElement {
   }, [deleteTarget, deleteRelationship, selectedId, select]);
 
   if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <span>Loading relationships...</span>
-      </div>
-    );
+    return <LoadingSpinner text="Loading relationships..." />;
   }
 
   if (error) {
