@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { to: '/plot', label: 'Plot', icon: 'plot' },
   { to: '/write', label: 'Write', icon: 'pen' },
   { to: '/export', label: 'Export', icon: 'download' },
+  { to: '/intake', label: 'Intake', icon: 'sparkle' },
   { to: '/settings', label: 'Settings', icon: 'settings' },
 ];
 

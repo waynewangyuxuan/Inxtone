@@ -109,3 +109,6 @@ export {
   useVersions,
   useBuildContext,
 } from './useChapters';
+
+// Intake
+export { useDecompose, useDetectDuplicates, useCommitEntities } from './useIntake';
