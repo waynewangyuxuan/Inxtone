@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button, Card, EmptyState, Badge } from '../../components/ui';
+import { Button, Card, EmptyState, Badge, LoadingSpinner } from '../../components/ui';
 import { useFactions, useDeleteFaction, useCharacters } from '../../hooks';
 import { useSelectedId, useStoryBibleActions } from '../../stores/useStoryBibleStore';
 import { FactionDetail } from './FactionDetail';
@@ -36,12 +36,7 @@ export function FactionList(): React.ReactElement {
   }, [characters]);
 
   if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <span>Loading factions...</span>
-      </div>
-    );
+    return <LoadingSpinner text="Loading factions..." />;
   }
 
   const handleCreate = () => {

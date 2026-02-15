@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button, Card, EmptyState, Badge } from '../../components/ui';
+import { Button, Card, EmptyState, Badge, LoadingSpinner } from '../../components/ui';
 import { useLocations, useDeleteLocation } from '../../hooks';
 import { useSelectedId, useStoryBibleActions } from '../../stores/useStoryBibleStore';
 import { LocationDetail } from './LocationDetail';
@@ -21,12 +21,7 @@ export function LocationList(): React.ReactElement {
   const { select, openForm } = useStoryBibleActions();
 
   if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <span>Loading locations...</span>
-      </div>
-    );
+    return <LoadingSpinner text="Loading locations..." />;
   }
 
   const handleCreate = () => {

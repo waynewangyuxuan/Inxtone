@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, EmptyState, Badge } from '../../components/ui';
+import { Button, Card, EmptyState, Badge, LoadingSpinner } from '../../components/ui';
 import { useForeshadowing } from '../../hooks';
 import type { ForeshadowingStatus, ForeshadowingTerm } from '@inxtone/core';
 import styles from './shared.module.css';
@@ -30,12 +30,7 @@ export function ForeshadowingList(): React.ReactElement {
   const navigate = useNavigate();
 
   if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <span>Loading foreshadowing...</span>
-      </div>
-    );
+    return <LoadingSpinner text="Loading foreshadowing..." />;
   }
 
   if (!items || items.length === 0) {

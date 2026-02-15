@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, EmptyState, Badge } from '../../components/ui';
+import { Button, Card, EmptyState, Badge, LoadingSpinner } from '../../components/ui';
 import { useArcs, useDeleteArc } from '../../hooks';
 import { useStoryBibleActions } from '../../stores/useStoryBibleStore';
 import { ArcForm } from './ArcForm';
@@ -27,12 +27,7 @@ export function ArcList(): React.ReactElement {
   const navigate = useNavigate();
 
   if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <span>Loading arcs...</span>
-      </div>
-    );
+    return <LoadingSpinner text="Loading arcs..." />;
   }
 
   const handleCreate = () => {

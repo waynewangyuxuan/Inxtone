@@ -17,9 +17,9 @@
 - [ ] **Auto-save collision** — `notifyManualSave()` clear pending timer + AbortController for in-flight requests
 - [ ] **useAutoSave unit tests** — no client-side test coverage
 - [ ] **i18n: prompt presets** — 36 hardcoded English strings → `t('key')`
-- [ ] **Outline CSS** — hardcoded `#ef4444` → `var(--color-danger)`
+- [x] **Outline CSS** — hardcoded `#ef4444` → `var(--color-danger)` *(fixed in fix/ui-consistency)*
 - [ ] **Brainstorm loading state** — no feedback during regeneration
-- [ ] **tokens.css** — define `--color-success-bg`, chip bg token
+- [x] **tokens.css** — define `--color-success-bg`, chip bg token *(fixed in fix/ui-consistency: added warning-bg, danger-bg, muted-bg)*
 - [ ] **Schema.md** — add `sort_order` column
 - [ ] **Accessibility** — `aria-pressed` on preset toggles, `aria-expanded` on outline header
 - [ ] **reorderChapters E2E** — verify actual sort order persisted

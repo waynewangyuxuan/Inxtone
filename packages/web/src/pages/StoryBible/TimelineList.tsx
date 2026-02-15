@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button, EmptyState } from '../../components/ui';
+import { Button, EmptyState, LoadingSpinner } from '../../components/ui';
 import { useTimeline, useDeleteTimelineEvent } from '../../hooks';
 import { useStoryBibleActions } from '../../stores/useStoryBibleStore';
 import type { TimelineEvent } from '@inxtone/core';
@@ -18,12 +18,7 @@ export function TimelineList(): React.ReactElement {
   const { openForm, select } = useStoryBibleActions();
 
   if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <span>Loading timeline...</span>
-      </div>
-    );
+    return <LoadingSpinner text="Loading timeline..." />;
   }
 
   const handleCreate = () => {

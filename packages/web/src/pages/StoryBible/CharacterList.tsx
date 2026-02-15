@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button, Card, EmptyState, RoleBadge } from '../../components/ui';
+import { Button, Card, EmptyState, RoleBadge, LoadingSpinner } from '../../components/ui';
 import { useCharacters, useDeleteCharacter } from '../../hooks';
 import { useSelectedId, useStoryBibleActions } from '../../stores/useStoryBibleStore';
 import { CharacterForm } from './CharacterForm';
@@ -21,12 +21,7 @@ export function CharacterList(): React.ReactElement {
   const { select, openForm } = useStoryBibleActions();
 
   if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner} />
-        <span>Loading characters...</span>
-      </div>
-    );
+    return <LoadingSpinner text="Loading characters..." />;
   }
 
   if (error) {
