@@ -112,3 +112,4 @@ export {
 
 // Intake
 export { useDecompose, useDetectDuplicates, useCommitEntities } from './useIntake';
+export { useIntakeImport } from './useIntakeImport';

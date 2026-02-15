@@ -2,14 +2,18 @@
  * Intake Page
  *
  * Smart Intake — AI-powered Story Bible entity extraction.
- * User selects a topic, pastes/uploads text, reviews extracted entities,
- * then commits accepted ones to the Story Bible.
+ * Two modes:
+ * - Document Intake: paste/upload text, select topic, extract entities
+ * - Chapter Import: paste/upload chapters, multi-pass AI extraction (SSE)
  */
 
 import React from 'react';
 import { Icon } from '../../components/Icon';
 import { useIntakeStore, useIntakeResult } from '../../stores/useIntakeStore';
+import { useIntakeImport } from '../../hooks/useIntakeImport';
 import { IntakeTextPanel } from './IntakeTextPanel';
+import { ChapterImportPanel } from './ChapterImportPanel';
+import { ImportProgressPanel } from './ImportProgressPanel';
 import { EntityReviewPanel } from './EntityReviewPanel';
 import { EntityEditModal } from './EntityEditModal';
 import type { IntakeHint } from '@inxtone/core';
@@ -28,12 +32,17 @@ const TOPICS: TopicChip[] = [
   { hint: 'plot', label: 'Plot', description: 'Arcs, hooks, foreshadowing' },
   { hint: 'location', label: 'Locations', description: 'Places and settings' },
   { hint: 'faction', label: 'Factions', description: 'Groups and organizations' },
+  { hint: 'chapters', label: 'Chapters', description: 'Import existing story chapters' },
   { hint: 'auto', label: 'Auto-detect', description: 'AI identifies all types' },
 ];
 
 export function Intake(): React.ReactElement {
   const { hint, setHint, reset } = useIntakeStore();
   const result = useIntakeResult();
+  const { startImport, cancel, isImporting, currentStep, currentPass, progress, error } =
+    useIntakeImport();
+
+  const isChapterMode = hint === 'chapters';
 
   const handleTopicSelect = (selected: IntakeHint) => {
     if (selected === hint) {
@@ -75,13 +84,30 @@ export function Intake(): React.ReactElement {
         </div>
       </section>
 
-      {/* Text Input */}
+      {/* Input Area — switches based on mode */}
       <section className={styles.inputSection}>
-        <IntakeTextPanel />
+        {isChapterMode ? (
+          <ChapterImportPanel onChaptersReady={startImport} disabled={isImporting} />
+        ) : (
+          <IntakeTextPanel />
+        )}
       </section>
 
+      {/* Import Progress (chapter mode) */}
+      {isImporting && (
+        <section className={styles.inputSection}>
+          <ImportProgressPanel
+            currentStep={currentStep}
+            currentPass={currentPass}
+            progress={progress}
+            error={error}
+            onCancel={cancel}
+          />
+        </section>
+      )}
+
       {/* Results */}
-      {result && (
+      {result && !isImporting && (
         <section className={styles.resultsSection}>
           <div className={styles.resultsDivider}>
             <span>Extraction Results</span>
