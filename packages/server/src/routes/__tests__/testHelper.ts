@@ -25,6 +25,7 @@ import {
   WritingService,
   SearchService,
   ExportService,
+  IntakeService,
 } from '@inxtone/core/services';
 import { errorHandler } from '../../middleware/errorHandler.js';
 import { registerRoutes } from '../index.js';
@@ -35,6 +36,7 @@ export interface TestContext {
   writingService: WritingService;
   searchService: SearchService;
   exportService: ExportService;
+  intakeService: IntakeService;
   db: Database;
 }
 
@@ -94,6 +96,20 @@ export async function createTestServer(): Promise<TestContext> {
     hookRepo,
   });
 
+  const intakeService = new IntakeService({
+    db,
+    characterRepo,
+    relationshipRepo,
+    locationRepo,
+    factionRepo,
+    arcRepo,
+    foreshadowingRepo,
+    hookRepo,
+    worldRepo,
+    timelineEventRepo: new TimelineEventRepository(db),
+    eventBus,
+  });
+
   const server = Fastify({ logger: false });
   server.setErrorHandler(errorHandler);
   await registerRoutes(server, {
@@ -101,8 +117,9 @@ export async function createTestServer(): Promise<TestContext> {
     writingService,
     searchService,
     exportService,
+    intakeService,
   });
   await server.ready();
 
-  return { server, service, writingService, searchService, exportService, db };
+  return { server, service, writingService, searchService, exportService, intakeService, db };
 }
