@@ -18,6 +18,28 @@ export type { PromptPreset, PresetCategory } from './ai/presets.js';
 // AI constants (shared between web + server)
 export { TOTAL_BUDGET } from './ai/BaseContextBuilder.js';
 
+// Smart Intake types (shared between web + server)
+export type {
+  IntakeHint,
+  IntakeConfidence,
+  ExtractedCharacter,
+  ExtractedRelationship,
+  ExtractedLocation,
+  ExtractedFaction,
+  ExtractedWorld,
+  ExtractedTimelineEvent,
+  ExtractedForeshadowing,
+  ExtractedArc,
+  ExtractedHook,
+  DecomposeResult,
+  ChapterText,
+  DetectedChapter,
+  IntakeProgressEvent,
+  DuplicateCandidate,
+  IntakeCommitEntity,
+  IntakeCommitResult,
+} from './ai/intake/types.js';
+
 // Note: Database module is server-only, import via '@inxtone/core/db'
 // Note: Services module is server-only, import via '@inxtone/core/services'
 
