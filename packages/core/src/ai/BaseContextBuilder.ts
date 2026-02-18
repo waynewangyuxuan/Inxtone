@@ -7,7 +7,7 @@
  * - getScopedRelationships(charIds) — fetch relationships between given characters
  * - truncateToFitBudget(items, budget) — priority-based token truncation
  *
- * @see Meta/Decisions/ADR-0002-ai-context-injection-strategy.md
+ * @see spec/Decisions/ADR-0002-ai-context-injection-strategy.md
  */
 
 import type { CharacterRepository } from '../db/repositories/CharacterRepository.js';

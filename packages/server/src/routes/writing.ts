@@ -9,7 +9,7 @@
  * Version endpoints: GET /api/versions
  * Stats endpoints: GET /api/stats
  *
- * @see Meta/Modules/02_writing_service.md
+ * @see spec/Modules/02_writing_service.md
  */
 
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';

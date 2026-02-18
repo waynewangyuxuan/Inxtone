@@ -10,7 +10,7 @@
  * MVP: Single provider (Gemini 2.5 Pro), no fallback chain.
  * Provider abstraction preserved in IAIService interface for M4+ expansion.
  *
- * @see Meta/Modules/03_ai_service.md §2.3 Gemini Provider 调用
+ * @see spec/Modules/03_ai_service.md §2.3 Gemini Provider 调用
  */
 
 import { GoogleGenAI } from '@google/genai';
