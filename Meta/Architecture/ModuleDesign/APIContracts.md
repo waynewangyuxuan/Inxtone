@@ -37,15 +37,23 @@ interface StoryBibleAPI {
   updateFaction(id: string, data: UpdateFactionInput): Promise<Faction>
   deleteFaction(id: string): Promise<void>
 
+  // Timeline
+  getTimelineEvents(): Promise<TimelineEvent[]>
+  createTimelineEvent(data: CreateTimelineEventInput): Promise<TimelineEvent>
+  updateTimelineEvent(id: number, data: UpdateTimelineEventInput): Promise<TimelineEvent>
+  deleteTimelineEvent(id: number): Promise<void>
+
   // Plot
   getArcs(): Promise<Arc[]>
   createArc(data: CreateArcInput): Promise<Arc>
   updateArc(id: string, data: UpdateArcInput): Promise<Arc>
+  deleteArc(id: string): Promise<void>
 
   // Foreshadowing
   getForeshadowing(): Promise<Foreshadowing[]>
   createForeshadowing(data: CreateForeshadowingInput): Promise<Foreshadowing>
   updateForeshadowing(id: string, data: UpdateForeshadowingInput): Promise<Foreshadowing>
+  deleteForeshadowing(id: string): Promise<void>
   resolveForeshadowing(id: string, chapterId: number): Promise<Foreshadowing>
 }
 ```
