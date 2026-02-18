@@ -23,6 +23,8 @@ export { GlobalContextBuilder } from '../ai/GlobalContextBuilder.js';
 export { PromptAssembler } from '../ai/PromptAssembler.js';
 export { GeminiProvider } from '../ai/GeminiProvider.js';
 export type { GeminiProviderOptions } from '../ai/GeminiProvider.js';
+export { IntakeService } from '../ai/IntakeService.js';
+export type { IntakeServiceDeps, IntakeServiceOptions } from '../ai/IntakeService.js';
 
 // Re-export errors for convenience
 export * from '../errors/index.js';

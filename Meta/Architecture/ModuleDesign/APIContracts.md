@@ -37,15 +37,23 @@ interface StoryBibleAPI {
   updateFaction(id: string, data: UpdateFactionInput): Promise<Faction>
   deleteFaction(id: string): Promise<void>
 
+  // Timeline
+  getTimelineEvents(): Promise<TimelineEvent[]>
+  createTimelineEvent(data: CreateTimelineEventInput): Promise<TimelineEvent>
+  updateTimelineEvent(id: number, data: UpdateTimelineEventInput): Promise<TimelineEvent>
+  deleteTimelineEvent(id: number): Promise<void>
+
   // Plot
   getArcs(): Promise<Arc[]>
   createArc(data: CreateArcInput): Promise<Arc>
   updateArc(id: string, data: UpdateArcInput): Promise<Arc>
+  deleteArc(id: string): Promise<void>
 
   // Foreshadowing
   getForeshadowing(): Promise<Foreshadowing[]>
   createForeshadowing(data: CreateForeshadowingInput): Promise<Foreshadowing>
   updateForeshadowing(id: string, data: UpdateForeshadowingInput): Promise<Foreshadowing>
+  deleteForeshadowing(id: string): Promise<void>
   resolveForeshadowing(id: string, chapterId: number): Promise<Foreshadowing>
 }
 ```
@@ -141,6 +149,71 @@ interface ConfigAPI {
   // AI Config
   getAIConfig(): Promise<AIConfig>
   updateAIConfig(config: AIConfig): Promise<void>
+}
+```
+
+## Intake API
+
+```typescript
+interface IntakeAPI {
+  // Document Intake — NL text → structured entities
+  decompose(input: { text: string; hint?: IntakeHint }): Promise<DecomposeResult>
+
+  // Chapter Import — multi-pass extraction with SSE progress
+  importChapters(input: { chapters: ChapterText[] }): AsyncIterable<IntakeProgressEvent>
+
+  // Commit — write confirmed entities to Story Bible
+  commit(input: { entities: IntakeCommitEntity[] }): Promise<IntakeCommitResult>
+}
+```
+
+### REST Endpoints
+
+| Endpoint | Method | Body | Response |
+|----------|--------|------|----------|
+| `/api/intake/decompose` | POST | `{ text: string, hint?: IntakeHint }` | `DecomposeResult` (JSON) |
+| `/api/intake/import-chapters` | POST | `{ chapters: { title, content, sortOrder }[] }` | SSE stream of `IntakeProgressEvent` |
+| `/api/intake/commit` | POST | `{ entities: IntakeCommitEntity[] }` | `IntakeCommitResult` (JSON) |
+
+### Types
+
+```typescript
+type IntakeHint = 'character' | 'relationship' | 'world' | 'location' | 'faction'
+               | 'foreshadowing' | 'arc' | 'hook' | 'timeline' | 'auto';
+
+interface DecomposeResult {
+  characters: ExtractedCharacter[];
+  relationships: ExtractedRelationship[];
+  locations: ExtractedLocation[];
+  factions: ExtractedFaction[];
+  foreshadowing: ExtractedForeshadowing[];
+  arcs: ExtractedArc[];
+  hooks: ExtractedHook[];
+  timeline: ExtractedTimeline[];
+  warnings: string[];
+}
+
+interface IntakeCommitEntity {
+  entityType: string;
+  action: 'create' | 'merge' | 'skip';
+  data: Record<string, unknown>;
+  existingId?: string;
+}
+
+interface IntakeCommitResult {
+  created: { type: string; id: string; name: string }[];
+  merged: { type: string; id: string; name: string }[];
+  skipped: number;
+  unresolved: number;
+}
+
+interface IntakeProgressEvent {
+  type: 'progress' | 'pass_complete' | 'done' | 'error';
+  step?: string;
+  pass?: number;
+  progress?: number;
+  entities?: Partial<DecomposeResult>;
+  error?: string;
 }
 ```
 

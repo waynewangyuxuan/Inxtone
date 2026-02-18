@@ -50,7 +50,9 @@ export {
 export {
   timelineKeys,
   useTimeline,
+  useTimelineEvent,
   useCreateTimelineEvent,
+  useUpdateTimelineEvent,
   useDeleteTimelineEvent,
 } from './useTimeline';
 
@@ -63,6 +65,7 @@ export {
   useForeshadowing,
   useForeshadowingItem,
   useCreateForeshadowing,
+  useUpdateForeshadowing,
   useAddForeshadowingHint,
   useResolveForeshadowing,
   useAbandonForeshadowing,
@@ -109,3 +112,7 @@ export {
   useVersions,
   useBuildContext,
 } from './useChapters';
+
+// Intake
+export { useDecompose, useCommitEntities } from './useIntake';
+export { useIntakeImport } from './useIntakeImport';

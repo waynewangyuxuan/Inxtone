@@ -36,6 +36,7 @@ import {
   SearchService,
   ChapterSetupAssist,
   ExportService,
+  IntakeService,
 } from '@inxtone/core/services';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
@@ -58,6 +59,7 @@ export interface ServerOptions {
   searchService?: ISearchService;
   exportService?: IExportService;
   setupAssist?: ChapterSetupAssist;
+  intakeService?: IntakeService;
 
   // Database instance for seed routes
   db?: InstanceType<typeof Database>;
@@ -120,6 +122,8 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
         stats: '/api/stats',
         // Export API
         export: '/api/export',
+        // Smart Intake API
+        intake: '/api/intake',
         // Future endpoints
         // quality: '/api/quality',
       },
@@ -145,6 +149,9 @@ export async function createServer(options: ServerOptions = {}): Promise<Fastify
     }
     if (options.setupAssist) {
       deps.setupAssist = options.setupAssist;
+    }
+    if (options.intakeService) {
+      deps.intakeService = options.intakeService;
     }
     if (options.db) {
       deps.db = options.db;
@@ -213,6 +220,7 @@ function createServices(options: {
   searchService: ISearchService;
   exportService: IExportService;
   setupAssist: ChapterSetupAssist;
+  intakeService: IntakeService;
   db: InstanceType<typeof Database>;
 } {
   // Use provided path or default to ~/.inxtone/data.db
@@ -277,6 +285,25 @@ function createServices(options: {
     { geminiApiKey: options.geminiApiKey }
   );
 
+  // Create IntakeService
+  const intakeOpts = options.geminiApiKey ? { geminiApiKey: options.geminiApiKey } : undefined;
+  const intakeService = new IntakeService(
+    {
+      db,
+      characterRepo,
+      relationshipRepo,
+      locationRepo,
+      factionRepo,
+      arcRepo,
+      foreshadowingRepo,
+      hookRepo,
+      worldRepo,
+      timelineEventRepo,
+      eventBus,
+    },
+    intakeOpts
+  );
+
   // Create WritingService
   const writingService = new WritingService({
     db,
@@ -319,6 +346,7 @@ function createServices(options: {
     searchService,
     exportService,
     setupAssist,
+    intakeService,
     db,
   };
 }
@@ -355,6 +383,7 @@ if (isMainModule) {
     searchService,
     exportService,
     setupAssist,
+    intakeService,
     db,
   } = createServices({ dbPath, geminiApiKey });
 
@@ -374,6 +403,7 @@ if (isMainModule) {
     searchService,
     exportService,
     setupAssist,
+    intakeService,
     db,
   })
     .then(() => {

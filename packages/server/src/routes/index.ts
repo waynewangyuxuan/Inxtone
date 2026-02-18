@@ -13,7 +13,7 @@ import type {
   ISearchService,
   IExportService,
 } from '@inxtone/core';
-import type { ChapterSetupAssist } from '@inxtone/core/services';
+import type { ChapterSetupAssist, IntakeService } from '@inxtone/core/services';
 import type { Database } from '@inxtone/core/db';
 
 import { characterRoutes } from './characters.js';
@@ -30,6 +30,7 @@ import { volumeRoutes, chapterRoutes, versionRoutes, statsRoutes } from './writi
 import { seedRoutes } from './seed.js';
 import { searchRoutes } from './search.js';
 import { exportRoutes } from './export.js';
+import { intakeRoutes } from './intake.js';
 
 /**
  * Dependencies required by route handlers.
@@ -41,6 +42,7 @@ export interface RouteDeps {
   searchService?: ISearchService;
   exportService?: IExportService;
   setupAssist?: ChapterSetupAssist;
+  intakeService?: IntakeService;
   db?: Database;
 }
 
@@ -84,6 +86,13 @@ export async function registerRoutes(fastify: FastifyInstance, deps: RouteDeps):
   if (deps.searchService) {
     await fastify.register(searchRoutes({ searchService: deps.searchService }), {
       prefix: '/api/search',
+    });
+  }
+
+  // Intake routes (optional - only registered if intakeService is provided)
+  if (deps.intakeService) {
+    await fastify.register(intakeRoutes({ intakeService: deps.intakeService }), {
+      prefix: '/api/intake',
     });
   }
 

@@ -159,6 +159,12 @@ export interface CreateTimelineEventInput {
   relatedLocations?: LocationId[];
 }
 
+/** Options for updating a timeline event */
+export interface UpdateTimelineEventInput {
+  eventDate?: string;
+  description?: string;
+}
+
 /** Options for creating foreshadowing */
 export interface CreateForeshadowingInput {
   content: string;
@@ -166,6 +172,11 @@ export interface CreateForeshadowingInput {
   plantedText?: string;
   plannedPayoff?: ChapterId;
   term?: 'short' | 'mid' | 'long';
+}
+
+/** Options for updating foreshadowing */
+export interface UpdateForeshadowingInput extends Partial<CreateForeshadowingInput> {
+  status?: 'active' | 'resolved' | 'abandoned';
 }
 
 /** Options for creating an arc */
@@ -239,6 +250,7 @@ export interface IStoryBibleService {
   // === Timeline ===
   createTimelineEvent(input: CreateTimelineEventInput): Promise<TimelineEvent>;
   getTimelineEvents(): Promise<TimelineEvent[]>;
+  updateTimelineEvent(id: number, input: UpdateTimelineEventInput): Promise<TimelineEvent>;
   deleteTimelineEvent(id: number): Promise<void>;
 
   // === Arcs ===
@@ -253,6 +265,7 @@ export interface IStoryBibleService {
   getForeshadowing(id: ForeshadowingId): Promise<Foreshadowing | null>;
   getAllForeshadowing(): Promise<Foreshadowing[]>;
   getActiveForeshadowing(): Promise<Foreshadowing[]>;
+  updateForeshadowing(id: ForeshadowingId, input: UpdateForeshadowingInput): Promise<Foreshadowing>;
   addForeshadowingHint(
     id: ForeshadowingId,
     chapter: ChapterId,
@@ -260,6 +273,7 @@ export interface IStoryBibleService {
   ): Promise<Foreshadowing>;
   resolveForeshadowing(id: ForeshadowingId, resolvedChapter: ChapterId): Promise<Foreshadowing>;
   abandonForeshadowing(id: ForeshadowingId): Promise<Foreshadowing>;
+  deleteForeshadowing(id: ForeshadowingId): Promise<void>;
 
   // === Hooks ===
   createHook(input: CreateHookInput): Promise<Hook>;
