@@ -7,7 +7,7 @@
  * - POST /commit — write confirmed entities to Story Bible
  * - POST /import-chapters — multi-pass chapter extraction (SSE stream)
  *
- * @see Meta/Milestone/M6.md
+ * @see spec/Milestone/M6.md
  */
 
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';

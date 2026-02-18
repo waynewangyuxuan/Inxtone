@@ -11,8 +11,8 @@
  * - Streaming AI generation responses
  * - Emitting events for generation lifecycle
  *
- * @see Meta/Modules/03_ai_service.md
- * @see Meta/Decisions/ADR-0002-ai-context-injection-strategy.md
+ * @see spec/Modules/03_ai_service.md
+ * @see spec/Decisions/ADR-0002-ai-context-injection-strategy.md
  */
 
 import { randomUUID } from 'node:crypto';

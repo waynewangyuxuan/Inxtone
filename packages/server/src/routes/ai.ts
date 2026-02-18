@@ -7,7 +7,7 @@
  * SSE endpoints: POST /continue, /dialogue, /describe, /brainstorm, /ask, /complete
  * JSON endpoints: POST /context, GET /providers
  *
- * @see Meta/Modules/03_ai_service.md
+ * @see spec/Modules/03_ai_service.md
  */
 
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
