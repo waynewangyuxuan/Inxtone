@@ -84,7 +84,9 @@ Extract power systems, magic/cultivation rules, social norms, notable locations,
 Primary: arcs[], foreshadowing[], hooks[]
 Secondary: timeline[]
 Extract story arcs (main/sub), foreshadowing seeds, narrative hooks, and timeline events.
-提取故事弧线（主线/支线）、伏笔、叙事钩子和时间线事件。`,
+提取故事弧线（主线/支线）、伏笔、叙事钩子和时间线事件。
+Note for hooks: "type" = where it appears (opening/arc/chapter), "hookType" = technique used (suspense/mystery/etc). Do NOT confuse them.
+注意 hooks："type"=出现位置（opening/arc/chapter），"hookType"=手法风格（suspense/mystery等），不要搞混。`,
 
   location: `Focus on extracting LOCATIONS.
 重点提取地点。
@@ -206,9 +208,9 @@ export const ENTITY_SCHEMA_DESCRIPTIONS: Record<string, string> = {
 
   hooks: `"hooks": [
   {
-    "type": "opening | arc | chapter",
+    "type": "opening | arc | chapter — WHERE the hook appears (scope/structural level) / 钩子出现的位置（结构层级）",
     "content": "Hook content / 钩子内容",
-    "hookType": "suspense | anticipation | emotion | mystery (optional)",
+    "hookType": "suspense | anticipation | emotion | mystery — HOW the hook works (technique/style) / 钩子的手法风格 (optional)",
     "strength": 0-100 (optional),
     "confidence": "high | medium | low"
   }
