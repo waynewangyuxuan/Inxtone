@@ -46,8 +46,6 @@ const relationshipTypeSchema = z.enum([
   'lover',
 ]);
 
-const hookTypeSchema = z.enum(['opening', 'arc', 'chapter']);
-
 const hookStyleSchema = z.enum(['suspense', 'anticipation', 'emotion', 'mystery']);
 
 const foreshadowingTermSchema = z.enum(['short', 'mid', 'long']);
@@ -146,13 +144,35 @@ export const extractedArcSchema = z.object({
   confidence: confidenceSchema,
 });
 
-export const extractedHookSchema = z.object({
-  type: hookTypeSchema,
-  content: z.string().min(1),
-  hookType: hookStyleSchema.optional(),
-  strength: z.number().min(0).max(100).optional(),
-  confidence: confidenceSchema,
-});
+const hookStyleValues = new Set(['suspense', 'anticipation', 'emotion', 'mystery']);
+
+export const extractedHookSchema = z
+  .object({
+    type: z.string().min(1),
+    content: z.string().min(1),
+    hookType: hookStyleSchema.optional(),
+    strength: z.number().min(0).max(100).optional(),
+    confidence: confidenceSchema,
+  })
+  .transform((data) => {
+    // AI often confuses type (structural: opening/arc/chapter) with hookType (style: mystery/suspense/…)
+    // If type contains a style value, remap it to hookType and default type to 'chapter'
+    if (hookStyleValues.has(data.type)) {
+      return {
+        ...data,
+        hookType: data.type as 'suspense' | 'anticipation' | 'emotion' | 'mystery',
+        type: 'chapter' as const,
+      };
+    }
+    // Validate type is a valid HookType, default to 'chapter' if not
+    const validTypes = new Set(['opening', 'arc', 'chapter']);
+    return {
+      ...data,
+      type: validTypes.has(data.type)
+        ? (data.type as 'opening' | 'arc' | 'chapter')
+        : ('chapter' as const),
+    };
+  });
 
 // ===========================================
 // Master Decompose Result Schema
