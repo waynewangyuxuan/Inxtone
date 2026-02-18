@@ -5,7 +5,7 @@
  * Parses IntakeProgressEvent SSE messages and updates intake store.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useIntakeStore } from '../stores/useIntakeStore';
 import type { IntakeProgressEvent, DecomposeResult } from '@inxtone/core';
 
@@ -33,6 +33,13 @@ export function useIntakeImport(): UseIntakeImportReturn {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const { setResult } = useIntakeStore();
+
+  // Abort on unmount
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();

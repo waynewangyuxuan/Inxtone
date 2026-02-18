@@ -564,6 +564,7 @@ describe('IntakeService', () => {
       ]);
 
       expect(result.created).toHaveLength(0);
+      expect(result.unresolved).toBe(1);
       expect(relationshipRepo.findAll()).toHaveLength(0);
     });
 

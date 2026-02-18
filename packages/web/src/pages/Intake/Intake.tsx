@@ -9,19 +9,18 @@
 
 import React from 'react';
 import { Icon } from '../../components/Icon';
-import { useIntakeStore, useIntakeResult } from '../../stores/useIntakeStore';
+import { useIntakeStore, useIntakeResult, type TopicHint } from '../../stores/useIntakeStore';
 import { useIntakeImport } from '../../hooks/useIntakeImport';
 import { IntakeTextPanel } from './IntakeTextPanel';
 import { ChapterImportPanel } from './ChapterImportPanel';
 import { ImportProgressPanel } from './ImportProgressPanel';
 import { EntityReviewPanel } from './EntityReviewPanel';
 import { EntityEditModal } from './EntityEditModal';
-import type { IntakeHint } from '@inxtone/core';
 import styles from './Intake.module.css';
 import pageStyles from '../Page.module.css';
 
 interface TopicChip {
-  hint: IntakeHint;
+  hint: TopicHint;
   label: string;
   description: string;
 }
@@ -44,7 +43,7 @@ export function Intake(): React.ReactElement {
 
   const isChapterMode = hint === 'chapters';
 
-  const handleTopicSelect = (selected: IntakeHint) => {
+  const handleTopicSelect = (selected: TopicHint) => {
     if (selected === hint) {
       setHint(undefined);
     } else {
@@ -70,12 +69,13 @@ export function Intake(): React.ReactElement {
       {/* Topic Selector */}
       <section className={styles.topicSection}>
         <label className={styles.topicLabel}>What are you importing?</label>
-        <div className={styles.topicGrid}>
+        <div className={styles.topicGrid} role="group" aria-label="Import topic selector">
           {TOPICS.map((topic) => (
             <button
               key={topic.hint}
               className={`${styles.topicChip} ${hint === topic.hint ? styles.topicChipActive : ''}`}
               onClick={() => handleTopicSelect(topic.hint)}
+              aria-pressed={hint === topic.hint}
             >
               <span className={styles.topicChipLabel}>{topic.label}</span>
               <span className={styles.topicChipDesc}>{topic.description}</span>

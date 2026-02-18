@@ -34,14 +34,7 @@ import type {
  * - faction → factions[], locations[]
  * - auto → all types
  */
-export type IntakeHint =
-  | 'character'
-  | 'world'
-  | 'plot'
-  | 'location'
-  | 'faction'
-  | 'chapters'
-  | 'auto';
+export type IntakeHint = 'character' | 'world' | 'plot' | 'location' | 'faction' | 'auto';
 
 /** How confident the AI is about an extracted entity */
 export type IntakeConfidence = 'high' | 'medium' | 'low';
@@ -259,4 +252,6 @@ export interface IntakeCommitResult {
   created: Array<{ type: string; id: string; name: string }>;
   merged: Array<{ type: string; id: string; name: string }>;
   skipped: number;
+  /** Number of entities that couldn't be resolved (e.g. relationships with unknown characters) */
+  unresolved: number;
 }

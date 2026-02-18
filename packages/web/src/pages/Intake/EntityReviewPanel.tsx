@@ -154,13 +154,15 @@ export function EntityReviewPanel(): React.ReactElement | null {
     commitMutation.mutate(
       { entities },
       {
-        onSuccess: (result) => {
-          const created = result.created.length;
-          const merged = result.merged.length;
-          addNotification(
-            `Committed ${created} new + ${merged} merged entities to Story Bible.`,
-            'success'
-          );
+        onSuccess: (commitResult) => {
+          const created = commitResult.created.length;
+          const merged = commitResult.merged.length;
+          const unresolved = commitResult.unresolved ?? 0;
+          let msg = `Committed ${created} new + ${merged} merged entities to Story Bible.`;
+          if (unresolved > 0) {
+            msg += ` ${unresolved} could not be resolved.`;
+          }
+          addNotification(msg, 'success');
           reset();
         },
       }
@@ -217,20 +219,17 @@ export function EntityReviewPanel(): React.ReactElement | null {
                 const edited = editedData[key];
                 const data = edited ?? entity;
                 const subtitle = group.getSubtitle(data);
-                const cardProps: Record<string, unknown> = {
-                  entityType: group.type,
-                  name: group.getName(data),
-                  confidence: str(data.confidence) || 'medium',
-                  decision: decisions[key] ?? 'accept',
-                  onAccept: () => setDecision(key, 'accept'),
-                  onReject: () => setDecision(key, 'reject'),
-                  onEdit: () => openEditor(key),
-                };
-                if (subtitle !== undefined) cardProps.subtitle = subtitle;
                 return (
                   <EntityCard
                     key={key}
-                    {...(cardProps as unknown as Parameters<typeof EntityCard>[0])}
+                    entityType={group.type}
+                    name={group.getName(data)}
+                    {...(subtitle !== undefined ? { subtitle } : {})}
+                    confidence={str(data.confidence) || 'medium'}
+                    decision={decisions[key] ?? 'accept'}
+                    onAccept={() => setDecision(key, 'accept')}
+                    onReject={() => setDecision(key, 'reject')}
+                    onEdit={() => openEditor(key)}
                   />
                 );
               })}

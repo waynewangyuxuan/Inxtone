@@ -1,7 +1,7 @@
 /**
  * Intake React Query Hooks
  *
- * Mutations for Smart Intake API: decompose, detect-duplicates, commit.
+ * Mutations for Smart Intake API: decompose, commit.
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,12 +13,7 @@ import { foreshadowingKeys } from './useForeshadowing';
 import { hookKeys } from './useHooks';
 import { timelineKeys } from './useTimeline';
 import { worldKeys } from './useWorld';
-import type {
-  DecomposeResult,
-  IntakeHint,
-  DuplicateCandidate,
-  IntakeCommitResult,
-} from '@inxtone/core';
+import type { DecomposeResult, IntakeHint, IntakeCommitResult } from '@inxtone/core';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -46,15 +41,6 @@ export function useDecompose() {
     mutationFn: (input: DecomposeInput) =>
       apiPost<DecomposeResult, DecomposeInput>('/intake/decompose', input),
     onError: (error) => showError('Extraction failed', error),
-  });
-}
-
-/** Check extracted entities against existing Story Bible for duplicates */
-export function useDetectDuplicates() {
-  return useMutation({
-    mutationFn: (entities: DecomposeResult) =>
-      apiPost<DuplicateCandidate[], DecomposeResult>('/intake/detect-duplicates', entities),
-    onError: (error) => showError('Duplicate detection failed', error),
   });
 }
 

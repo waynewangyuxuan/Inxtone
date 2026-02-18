@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **M6: Smart Intake** — AI-powered Story Bible population from natural language and existing chapters
+  - IntakeService: `decompose()` for NL text → structured entities, `extractFromChapters()` for multi-pass chapter extraction, `commitEntities()` for transactional write
+  - Bilingual prompt templates (English system instructions + Chinese domain examples) with `generateJSON<DecomposeResult>()`
+  - 3 API endpoints: `POST /api/intake/decompose` (JSON), `POST /api/intake/import-chapters` (SSE streaming), `POST /api/intake/commit` (JSON)
+  - Intake page (`/intake`): topic selector chips (Characters, World, Plot, Locations, Factions, Chapters, Auto-detect)
+  - Document intake: textarea + .txt/.md file drop, hint-aware extraction, entity review with Accept/Edit/Reject per entity
+  - Chapter import: file upload (.txt/.md/.docx) + paste, chapter boundary detection (`第N章`, `Chapter N`), 3-pass SSE extraction with progress bar
+  - Entity review panel: cards grouped by type with confidence badges, batch actions (Accept All, Accept All [type])
+  - Entity edit modal: dynamic form fields pre-filled with AI-extracted data
+  - DOCX parsing via `mammoth` library
+  - Zustand store + React Query hooks for intake state management
+  - SSE streaming hook with `fetch()` + `ReadableStream`, abort on unmount
+  - Accessibility: `role="progressbar"`, `aria-pressed` on topic chips, `role="group"` on selector
+  - 1262 tests passing across all packages
 - **M5: Export + Issues #9 & #8** — Multi-format export, StoryBiblePanel refactor, Context Preview UI
   - ExportService with formatter strategy pattern: MarkdownFormatter, TxtFormatter, DocxFormatter, BibleFormatter
   - Export API: `POST /api/export/chapters` (MD/TXT/DOCX), `POST /api/export/story-bible` (Markdown) — raw file download with Content-Disposition

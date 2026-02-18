@@ -5,8 +5,9 @@
  * Shows detected chapter boundaries and word counts.
  */
 
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Button } from '../../components/ui/Button';
+import { useNotificationStore } from '../../stores/useNotificationStore';
 import type { DetectedChapter } from '@inxtone/core';
 import styles from './Intake.module.css';
 
@@ -59,7 +60,7 @@ export function ChapterImportPanel({
   const [rawText, setRawText] = useState('');
   const [chapters, setChapters] = useState<DetectedChapter[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const addNotification = useNotificationStore((s) => s.addNotification);
 
   const handleTextChange = useCallback((text: string) => {
     setRawText(text);
@@ -76,7 +77,10 @@ export function ChapterImportPanel({
       setIsDragOver(false);
       const file = e.dataTransfer.files[0];
       if (!file) return;
-      if (!/\.(txt|md)$/i.exec(file.name)) return;
+      if (!/\.(txt|md)$/i.exec(file.name)) {
+        addNotification('Only .txt and .md files are supported.', 'error');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
         const text = event.target?.result;
@@ -84,7 +88,7 @@ export function ChapterImportPanel({
       };
       reader.readAsText(file);
     },
-    [handleTextChange]
+    [handleTextChange, addNotification]
   );
 
   const handleFileSelect = useCallback(() => {
@@ -127,7 +131,6 @@ export function ChapterImportPanel({
         onDrop={handleDrop}
       >
         <textarea
-          ref={textareaRef}
           className={styles.textInput}
           value={rawText}
           onChange={(e) => handleTextChange(e.target.value)}

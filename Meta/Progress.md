@@ -4,6 +4,104 @@
 
 ---
 
+## 2026-02-17 (M6: Smart Intake — Complete) ✅
+
+### Completed
+
+**Branch**: `ms6`
+
+**Phase 1: IntakeService Core + Prompt Templates**
+- `IntakeService` (core): AI-powered Story Bible extraction pipeline
+  - `decompose(text, hint?)` — single-call NL text → structured entities via `generateJSON<DecomposeResult>()`
+  - `extractFromChapters(chapters)` — 3-pass async generator with SSE progress events
+  - `commitEntities(entities)` — transactional write with dependency-ordered entity creation + name→ID resolution
+  - `setGeminiApiKey(key)` — reuses existing provider via `updateApiKey()`
+- Bilingual prompt templates (`INTAKE_DECOMPOSE`, `INTAKE_CHAPTER_EXTRACT`) — English system instructions + Chinese domain examples
+- Zod validation schemas for all 8 entity types + `DecomposeResult`
+- Chapter boundary detection: `第N章`, `Chapter N`, `第N回`, `卷N` patterns with fragment merging
+- DOCX reader via `mammoth.extractRawText()`
+
+**Phase 2: API Routes + Document Intake UI**
+- 3 API routes: `POST /api/intake/decompose`, `POST /api/intake/import-chapters` (SSE), `POST /api/intake/commit`
+- Input validation: `.max(500000)` on text fields, `.max(200)` on titles
+- Intake page at `/intake` with topic selector chips (Characters, World, Plot, Locations, Factions, Chapters, Auto-detect)
+- `IntakeTextPanel`: textarea + .txt/.md file drop zone, hint-aware extraction
+- `EntityReviewPanel`: entity cards grouped by type with confidence badges, per-entity Accept/Edit/Reject, batch actions
+- `EntityCard`: type badge, confidence dot, name/subtitle preview, action buttons
+- `EntityEditModal`: dynamic form fields matching entity type, pre-filled with AI data
+- Zustand store (`useIntakeStore`): result, decisions, editedData, hint state
+- React Query hooks: `useDecompose()`, `useCommitEntities()` with full cache invalidation
+
+**Phase 3: Chapter Import + Auto-Extraction**
+- `ChapterImportPanel`: file drop zone (.txt/.md/.docx) + paste textarea with chapter boundary detection
+- `ImportProgressPanel`: progress bar with 3-pass checklist (characters/locations → relationships → plot)
+  - Accessibility: `role="progressbar"`, `aria-valuenow/min/max`, `aria-label`
+- SSE streaming hook (`useIntakeImport`): `fetch()` + `ReadableStream`, accumulates entities across passes
+  - Cleanup on unmount via `useEffect` abort
+
+**Phase 4: Integration + Polish**
+- Sidebar navigation entry with import icon
+- Topic selector with `aria-pressed` + `role="group"` accessibility
+- Toast notifications for unsupported file drops
+- `TopicHint` UI-only type (`IntakeHint | 'chapters'`) — `'chapters'` excluded from API hint enum
+- `IntakeCommitResult.unresolved` field for entities that couldn't be resolved (e.g., relationships with unknown characters)
+- Removed dead code: `useDetectDuplicates`, `duplicates` state, unused selectors, `textareaRef`
+
+**Code Review Fixes Applied**
+- `setGeminiApiKey`: reuse provider via `updateApiKey()` instead of `new GeminiProvider()`
+- Removed `'chapters'` from core `IntakeHint` type (UI-only concern)
+- Added `.max()` constraints on Zod schemas for text inputs
+- Added accessibility attributes to progress bar and topic selector
+- Added `useEffect` cleanup for SSE abort on unmount
+- Replaced cardProps double-cast with conditional spread for `exactOptionalPropertyTypes`
+- Added toast notifications for bad file drops
+- Added `unresolved` tracking in `commitEntities()`
+
+### New Files (18)
+| File | Purpose |
+|------|---------|
+| `packages/core/src/ai/IntakeService.ts` | AI decomposition + commit pipeline |
+| `packages/core/src/ai/intake/types.ts` | Intake types + Zod schemas |
+| `packages/core/src/ai/intake/schemas.ts` | Per-entity validation schemas |
+| `packages/core/src/ai/intake/templates.ts` | Bilingual prompt templates |
+| `packages/core/src/ai/intake/chapterSplitter.ts` | Chapter boundary detection |
+| `packages/core/src/ai/intake/docxReader.ts` | DOCX → plain text |
+| `packages/core/src/ai/__tests__/IntakeService.test.ts` | 28 unit tests |
+| `packages/server/src/routes/intake.ts` | 3 API routes |
+| `packages/server/src/routes/__tests__/intake.test.ts` | Route integration tests |
+| `packages/web/src/pages/Intake/Intake.tsx` | Main page with topic selector |
+| `packages/web/src/pages/Intake/Intake.module.css` | Styles |
+| `packages/web/src/pages/Intake/IntakeTextPanel.tsx` | NL text input + file drop |
+| `packages/web/src/pages/Intake/ChapterImportPanel.tsx` | Chapter import + boundary detection |
+| `packages/web/src/pages/Intake/EntityReviewPanel.tsx` | Entity review cards |
+| `packages/web/src/pages/Intake/EntityCard.tsx` | Single entity card |
+| `packages/web/src/pages/Intake/EntityEditModal.tsx` | Edit entity modal |
+| `packages/web/src/pages/Intake/ImportProgressPanel.tsx` | Progress bar + pass checklist |
+| `packages/web/src/stores/useIntakeStore.ts` | Zustand intake state |
+| `packages/web/src/hooks/useIntake.ts` | React Query mutations |
+| `packages/web/src/hooks/useIntakeImport.ts` | SSE streaming hook |
+
+### Modified Files (10)
+| File | Change |
+|------|--------|
+| `packages/core/package.json` | +mammoth dependency |
+| `packages/core/src/index.ts` | Export intake types |
+| `packages/server/src/index.ts` | Create IntakeService in bootstrap |
+| `packages/server/src/routes/index.ts` | Register intake routes |
+| `packages/web/src/App.tsx` | Add /intake route |
+| `packages/web/src/pages/index.ts` | Export Intake |
+| `packages/web/src/components/layout/Sidebar.tsx` | Add Intake nav item |
+| `packages/web/src/components/Icon.tsx` | Add import icon |
+| `packages/web/src/hooks/index.ts` | Export intake hooks |
+| `Meta/Architecture/ModuleDesign/APIContracts.md` | Add Intake API section |
+
+### Stats
+- Tests: **1262 passed** across all packages, 0 failures
+- Build: clean (0 TS errors)
+- New tests: 28+ (IntakeService unit tests + route integration tests)
+
+---
+
 ## 2026-02-13 (UI Consistency & Tech Debt Sweep)
 
 ### Completed

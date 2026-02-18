@@ -5,9 +5,10 @@
  * Handles paste, file drop (.txt/.md), and extract button.
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { useIntakeStore } from '../../stores/useIntakeStore';
+import { useNotificationStore } from '../../stores/useNotificationStore';
 import { useDecompose } from '../../hooks/useIntake';
 import type { IntakeHint } from '@inxtone/core';
 import styles from './Intake.module.css';
@@ -15,14 +16,15 @@ import styles from './Intake.module.css';
 export function IntakeTextPanel(): React.ReactElement {
   const { hint, inputText, setInputText, setResult } = useIntakeStore();
   const decomposeMutation = useDecompose();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const addNotification = useNotificationStore((s) => s.addNotification);
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleExtract = useCallback(() => {
     if (!inputText.trim()) return;
 
     const input: { text: string; hint?: IntakeHint } = { text: inputText };
-    if (hint) input.hint = hint;
+    // 'chapters' is UI-only mode; only pass valid API hints
+    if (hint && hint !== 'chapters') input.hint = hint;
 
     decomposeMutation.mutate(input, {
       onSuccess: (result) => {
@@ -50,6 +52,7 @@ export function IntakeTextPanel(): React.ReactElement {
 
       // Only accept text files
       if (!/\.(txt|md)$/i.exec(file.name)) {
+        addNotification('Only .txt and .md files are supported.', 'error');
         return;
       }
 
@@ -62,7 +65,7 @@ export function IntakeTextPanel(): React.ReactElement {
       };
       reader.readAsText(file);
     },
-    [setInputText]
+    [setInputText, addNotification]
   );
 
   const handleFileSelect = useCallback(() => {
@@ -97,7 +100,6 @@ export function IntakeTextPanel(): React.ReactElement {
         onDrop={handleDrop}
       >
         <textarea
-          ref={textareaRef}
           className={styles.textInput}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}

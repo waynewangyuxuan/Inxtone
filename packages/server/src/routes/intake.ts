@@ -21,10 +21,8 @@ import { z } from 'zod';
 // ===========================================
 
 const decomposeSchema = z.object({
-  text: z.string().min(1, 'Text is required'),
-  hint: z
-    .enum(['character', 'world', 'plot', 'location', 'faction', 'chapters', 'auto'])
-    .optional(),
+  text: z.string().min(1, 'Text is required').max(500000, 'Text too long (max 500K characters)'),
+  hint: z.enum(['character', 'world', 'plot', 'location', 'faction', 'auto']).optional(),
 });
 
 const commitEntitySchema = z.object({
@@ -65,8 +63,8 @@ const importChaptersSchema = z.object({
   chapters: z
     .array(
       z.object({
-        title: z.string().min(1),
-        content: z.string().min(1),
+        title: z.string().min(1).max(200),
+        content: z.string().min(1).max(500000),
         sortOrder: z.number().int().nonnegative(),
       })
     )

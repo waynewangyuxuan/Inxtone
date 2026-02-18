@@ -6,7 +6,10 @@
  */
 
 import { create } from 'zustand';
-import type { IntakeHint, DecomposeResult, DuplicateCandidate } from '@inxtone/core';
+import type { IntakeHint, DecomposeResult } from '@inxtone/core';
+
+/** UI-level hint — extends IntakeHint with 'chapters' mode (UI-only, not sent to API) */
+export type TopicHint = IntakeHint | 'chapters';
 
 /** Action the user takes on each extracted entity */
 export type EntityDecision = 'accept' | 'reject';
@@ -25,12 +28,11 @@ export function parseEntityKey(key: EntityKey): { entityType: string; index: num
 
 interface IntakeState {
   // Input
-  hint: IntakeHint | undefined;
+  hint: TopicHint | undefined;
   inputText: string;
 
   // Results
   result: DecomposeResult | null;
-  duplicates: DuplicateCandidate[];
 
   // Per-entity decisions & edits
   decisions: Record<EntityKey, EntityDecision>;
@@ -40,10 +42,9 @@ interface IntakeState {
   editingKey: EntityKey | null;
 
   // Actions
-  setHint: (hint: IntakeHint | undefined) => void;
+  setHint: (hint: TopicHint | undefined) => void;
   setInputText: (text: string) => void;
   setResult: (result: DecomposeResult) => void;
-  setDuplicates: (duplicates: DuplicateCandidate[]) => void;
   setDecision: (key: EntityKey, decision: EntityDecision) => void;
   setEditedData: (key: EntityKey, data: Record<string, unknown>) => void;
   acceptAll: () => void;
@@ -91,10 +92,9 @@ function buildAllKeys(result: DecomposeResult): EntityKey[] {
 }
 
 const initialState = {
-  hint: undefined as IntakeHint | undefined,
+  hint: undefined as TopicHint | undefined,
   inputText: '',
   result: null as DecomposeResult | null,
-  duplicates: [] as DuplicateCandidate[],
   decisions: {} as Record<EntityKey, EntityDecision>,
   editedData: {} as Record<EntityKey, Record<string, unknown>>,
   editingKey: null as EntityKey | null,
@@ -112,10 +112,8 @@ export const useIntakeStore = create<IntakeState>((set, get) => ({
     for (const key of buildAllKeys(result)) {
       decisions[key] = 'accept';
     }
-    set({ result, decisions, editedData: {}, duplicates: [], editingKey: null });
+    set({ result, decisions, editedData: {}, editingKey: null });
   },
-
-  setDuplicates: (duplicates) => set({ duplicates }),
 
   setDecision: (key, decision) =>
     set((state) => ({ decisions: { ...state.decisions, [key]: decision } })),
@@ -162,22 +160,5 @@ export const useIntakeStore = create<IntakeState>((set, get) => ({
 }));
 
 // Selector hooks
-export const useIntakeHint = () => useIntakeStore((s) => s.hint);
 export const useIntakeResult = () => useIntakeStore((s) => s.result);
-export const useIntakeDecisions = () => useIntakeStore((s) => s.decisions);
 export const useIntakeEditingKey = () => useIntakeStore((s) => s.editingKey);
-export const useIntakeActions = () =>
-  useIntakeStore((s) => ({
-    setHint: s.setHint,
-    setInputText: s.setInputText,
-    setResult: s.setResult,
-    setDuplicates: s.setDuplicates,
-    setDecision: s.setDecision,
-    setEditedData: s.setEditedData,
-    acceptAll: s.acceptAll,
-    acceptAllOfType: s.acceptAllOfType,
-    rejectAll: s.rejectAll,
-    openEditor: s.openEditor,
-    closeEditor: s.closeEditor,
-    reset: s.reset,
-  }));

@@ -112,7 +112,7 @@ export class IntakeService {
 
   /** Set Gemini API key (BYOK pattern) */
   setGeminiApiKey(key: string): void {
-    this.provider = new GeminiProvider(key);
+    this.provider.updateApiKey(key);
   }
 
   // ===================================
@@ -474,6 +474,7 @@ export class IntakeService {
     const created: IntakeCommitResult['created'] = [];
     const merged: IntakeCommitResult['merged'] = [];
     let skipped = 0;
+    let unresolved = 0;
 
     // Name → ID maps built during commit (for resolving references)
     const charNameToId = new Map<string, string>();
@@ -523,12 +524,14 @@ export class IntakeService {
             } else {
               merged.push(commitResult);
             }
+          } else {
+            unresolved++;
           }
         }
       }
     });
 
-    return { created, merged, skipped };
+    return { created, merged, skipped, unresolved };
   }
 
   // ===================================

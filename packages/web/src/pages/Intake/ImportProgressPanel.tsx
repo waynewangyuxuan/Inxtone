@@ -39,7 +39,14 @@ export function ImportProgressPanel({
       <h3 className={styles.progressTitle}>Extracting Story Bible...</h3>
 
       {/* Progress bar */}
-      <div className={styles.progressBar}>
+      <div
+        className={styles.progressBar}
+        role="progressbar"
+        aria-valuenow={Math.min(progress, 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Extraction progress"
+      >
         <div className={styles.progressFill} style={{ width: `${Math.min(progress, 100)}%` }} />
       </div>
 
