@@ -21,19 +21,13 @@ import {
 } from 'recharts';
 import { useChapters } from '../../hooks/useChapters';
 import { useArcs } from '../../hooks/useArcs';
+import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
-import type { EmotionCurve, TensionLevel } from '@inxtone/core';
+import type { TensionLevel } from '@inxtone/core';
 import styles from './PacingView.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const EMOTION_VALUES: Record<EmotionCurve, number> = {
-  low_to_high: 75,
-  high_to_low: 25,
-  wave: 50,
-  stable: 50,
-};
 
 const TENSION_VALUES: Record<TensionLevel, number> = {
   low: 20,
@@ -44,6 +38,13 @@ const TENSION_VALUES: Record<TensionLevel, number> = {
 const GOLDEN_CHAPTER_THRESHOLD = 3000; // words
 
 type ViewMode = 'words' | 'emotion' | 'combined';
+
+// Moved outside component to avoid re-creation on every render
+const VIEW_MODES: Array<{ value: ViewMode; label: string }> = [
+  { value: 'words', label: 'Word Count' },
+  { value: 'emotion', label: 'Emotion / Tension' },
+  { value: 'combined', label: 'Combined' },
+];
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
 
@@ -90,17 +91,40 @@ export function PacingView(): React.ReactElement {
     [chapters]
   );
 
-  // Build chart data
+  // Build chart data.
+  // emotionCurve is an enum per chapter describing the curve *type* (e.g. low_to_high),
+  // not a numeric value. We interpolate based on chapter position so the line shows an
+  // actual curve rather than a flat value repeated across all chapters.
   const chartData = useMemo(() => {
-    return sortedChapters.map((ch) => ({
-      id: ch.id,
-      label: ch.title ? `${ch.id}: ${ch.title}` : `${ch.id}`,
-      words: ch.wordCount,
-      emotion: ch.emotionCurve ? EMOTION_VALUES[ch.emotionCurve] : null,
-      tension: ch.tension ? TENSION_VALUES[ch.tension] : null,
-      isGolden: ch.wordCount >= GOLDEN_CHAPTER_THRESHOLD,
-      status: ch.status,
-    }));
+    const n = sortedChapters.length;
+    return sortedChapters.map((ch, i) => {
+      const t = n > 1 ? i / (n - 1) : 0.5;
+      let emotion: number | null = null;
+      if (ch.emotionCurve) {
+        switch (ch.emotionCurve) {
+          case 'low_to_high':
+            emotion = Math.round(20 + 60 * t);
+            break;
+          case 'high_to_low':
+            emotion = Math.round(80 - 60 * t);
+            break;
+          case 'stable':
+            emotion = 50;
+            break;
+          case 'wave':
+            emotion = Math.round(50 + 30 * Math.sin((2 * Math.PI * i) / 4));
+            break;
+        }
+      }
+      return {
+        id: ch.id,
+        words: ch.wordCount,
+        emotion,
+        tension: ch.tension ? TENSION_VALUES[ch.tension] : null,
+        isGolden: ch.wordCount >= GOLDEN_CHAPTER_THRESHOLD,
+        status: ch.status,
+      };
+    });
   }, [sortedChapters]);
 
   // Arc boundaries as chapter IDs
@@ -118,9 +142,8 @@ export function PacingView(): React.ReactElement {
     const withWords = sortedChapters.filter((c) => c.wordCount > 0);
     const total = withWords.reduce((s, c) => s + c.wordCount, 0);
     const avg = withWords.length ? Math.round(total / withWords.length) : 0;
-    const max = Math.max(...withWords.map((c) => c.wordCount), 0);
     const golden = withWords.filter((c) => c.wordCount >= GOLDEN_CHAPTER_THRESHOLD).length;
-    return { total, avg, max, golden };
+    return { total, avg, golden };
   }, [sortedChapters]);
 
   if (isLoading) return <LoadingSpinner text="Loading chapters..." />;
@@ -133,25 +156,21 @@ export function PacingView(): React.ReactElement {
     );
   }
 
-  const VIEW_MODES: Array<{ value: ViewMode; label: string }> = [
-    { value: 'words', label: 'Word Count' },
-    { value: 'emotion', label: 'Emotion / Tension' },
-    { value: 'combined', label: 'Combined' },
-  ];
-
   return (
     <div className={styles.container}>
       {/* Controls */}
       <div className={styles.controls}>
         <div className={styles.viewToggle}>
           {VIEW_MODES.map((m) => (
-            <button
+            <Button
               key={m.value}
-              className={`${styles.viewBtn} ${viewMode === m.value ? styles.viewBtnActive : ''}`}
+              variant="ghost"
+              size="sm"
+              className={viewMode === m.value ? styles.viewBtnActive : ''}
               onClick={() => setViewMode(m.value)}
             >
               {m.label}
-            </button>
+            </Button>
           ))}
         </div>
 

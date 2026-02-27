@@ -10,18 +10,19 @@ import { RelationshipMap } from './RelationshipMap';
 import { TimelineView } from './TimelineView';
 import { PacingView } from './PacingView';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
+import { Tabs, TabPanel } from '../../components/ui/Tabs';
 import styles from './Visualizations.module.css';
 
-type Tab = 'relationships' | 'timeline' | 'pacing';
+type TabId = 'relationships' | 'timeline' | 'pacing';
 
-const TABS: Array<{ id: Tab; label: string }> = [
+const TABS = [
   { id: 'relationships', label: 'Relationship Map' },
   { id: 'timeline', label: 'Timeline' },
   { id: 'pacing', label: 'Pacing' },
 ];
 
 export function Visualizations(): React.ReactElement {
-  const [activeTab, setActiveTab] = useState<Tab>('relationships');
+  const [activeTab, setActiveTab] = useState<TabId>('relationships');
 
   return (
     <div className={styles.page}>
@@ -30,24 +31,24 @@ export function Visualizations(): React.ReactElement {
         <p className={styles.subtitle}>See and verify your story&apos;s structural integrity</p>
       </header>
 
-      <div className={styles.tabBar}>
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={TABS} activeTab={activeTab} onChange={(id) => setActiveTab(id as TabId)} />
 
       <div className={styles.content}>
-        <ErrorBoundary>
-          {activeTab === 'relationships' && <RelationshipMap />}
-          {activeTab === 'timeline' && <TimelineView />}
-          {activeTab === 'pacing' && <PacingView />}
-        </ErrorBoundary>
+        <TabPanel id="relationships" activeTab={activeTab}>
+          <ErrorBoundary>
+            <RelationshipMap />
+          </ErrorBoundary>
+        </TabPanel>
+        <TabPanel id="timeline" activeTab={activeTab}>
+          <ErrorBoundary>
+            <TimelineView />
+          </ErrorBoundary>
+        </TabPanel>
+        <TabPanel id="pacing" activeTab={activeTab}>
+          <ErrorBoundary>
+            <PacingView />
+          </ErrorBoundary>
+        </TabPanel>
       </div>
     </div>
   );

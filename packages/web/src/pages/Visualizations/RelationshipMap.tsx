@@ -12,6 +12,7 @@ import { useCharacters } from '../../hooks/useCharacters';
 import { useRelationships } from '../../hooks/useRelationships';
 import { useFactions } from '../../hooks/useFactions';
 import { useStoryBibleStore } from '../../stores/useStoryBibleStore';
+import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import type { Character, CharacterId, Relationship, RelationshipType } from '@inxtone/core';
@@ -97,6 +98,9 @@ export function RelationshipMap(): React.ReactElement {
   const [nodePositions, setNodePositions] = useState<GraphNode[]>([]);
   const [linkPositions, setLinkPositions] = useState<GraphLink[]>([]);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  // Ref so the simulation effect can read current dimensions without re-triggering on resize
+  const dimensionsRef = useRef(dimensions);
+  dimensionsRef.current = dimensions;
 
   // Interaction state
   const [hoveredId, setHoveredId] = useState<CharacterId | null>(null);
@@ -105,7 +109,10 @@ export function RelationshipMap(): React.ReactElement {
   const [filter, setFilter] = useState<RelationshipType | 'all'>('all');
   const [colorMode, setColorMode] = useState<'role' | 'faction'>('faction');
 
-  // Build character → faction color map
+  // Build character → faction color map.
+  // Note: Character has no factionId field — only faction.leaderId is available,
+  // so only faction leaders receive a faction color. Other members fall back to role color.
+  // To color all members, add factionId to the Character type.
   const factionColorMap = useMemo(() => {
     const map = new Map<CharacterId, string>();
     factions.forEach((faction, i) => {
@@ -141,7 +148,8 @@ export function RelationshipMap(): React.ReactElement {
     if (!el) return;
     const obs = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry) {
+      // Skip 0×0 reports that occur when the panel is hidden (display:none)
+      if (entry && entry.contentRect.width > 0 && entry.contentRect.height > 0) {
         setDimensions({
           width: entry.contentRect.width,
           height: entry.contentRect.height,
@@ -162,8 +170,8 @@ export function RelationshipMap(): React.ReactElement {
     const nodes: GraphNode[] = characters.map((c) => ({
       id: c.id,
       character: c,
-      x: dimensions.width / 2 + (Math.random() - 0.5) * 200,
-      y: dimensions.height / 2 + (Math.random() - 0.5) * 200,
+      x: dimensionsRef.current.width / 2 + (Math.random() - 0.5) * 200,
+      y: dimensionsRef.current.height / 2 + (Math.random() - 0.5) * 200,
     }));
 
     const links: GraphLink[] = filteredLinks.map((r) => ({
@@ -189,7 +197,10 @@ export function RelationshipMap(): React.ReactElement {
           .strength(0.5)
       )
       .force('charge', d3.forceManyBody<GraphNode>().strength(-300))
-      .force('center', d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
+      .force(
+        'center',
+        d3.forceCenter(dimensionsRef.current.width / 2, dimensionsRef.current.height / 2)
+      )
       .force('collision', d3.forceCollide<GraphNode>(NODE_RADIUS + 10))
       .on('tick', () => {
         setNodePositions([...nodesRef.current]);
@@ -205,7 +216,19 @@ export function RelationshipMap(): React.ReactElement {
     return () => {
       sim.stop();
     };
-  }, [characters, relationships, filter, dimensions.width, dimensions.height]);
+  }, [characters, relationships, filter]);
+
+  // Update center force position on resize — without recreating nodes or restarting from scratch
+  useEffect(() => {
+    if (dimensions.width === 0 || dimensions.height === 0) return;
+    const sim = simulationRef.current;
+    if (!sim) return;
+    const centerForce = sim.force<d3.ForceCenter<GraphNode>>('center');
+    if (centerForce) {
+      centerForce.x(dimensions.width / 2).y(dimensions.height / 2);
+      sim.alpha(0.1).restart();
+    }
+  }, [dimensions.width, dimensions.height]);
 
   // ─── Node drag ──────────────────────────────────────────────────────────
 
@@ -264,7 +287,7 @@ export function RelationshipMap(): React.ReactElement {
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
-      if (!e.metaKey) return;
+      if (!e.metaKey && !e.ctrlKey) return;
       e.preventDefault();
       const delta = e.deltaY > 0 ? 0.9 : 1.1;
       const cx = dimensions.width / 2;
@@ -341,33 +364,39 @@ export function RelationshipMap(): React.ReactElement {
       {/* Filter bar */}
       <div className={styles.filterBar}>
         {RELATIONSHIP_FILTERS.map((f) => (
-          <button
+          <Button
             key={f.value}
-            className={`${styles.filterBtn} ${filter === f.value ? styles.filterActive : ''}`}
+            variant="ghost"
+            size="sm"
+            className={filter === f.value ? styles.filterActive : ''}
             onClick={() => setFilter(f.value)}
           >
             {f.value !== 'all' && (
               <span className={styles.filterDot} style={{ background: LINK_COLORS[f.value] }} />
             )}
             {f.label}
-          </button>
+          </Button>
         ))}
         <span className={styles.filterStats}>
           {characters.length} characters · {linkPositions.length} relationships
         </span>
         <div className={styles.colorModeToggle}>
-          <button
-            className={`${styles.colorModeBtn} ${colorMode === 'faction' ? styles.colorModeBtnActive : ''}`}
+          <Button
+            variant="ghost"
+            size="sm"
+            className={colorMode === 'faction' ? styles.colorModeBtnActive : ''}
             onClick={() => setColorMode('faction')}
           >
             By Faction
-          </button>
-          <button
-            className={`${styles.colorModeBtn} ${colorMode === 'role' ? styles.colorModeBtnActive : ''}`}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={colorMode === 'role' ? styles.colorModeBtnActive : ''}
             onClick={() => setColorMode('role')}
           >
             By Role
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -401,7 +430,7 @@ export function RelationshipMap(): React.ReactElement {
             {linkPositions.map((link, i) => {
               const src = link.source as GraphNode;
               const tgt = link.target as GraphNode;
-              if (!src.x || !tgt.x || !src.y || !tgt.y) return null;
+              if (src.x == null || tgt.x == null || src.y == null || tgt.y == null) return null;
 
               // Shorten line to node edge
               const dx = tgt.x - src.x;
@@ -432,7 +461,7 @@ export function RelationshipMap(): React.ReactElement {
               const oy2 = y2 + perpY;
 
               return (
-                <g key={i} opacity={highlighted ? 1 : 0.15}>
+                <g key={link.relationship.id} opacity={highlighted ? 1 : 0.15}>
                   <line
                     x1={ox1}
                     y1={oy1}
@@ -460,7 +489,7 @@ export function RelationshipMap(): React.ReactElement {
 
             {/* Nodes */}
             {nodePositions.map((node) => {
-              if (!node.x || !node.y) return null;
+              if (node.x == null || node.y == null) return null;
               const color = getNodeColor(node.character);
               const highlighted = isHighlighted(node.id);
               const isSelected = selectedId === node.id;
@@ -545,7 +574,9 @@ export function RelationshipMap(): React.ReactElement {
 
         {/* Zoom controls */}
         <div className={styles.zoomControls}>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             className={styles.zoomBtn}
             onClick={() => {
               const cx = dimensions.width / 2;
@@ -561,8 +592,10 @@ export function RelationshipMap(): React.ReactElement {
             }}
           >
             +
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className={styles.zoomBtn}
             onClick={() => {
               const cx = dimensions.width / 2;
@@ -578,14 +611,16 @@ export function RelationshipMap(): React.ReactElement {
             }}
           >
             −
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className={styles.zoomBtn}
             onClick={() => setTransform({ x: 0, y: 0, k: 1 })}
             title="Reset view"
           >
             ⊙
-          </button>
+          </Button>
         </div>
       </div>
 

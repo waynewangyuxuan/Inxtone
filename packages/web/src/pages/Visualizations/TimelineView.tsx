@@ -1,8 +1,12 @@
 /**
  * TimelineView
  *
- * Chronological display of story timeline events with arc boundary markers.
- * Data source: /timeline and /arcs APIs.
+ * Chronological display of story timeline events.
+ * Data source: /timeline, /arcs, /characters APIs.
+ *
+ * Note: TimelineEvent has no arcId field. Arc filtering works indirectly via
+ * arc.characterArcs — events whose relatedCharacters overlap with the arc's
+ * character list will be shown when that arc is selected.
  */
 
 import React, { useMemo, useState } from 'react';
@@ -13,21 +17,18 @@ import { useCharacters } from '../../hooks/useCharacters';
 import { useStoryBibleStore } from '../../stores/useStoryBibleStore';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
 import type { CharacterId } from '@inxtone/core';
 import styles from './TimelineView.module.css';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface FilterState {
-  arcId: string;
-  characterId: CharacterId;
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return 'Undated';
-  return dateStr;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr; // non-ISO string (e.g. "百年前") — display as-is
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 const ARC_COLORS = ['var(--color-accent)', '#6b8cba', '#4ade80', '#a78bfa', '#f59e0b', '#f472b6'];
@@ -40,7 +41,8 @@ export function TimelineView(): React.ReactElement {
   const { data: arcs = [], isLoading: arcsLoading } = useArcs();
   const { data: characters = [] } = useCharacters();
 
-  const [filters, setFilters] = useState<FilterState>({ arcId: 'all', characterId: 'all' });
+  const [arcId, setArcId] = useState<string>('all');
+  const [characterId, setCharacterId] = useState<CharacterId>('all');
   const [hoveredEventId, setHoveredEventId] = useState<number | null>(null);
   const [expandedEventId, setExpandedEventId] = useState<number | null>(null);
 
@@ -53,45 +55,47 @@ export function TimelineView(): React.ReactElement {
     return map;
   }, [arcs]);
 
-  // Sort events by date
+  // Memoize character id→name lookup
+  const characterMap = useMemo(() => new Map(characters.map((c) => [c.id, c.name])), [characters]);
+
+  // Sort events chronologically.
+  // eventDate is a free-form string — may be an ISO date ("2024-01-15") or a
+  // human-readable label ("百年前"). For ISO dates we sort numerically; for
+  // non-parseable strings we fall back to id (insertion order).
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => {
-      if (!a.eventDate && !b.eventDate) return 0;
+      if (!a.eventDate && !b.eventDate) return a.id - b.id;
       if (!a.eventDate) return 1;
       if (!b.eventDate) return -1;
-      return a.eventDate.localeCompare(b.eventDate);
+      const da = new Date(a.eventDate).getTime();
+      const db = new Date(b.eventDate).getTime();
+      if (isNaN(da) || isNaN(db)) return a.id - b.id;
+      return da - db;
     });
   }, [events]);
 
-  // Filter events
+  // Filter events by arc and/or character.
+  // TimelineEvent has no direct arcId, so arc filtering works indirectly:
+  // filter events whose relatedCharacters overlap with the arc's characterArcs keys.
   const filteredEvents = useMemo(() => {
-    return sortedEvents.filter((event) => {
-      if (
-        filters.characterId !== 'all' &&
-        !event.relatedCharacters?.includes(filters.characterId)
-      ) {
-        return false;
-      }
-      return true;
-    });
-  }, [sortedEvents, filters]);
+    let result = sortedEvents;
 
-  // Compute arc boundaries for the sorted event list
-  const arcBoundaries = useMemo(() => {
-    const boundaries: Array<{ arcId: string; name: string; color: string; startIndex: number }> =
-      [];
-    // Simple heuristic: mark arc start when a new arc appears in sequence
-    // (real arc boundaries would come from arc.chapterStart)
-    arcs.forEach((arc) => {
-      boundaries.push({
-        arcId: arc.id,
-        name: arc.name,
-        color: arcColorMap.get(arc.id) ?? 'var(--color-accent)',
-        startIndex: 0,
-      });
-    });
-    return boundaries;
-  }, [arcs, arcColorMap]);
+    if (arcId !== 'all') {
+      const arc = arcs.find((a) => a.id === arcId);
+      const arcCharIds = new Set(Object.keys(arc?.characterArcs ?? {}));
+      // Always apply the filter — if arc has no characterArcs, result is 0 events
+      // (honest: no associations recorded) rather than silently showing all events
+      result = result.filter((event) =>
+        event.relatedCharacters?.some((cid) => arcCharIds.has(cid))
+      );
+    }
+
+    if (characterId !== 'all') {
+      result = result.filter((event) => event.relatedCharacters?.includes(characterId));
+    }
+
+    return result;
+  }, [sortedEvents, arcId, characterId, arcs]);
 
   if (eventsLoading || arcsLoading) return <LoadingSpinner text="Loading timeline..." />;
   if (!events.length) {
@@ -103,62 +107,54 @@ export function TimelineView(): React.ReactElement {
     );
   }
 
-  const characterMap = new Map(characters.map((c) => [c.id, c.name]));
-
   return (
     <div className={styles.container}>
       {/* Filters */}
       <div className={styles.filterBar}>
-        <select
-          className={styles.filterSelect}
-          value={filters.arcId}
-          onChange={(e) => setFilters((f) => ({ ...f, arcId: e.target.value }))}
-        >
-          <option value="all">All Arcs</option>
-          {arcs.map((arc) => (
-            <option key={arc.id} value={arc.id}>
-              {arc.name}
-            </option>
-          ))}
-        </select>
+        <Select
+          size="sm"
+          value={arcId}
+          onChange={(e) => setArcId(e.target.value)}
+          options={[
+            { value: 'all', label: 'All Arcs' },
+            ...arcs.map((arc) => ({ value: arc.id, label: arc.name })),
+          ]}
+        />
 
-        <select
-          className={styles.filterSelect}
-          value={filters.characterId}
-          onChange={(e) => setFilters((f) => ({ ...f, characterId: e.target.value }))}
-        >
-          <option value="all">All Characters</option>
-          {characters.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <Select
+          size="sm"
+          value={characterId}
+          onChange={(e) => setCharacterId(e.target.value)}
+          options={[
+            { value: 'all', label: 'All Characters' },
+            ...characters.map((c) => ({ value: c.id, label: c.name })),
+          ]}
+        />
 
         <span className={styles.filterStats}>
           {filteredEvents.length} of {events.length} events
         </span>
       </div>
 
-      {/* Arc legend */}
+      {/* Arc chips — click to filter by arc */}
       {arcs.length > 0 && (
         <div className={styles.arcLegend}>
           {arcs.map((arc) => (
-            <button
+            <Button
               key={arc.id}
-              className={`${styles.arcChip} ${filters.arcId === arc.id ? styles.arcChipActive : ''}`}
+              variant="ghost"
+              size="sm"
+              className={`${styles.arcChip} ${arcId === arc.id ? styles.arcChipActive : ''}`}
               style={
                 {
                   '--arc-color': arcColorMap.get(arc.id) ?? 'var(--color-accent)',
                 } as React.CSSProperties
               }
-              onClick={() =>
-                setFilters((f) => ({ ...f, arcId: f.arcId === arc.id ? 'all' : arc.id }))
-              }
+              onClick={() => setArcId((prev) => (prev === arc.id ? 'all' : arc.id))}
             >
               <span className={styles.arcDot} style={{ background: arcColorMap.get(arc.id) }} />
               {arc.name}
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -237,16 +233,6 @@ export function TimelineView(): React.ReactElement {
             </div>
           );
         })}
-
-        {/* Arc boundary markers */}
-        {arcBoundaries.map((boundary) => (
-          <div key={boundary.arcId} className={styles.arcMarker}>
-            <div className={styles.arcMarkerLine} style={{ borderColor: boundary.color }} />
-            <span className={styles.arcMarkerLabel} style={{ color: boundary.color }}>
-              {boundary.name}
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );
