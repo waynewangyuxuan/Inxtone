@@ -1,0 +1,231 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-sm) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 2px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+
+.viewBtn {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  border-radius: calc(var(--radius-md) - 2px);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viewBtn:hover {
+  color: var(--color-text);
+}
+
+.viewBtnActive {
+  background: var(--color-bg);
+  color: var(--color-accent);
+  border: 1px solid var(--color-border);
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.statValue {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.statDivider {
+  width: 1px;
+  height: 28px;
+  background: var(--color-border);
+}
+
+/* ─── Charts ──────────────────────────────────────────────────────────────── */
+
+.chartWrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.chartSection {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.chartTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+/* ─── Tooltip ──────────────────────────────────────────────────────────────── */
+
+.tooltip {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow-md);
+}
+
+.tooltipTitle {
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+}
+
+.tooltipDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tooltipLabel {
+  flex: 1;
+}
+
+.tooltipValue {
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}
+
+/* ─── Chapter list ──────────────────────────────────────────────────────────── */
+
+.chapterList {
+  border-top: 1px solid var(--color-border);
+  overflow-y: auto;
+  max-height: 200px;
+  flex-shrink: 0;
+}
+
+.chapterRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xs) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.chapterRow:hover {
+  background: var(--color-bg-elevated);
+}
+
+.chapterRowSelected {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border-left: 2px solid var(--color-accent);
+}
+
+.chapterNum {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.chapterTitle {
+  flex: 1;
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapterStatus {
+  font-size: var(--text-xs);
+  padding: 1px var(--space-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.status_done {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.status_draft {
+  color: #6b8cba;
+  border-color: #6b8cba;
+}
+
+.status_outline {
+  color: var(--color-text-secondary);
+}
+
+.status_revision {
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.chapterWords {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.goldenBadge {
+  color: var(--color-accent);
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+}

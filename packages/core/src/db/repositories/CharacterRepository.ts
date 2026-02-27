@@ -34,6 +34,7 @@ interface CharacterRow {
   facets: string | null;
   arc: string | null;
   first_appearance: string | null;
+  faction_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -57,8 +58,8 @@ export class CharacterRepository extends BaseRepository<Character, CharacterId> 
       `INSERT INTO characters (
         id, name, role, appearance, voice_samples,
         motivation, conflict_type, template, first_appearance,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        faction_id, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         input.name,
@@ -69,6 +70,7 @@ export class CharacterRepository extends BaseRepository<Character, CharacterId> 
         input.conflictType ?? null,
         input.template ?? null,
         input.firstAppearance ?? null,
+        input.factionId ?? null,
         now,
         now,
       ]
@@ -173,6 +175,10 @@ export class CharacterRepository extends BaseRepository<Character, CharacterId> 
       updates.push('first_appearance = ?');
       params.push(input.firstAppearance);
     }
+    if (input.factionId !== undefined) {
+      updates.push('faction_id = ?');
+      params.push(input.factionId ?? null);
+    }
 
     params.push(id);
 
@@ -265,6 +271,7 @@ export class CharacterRepository extends BaseRepository<Character, CharacterId> 
     if (row.conflict_type) character.conflictType = row.conflict_type as ConflictType;
     if (row.template) character.template = row.template as CharacterTemplate;
     if (row.first_appearance !== null) character.firstAppearance = Number(row.first_appearance);
+    if (row.faction_id) character.factionId = row.faction_id;
 
     // Parse JSON fields with explicit null checks
     const voiceSamples = this.parseJson<string[]>(row.voice_samples);

@@ -15,6 +15,7 @@ import type {
   Location,
   LocationId,
   Faction,
+  FactionId,
   World,
   Arc,
   ArcId,
@@ -170,6 +171,7 @@ export interface CreateCharacterRequest {
   conflictType?: ConflictType;
   template?: CharacterTemplate;
   firstAppearance?: ChapterId;
+  factionId?: FactionId;
 }
 export type CreateCharacterResponse = ApiResponse<Character>;
 

@@ -100,6 +100,8 @@ export interface CreateCharacterInput {
   conflictType?: ConflictType;
   template?: CharacterTemplate;
   firstAppearance?: ChapterId;
+  /** null is treated the same as omitting the field (no faction) */
+  factionId?: FactionId | null;
 }
 
 /** Options for updating a character */

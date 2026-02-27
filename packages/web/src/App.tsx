@@ -9,7 +9,16 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppShell } from './components/layout';
-import { Dashboard, StoryBible, Plot, Write, Export, Settings, Intake } from './pages';
+import {
+  Dashboard,
+  StoryBible,
+  Plot,
+  Write,
+  Export,
+  Settings,
+  Intake,
+  Visualizations,
+} from './pages';
 import { ApiKeyDialog } from './components/ApiKeyDialog';
 import { SearchModal } from './components/SearchModal';
 import { ShortcutReferenceModal } from './components/ShortcutReferenceModal';
@@ -65,6 +74,7 @@ export function App(): React.ReactElement {
               <Route path="export" element={<Export />} />
               <Route path="intake" element={<Intake />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="visualizations" element={<Visualizations />} />
             </Route>
           </Routes>
           <ApiKeyDialog />

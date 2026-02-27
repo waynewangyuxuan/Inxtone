@@ -28,8 +28,10 @@ export function Tabs({ tabs, activeTab, onChange, className }: TabsProps): React
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             role="tab"
             aria-selected={activeTab === tab.id}
+            aria-controls={`panel-${tab.id}`}
             className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
             onClick={() => onChange(tab.id)}
           >
@@ -50,10 +52,9 @@ export interface TabPanelProps {
   children: React.ReactNode;
 }
 
-export function TabPanel({ id, activeTab, children }: TabPanelProps): React.ReactElement | null {
-  if (id !== activeTab) return null;
+export function TabPanel({ id, activeTab, children }: TabPanelProps): React.ReactElement {
   return (
-    <div role="tabpanel" aria-labelledby={`tab-${id}`}>
+    <div role="tabpanel" id={`panel-${id}`} aria-labelledby={`tab-${id}`} hidden={id !== activeTab}>
       {children}
     </div>
   );
