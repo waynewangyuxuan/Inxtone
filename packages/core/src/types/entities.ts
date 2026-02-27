@@ -131,6 +131,7 @@ export interface Character extends Timestamps {
 
   // Metadata
   firstAppearance?: ChapterId;
+  factionId?: FactionId;
 }
 
 // ===========================================

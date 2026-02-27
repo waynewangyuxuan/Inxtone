@@ -110,17 +110,34 @@ export function RelationshipMap(): React.ReactElement {
   const [colorMode, setColorMode] = useState<'role' | 'faction'>('faction');
 
   // Build character → faction color map.
-  // Note: Character has no factionId field — only faction.leaderId is available,
-  // so only faction leaders receive a faction color. Other members fall back to role color.
-  // To color all members, add factionId to the Character type.
+  // Primary: character.factionId (direct membership).
+  // Fallback: faction.leaderId — covers characters whose factionId hasn't been set yet,
+  // ensuring faction leaders always receive a faction color.
   const factionColorMap = useMemo(() => {
-    const map = new Map<CharacterId, string>();
+    const factionColors = new Map<string, string>();
     factions.forEach((faction, i) => {
-      const color = FACTION_PALETTE[i % FACTION_PALETTE.length] ?? FACTION_PALETTE[0]!;
-      if (faction.leaderId) map.set(faction.leaderId, color);
+      factionColors.set(
+        faction.id,
+        FACTION_PALETTE[i % FACTION_PALETTE.length] ?? FACTION_PALETTE[0]!
+      );
+    });
+    const map = new Map<CharacterId, string>();
+    // Fallback: colour faction leaders
+    factions.forEach((faction) => {
+      if (faction.leaderId) {
+        const color = factionColors.get(faction.id);
+        if (color) map.set(faction.leaderId, color);
+      }
+    });
+    // Primary: overwrite with direct factionId (more accurate)
+    characters.forEach((c) => {
+      if (c.factionId) {
+        const color = factionColors.get(c.factionId);
+        if (color) map.set(c.id, color);
+      }
     });
     return map;
-  }, [factions]);
+  }, [factions, characters]);
 
   const getNodeColor = useCallback(
     (character: Character): string => {

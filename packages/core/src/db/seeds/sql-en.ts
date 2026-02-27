@@ -32,14 +32,14 @@ INSERT OR REPLACE INTO world (id, power_system, social_rules, created_at, update
 -- ============================================================================
 -- CHARACTERS
 -- ============================================================================
-INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, motivation, conflict_type, template, facets, arc, first_appearance, created_at, updated_at) VALUES
+INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, motivation, conflict_type, template, facets, arc, first_appearance, faction_id, created_at, updated_at) VALUES
 ('C-001', 'Elara Voss', 'main', 'A girl of seventeen with ash-pale skin and eyes like winter water. Her throat bears a scar shaped precisely like a glyph—not random, but deliberate. She moves quietly, as if afraid to disturb the air, and carries a slate and chalk bound by cord.',
   json('[{"character": "Elara", "text": "[writing on slate] The silence doesn''t frighten me. It''s the noise that does."}, {"character": "Elara", "text": "[chalk scraping] Can you hear the words underneath the words?"}]'),
   json('{"surface": "To master the Grammar and prove her mute voice isn''t weakness", "hidden": "To understand why her voice was stolen and reclaim what was taken", "core": "To find the Author beneath the language—the consciousness that breathes meaning into reality"}'),
   'ideal_vs_reality', 'The Seeker',
   json('{"wisdom": "perceives patterns others miss", "isolation": "her silence makes her both invisible and glaring", "hunger": "for connection despite (or because of) her inability to speak"}'),
   json('{"name": "The Voice in the Silence", "arc_id": "ARC-001", "chapters": [1, 2, 3, 4, 5]}'),
-  'Chapter 1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  'Chapter 1', 'F-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('C-002', 'Cael Ashford', 'supporting', 'A man in his late twenties with ink-stained fingers and the kind face of someone who has learned grief. His dark hair is perpetually unkempt, and there''s a tremor in his hands when he writes, as if the words might escape before he''s ready.',
   json('[{"character": "Cael", "text": "Every student who comes through these doors thinks they''re special. Some actually are. But none of them understand the cost until it''s too late."}, {"character": "Cael", "text": "I assigned myself to be your mentor because I recognize the look. I had a sister who carried that same question in her eyes."}]'),
@@ -47,7 +47,7 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'love_vs_duty', 'The Guardian',
   json('{"guilt": "over Lira''s linguistic collapse", "protective_instinct": "borders on obsessive", "forbidden_depth": "feelings for Elara that he refuses to name"}'),
   json('{"name": "The Cost of Naming", "arc_id": "ARC-002", "chapters": [2, 3, 4, 5]}'),
-  'Chapter 2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  'Chapter 2', 'F-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('C-003', 'Vesper Kaine', 'antagonist', 'An Archspeaker expelled a decade ago, with the kind of dangerous beauty that comes from absolute certainty. Their words cut like glass—precise, memorable, and barbed. They move through shadows with ease, and their eyes reflect something older than their face.',
   json('[{"character": "Vesper", "text": "The Loom doesn''t protect Speakers. It collects them. Keeps them in a tower, teaches them tricks, then cages them when they learn too much."}, {"character": "Vesper", "text": "The words that could reshape the world are rotting in the Deep Archive, guarded by frightened priests. I''m going to free them."}]'),
@@ -55,7 +55,7 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'self_vs_society', 'The Fallen',
   json('{"charisma": "undeniably seductive ideology", "bitterness": "transformed into conviction", "visionary_danger": "isn''t wrong, but isn''t sane"}'),
   json('{"name": "The Unraveling", "arc_id": "ARC-001", "chapters": [3, 5, 6]}'),
-  'Chapter 3', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  'Chapter 3', 'F-002', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('C-004', 'Maren Dusk', 'supporting', 'A girl of sixteen from the nomadic Unbound clans, all quick movements and infectious laughter. Her dark skin is marked with temporary glyphs in indigo ink—the oral tradition''s way of remembering. She wears her hair in braids decorated with charms.',
   json('[{"character": "Maren", "text": "You think because you write it down it''s more true? My grandmother carries five generations of stories in her voice, and not one of them''s ever been forgotten."}, {"character": "Maren", "text": "I came here to prove the Loom isn''t the only way. And maybe to prove it to myself."}]'),
@@ -63,7 +63,7 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'ideal_vs_reality', 'The Confidant',
   json('{"warmth": "genuine and generous", "humor": "sharp but kind", "doubt": "about whether she belongs in either world"}'),
   json('{"name": "The Voice in the Silence", "arc_id": "ARC-001", "chapters": [1, 2, 3, 4, 5]}'),
-  'Chapter 1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  'Chapter 1', 'F-003', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('C-005', 'The Rector', 'antagonist', 'An ancient figure who has led the Loom for forty years, with silver hair worn long and eyes that contain depths of knowledge and ancient calculation. Every movement is deliberate, every word weighted with authority. Some say he hasn''t aged in decades.',
   json('[{"character": "The Rector", "text": "The Grammar of Being is not a tool for the ambitious. It is a knife, and blades have never loved their wielders."}, {"character": "The Rector", "text": "I have prevented the Unraveling. Every day, every law, every restriction—it all stands between civilization and absolute dissolution."}]'),
@@ -71,7 +71,7 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'survival_vs_dignity', 'The Avenger',
   json('{"power": "absolute within his domain", "fear": "of what lies beyond the Archive", "tragedy": "he became the thing he feared most"}'),
   json('{"name": "The Rector''s Choice", "arc_id": "ARC-001", "chapters": [1, 5, 6, 7]}'),
-  'Chapter 5', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  'Chapter 5', 'F-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 ('C-006', 'Pip', 'supporting', 'A book-golem constructed from discarded pages, with a spine of actual leather binding and covers that shift between states. When it moves, pages rustle. Its "eyes" are two illuminated words from classical poetry: "Here" and "Now."',
   json('[{"character": "Pip", "text": "[pages turning frantically] She is coming she is coming she is coming—"}, {"character": "Pip", "text": "[in the voice of a hundred forgotten stories] I remember everything written on my pages. Even the things that were erased."}]'),
@@ -79,7 +79,7 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'belonging_vs_isolation', 'The Witness',
   json('{"loyalty": "absolute but unquestioning", "haunting": "echoes of every story written on its pages", "possibility": "that it''s not a golem but a prison for something sentient"}'),
   json('{"name": "The Voice in the Silence", "arc_id": "ARC-001", "chapters": [1, 2, 3, 4]}'),
-  'Chapter 1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+  'Chapter 1', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- ============================================================================
 -- RELATIONSHIPS

@@ -16,10 +16,19 @@ export type SeedLang = 'en' | 'zh';
  * Run seed with raw SQL.
  * The SQL files include their own cleanup (DELETE FROM) statements,
  * so this effectively replaces existing demo data.
+ *
+ * FK enforcement is temporarily disabled because seeds have circular
+ * dependencies (characters.faction_id ↔ factions.leader_id) that
+ * cannot be satisfied in a single-pass insert order.
  */
 export function runSeed(db: Database, lang: SeedLang): void {
   const sql = lang === 'en' ? seedSqlEn : seedSqlZh;
-  db.exec(sql);
+  db.connection.pragma('foreign_keys = OFF');
+  try {
+    db.exec(sql);
+  } finally {
+    db.connection.pragma('foreign_keys = ON');
+  }
 }
 
 /**

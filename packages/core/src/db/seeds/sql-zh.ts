@@ -57,9 +57,9 @@ INSERT OR REPLACE INTO world (id, power_system, social_rules, created_at, update
 -- ============================================
 -- CHARACTERS (6人)
 -- ============================================
-INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, motivation, conflict_type, template, first_appearance, created_at, updated_at) VALUES
+INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, motivation, conflict_type, template, first_appearance, faction_id, created_at, updated_at) VALUES
 
--- 1. 沈书 - 主角，抄书人
+-- 1. 沈书 - 主角，抄书人 (七院联盟 — 出身青鉴书院)
 ('C-001', '沈书', 'main',
   '身形清瘦，常年穿一件洗得发白的青衫。手指上有厚厚的墨茧。眉目清淡，像一幅还没画完的白描。背上永远背着一只旧书箱。',
   json_array(
@@ -74,11 +74,12 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'ideal_vs_reality',
   'seeker',
   'C-001',
+  'F-001',
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 ),
 
--- 2. 落棠 - 配角，剑宗弟子
+-- 2. 落棠 - 配角，剑宗弟子 (七院联盟 — 剑宗为七院之一)
 ('C-002', '落棠', 'supporting',
   '高挑冷面，黑发以一根木簪束起。剑总是背在身后，但出鞘极快。眼神像秋天的水——清澈，但冷。唯独说到她看不懂的那行字时，会露出十七岁少女才有的迷茫。',
   json_array(
@@ -93,11 +94,12 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'love_vs_duty',
   'guardian',
   'C-002',
+  'F-001',
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 ),
 
--- 3. 墨痴 - 反派，书法宗师
+-- 3. 墨痴 - 反派，书法宗师 (逐墨众 — 首领)
 ('C-003', '墨痴', 'antagonist',
   '形容枯槁，满头白发披散。衣衫上全是墨迹，新旧交叠。双手因长年握笔而变形，但每一根手指都稳如磐石。眼神时而清明时而浑浊，像是随时在遗忘和想起之间摇摆。',
   json_array(
@@ -112,11 +114,12 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'desire_vs_morality',
   'fallen',
   'C-003',
+  'F-002',
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 ),
 
--- 4. 阿鹿 - 配角，山中猎户
+-- 4. 阿鹿 - 配角，山中猎户 (无门派)
 ('C-004', '阿鹿', 'supporting',
   '晒得黝黑，短发用草绳扎着。手上有猎弓的茧子。眼睛很大很亮，暗处会泛出极淡的墨色。笑起来像山涧里的阳光。总是光着脚。',
   json_array(
@@ -131,11 +134,12 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'self_vs_society',
   'rebel',
   'C-004',
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 ),
 
--- 5. 钟离白 - 反派，守护者传人
+-- 5. 钟离白 - 反派，守护者传人 (守章人 — 首领)
 ('C-005', '钟离白', 'antagonist',
   '一身素白，面容清冷如霜。左手始终藏在袖中——那只手已经被封印术侵蚀成墨色。走路无声，像一页纸在风中飘。',
   json_array(
@@ -150,11 +154,12 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'survival_vs_dignity',
   'martyr',
   'C-005',
+  'F-003',
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 ),
 
--- 6. 句读先生 - 配角，神秘说书人
+-- 6. 句读先生 - 配角，神秘说书人 (无门派)
 ('C-006', '句读先生', 'supporting',
   '总是一副茶馆说书人的打扮，灰袍折扇。面容看不出年纪，五官平平无奇但让人过目不忘。说话时习惯性地敲桌子打拍子。',
   json_array(
@@ -169,6 +174,7 @@ INSERT OR REPLACE INTO characters (id, name, role, appearance, voice_samples, mo
   'knowledge_vs_concealment',
   'bystander',
   'C-006',
+  NULL,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 );

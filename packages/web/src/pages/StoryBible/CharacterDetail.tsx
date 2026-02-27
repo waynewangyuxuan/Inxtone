@@ -8,6 +8,7 @@
 import React from 'react';
 import { Button, Badge, EditableField, EditableList, LoadingSpinner } from '../../components/ui';
 import { useCharacter, useUpdateCharacter } from '../../hooks/useCharacters';
+import { useFactions } from '../../hooks/useFactions';
 import type { CharacterId, UpdateCharacterInput } from '@inxtone/core';
 import styles from './CharacterDetail.module.css';
 
@@ -41,6 +42,12 @@ export function CharacterDetail({
 }: CharacterDetailProps): React.ReactElement {
   const { data: character, isLoading } = useCharacter(characterId);
   const updateCharacter = useUpdateCharacter();
+  const { data: factions = [] } = useFactions();
+
+  const factionOptions = [
+    { label: 'No Faction', value: '' },
+    ...factions.map((f) => ({ label: f.name, value: f.id })),
+  ];
 
   if (isLoading) {
     return (
@@ -88,6 +95,14 @@ export function CharacterDetail({
           {character.template && <Badge variant="default">{character.template}</Badge>}
           {character.conflictType && (
             <Badge variant="muted">{character.conflictType.replace(/_/g, ' ')}</Badge>
+          )}
+          {factions.length > 0 && (
+            <EditableField
+              value={character.factionId ?? ''}
+              onSave={(factionId) => save({ factionId: factionId || null })}
+              as="select"
+              options={factionOptions}
+            />
           )}
         </div>
       </div>
